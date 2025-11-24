@@ -73,7 +73,7 @@ fn DemoShell() -> Element {
                         .iter()
                         .enumerate()
                         .map(|(idx, (label, ..))| {
-                            let mut preset = preset.clone();
+                            let mut preset = preset;
                             rsx!(
                                 Button {
                                     r#type: ButtonType::Text,
@@ -87,7 +87,7 @@ fn DemoShell() -> Element {
                 span { style: "margin-left: 12px;", "开关：" }
                 {
                     let ghost_val = *ghost.read();
-                    let mut ghost_signal = ghost.clone();
+                    let mut ghost_signal = ghost;
                     let ghost_label = format!("Ghost {}", if ghost_val { "ON" } else { "OFF" });
                     rsx!(Button {
                         r#type: ButtonType::Text,
@@ -100,7 +100,7 @@ fn DemoShell() -> Element {
                 }
                 {
                     let danger_val = *danger.read();
-                    let mut danger_signal = danger.clone();
+                    let mut danger_signal = danger;
                     let danger_label = format!("Danger {}", if danger_val { "ON" } else { "OFF" });
                     rsx!(Button {
                         r#type: ButtonType::Text,
@@ -113,7 +113,7 @@ fn DemoShell() -> Element {
                 }
                 {
                     let loading_val = *loading.read();
-                    let mut loading_signal = loading.clone();
+                    let mut loading_signal = loading;
                     let loading_label = format!("Loading {}", if loading_val { "ON" } else { "OFF" });
                     rsx!(Button {
                         r#type: ButtonType::Text,
@@ -126,7 +126,7 @@ fn DemoShell() -> Element {
                 }
                 {
                     let block_val = *block.read();
-                    let mut block_signal = block.clone();
+                    let mut block_signal = block;
                     let block_label = format!("Block {}", if block_val { "ON" } else { "OFF" });
                     rsx!(Button {
                         r#type: ButtonType::Text,

@@ -2,8 +2,9 @@ use crate::theme::{ThemeTokens, use_theme};
 use dioxus::prelude::*;
 
 /// Supported button visual types.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ButtonType {
+    #[default]
     Default,
     Primary,
     Dashed,
@@ -11,38 +12,22 @@ pub enum ButtonType {
     Link,
 }
 
-impl Default for ButtonType {
-    fn default() -> Self {
-        ButtonType::Default
-    }
-}
-
 /// Button size variants.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ButtonSize {
     Small,
+    #[default]
     Middle,
     Large,
 }
 
-impl Default for ButtonSize {
-    fn default() -> Self {
-        ButtonSize::Middle
-    }
-}
-
 /// Shape variants for the button outline.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ButtonShape {
+    #[default]
     Default,
     Round,
     Circle,
-}
-
-impl Default for ButtonShape {
-    fn default() -> Self {
-        ButtonShape::Default
-    }
 }
 
 /// Props for the Ant Design flavored button.
@@ -147,8 +132,6 @@ pub fn Button(props: ButtonProps) -> Element {
         visuals.focus_shadow
     );
 
-    let onclick = onclick.clone();
-
     let render_contents = rsx! {
         if loading {
             span { class: "adui-btn-spinner adui-btn-icon" }
@@ -159,8 +142,8 @@ pub fn Button(props: ButtonProps) -> Element {
         span { class: "adui-btn-content", {children} }
     };
 
-    if let Some(href) = href.clone() {
-        let handler = onclick.clone();
+    if let Some(href) = href {
+        let handler = onclick;
         return rsx! {
             a {
                 class: "{class_attr}",
@@ -184,7 +167,7 @@ pub fn Button(props: ButtonProps) -> Element {
         };
     }
 
-    let handler = onclick.clone();
+    let handler = onclick;
     rsx! {
         button {
             class: "{class_attr}",

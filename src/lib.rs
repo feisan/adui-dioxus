@@ -4,6 +4,13 @@ pub mod components;
 pub mod theme;
 
 pub use components::button::{Button, ButtonProps, ButtonShape, ButtonSize, ButtonType};
+pub use components::float_button::{
+    FloatButton, FloatButtonProps, FloatButtonShape, FloatButtonType,
+};
+pub use components::icon::{Icon, IconKind, IconProps};
+pub use components::typography::{
+    Paragraph, ParagraphProps, Text, TextProps, TextType, Title, TitleLevel, TitleProps,
+};
 pub use theme::{
     THEME_BASE_STYLE, Theme, ThemeHandle, ThemeMode, ThemeProvider, ThemeTokens, use_theme,
 };

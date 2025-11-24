@@ -82,6 +82,124 @@ pub const THEME_BASE_STYLE: &str = r#"
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+
+.adui-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    transition: transform 0.16s ease;
+}
+
+.adui-icon-spin {
+    animation: adui-spin 1s linear infinite;
+}
+
+.adui-text {
+    font-size: inherit;
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.adui-text-code {
+    padding: 1px 4px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.95em;
+}
+
+.adui-text-mark {
+    background: rgba(255, 229, 143, 0.8);
+    padding: 1px 2px;
+}
+
+.adui-text-strong {
+    font-weight: 600;
+}
+
+.adui-text-italic {
+    font-style: italic;
+}
+
+.adui-text-nowrap {
+    white-space: nowrap;
+}
+
+.adui-text-ellipsis {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+.adui-paragraph {
+    margin: 0 0 0.6em 0;
+}
+
+.adui-title {
+    margin: 0 0 0.4em 0;
+    font-weight: 600;
+    color: var(--adui-color-text);
+    line-height: 1.25;
+}
+
+.adui-title-1 { font-size: 32px; }
+.adui-title-2 { font-size: 28px; }
+.adui-title-3 { font-size: 24px; }
+.adui-title-4 { font-size: 20px; }
+.adui-title-5 { font-size: 16px; }
+
+.adui-float-btn {
+    position: fixed;
+    z-index: 99;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 56px;
+    height: 56px;
+    padding: 0 16px;
+    border: 1px solid var(--adui-fb-border);
+    background: var(--adui-fb-bg);
+    color: var(--adui-fb-color);
+    border-radius: var(--adui-fb-radius);
+    box-shadow: var(--adui-fb-shadow);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-decoration: none;
+}
+
+.adui-float-btn:hover {
+    background: var(--adui-fb-bg-hover);
+    color: var(--adui-fb-color-hover);
+    border-color: var(--adui-fb-border-hover);
+    transform: translateY(-2px);
+}
+
+.adui-float-btn:active {
+    background: var(--adui-fb-bg-active);
+    color: var(--adui-fb-color-active);
+    border-color: var(--adui-fb-border-active);
+    transform: translateY(0);
+}
+
+.adui-float-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.adui-float-btn-desc {
+    font-size: 12px;
+    line-height: 1.2;
+    max-width: 120px;
+    white-space: nowrap;
+}
 "#;
 
 /// Theme mode tracks the seed variant.
