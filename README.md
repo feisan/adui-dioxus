@@ -10,6 +10,7 @@ adui-dioxus 是一个基于 Dioxus 的 UI 库，提供了丰富的组件和样�
 - FloatButton：悬浮按钮，支持圆/方形、primary/default、danger、tooltip、可配置位置
 - Icon：内置常用图标集（plus/minus/check/close/info/question/search/arrow/loading），支持旋转、大小、颜色
 - Typography：Title/Text/Paragraph，支持 tone（default/secondary/danger/disabled）、strong/italic/underline/delete/code/mark、ellipsis
+- 布局：Divider/Flex/Grid/Layout/Masonry/Space/Splitter（可拖拽分栏），覆盖常用布局场景
 
 ## 本地运行
 要求 Rust + Dioxus 0.7 生态（推荐安装 dioxus-cli）。
@@ -19,9 +20,11 @@ adui-dioxus 是一个基于 Dioxus 的 UI 库，提供了丰富的组件和样�
 - 悬浮按钮示例（浏览器）：`dx serve --example float_button_demo`
 - 图标示例（浏览器）：`dx serve --example icon_demo`
 - 排版示例（浏览器）：`dx serve --example typography_demo`
+- 布局示例（浏览器）：`dx serve --example layout_demo`
 
 ## 示例功能概览
 - `button_demo`：主题切换（Light/Dark）、主色预设、按钮 type/size/shape 及状态开关
 - `float_button_demo`：浮动按钮主/副按钮，主题切换，位置与 tooltip 展示
 - `icon_demo`：图标列表，主题切换，大小调节，主色切换，全局旋转开关
 - `typography_demo`：Title/Text/Paragraph，支持 tone 切换与修饰（strong/italic/underline/delete/code/mark/ellipsis）
+- `layout_demo`：展示 Divider、Flex、Space、Grid、Layout、Masonry、Splitter（拖拽调整分栏比例）

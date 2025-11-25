@@ -95,6 +95,53 @@ pub const THEME_BASE_STYLE: &str = r#"
     animation: adui-spin 1s linear infinite;
 }
 
+.adui-divider {
+    border-top: 1px solid var(--adui-color-border);
+    margin: 16px 0;
+    position: relative;
+}
+
+.adui-divider-vertical {
+    display: inline-block;
+    height: 1em;
+    border-left: 1px solid var(--adui-color-border);
+    margin: 0 8px;
+}
+
+.adui-divider-horizontal {
+    display: flex;
+    align-items: center;
+}
+
+.adui-divider-plain {
+    color: var(--adui-color-text-muted);
+    font-size: 13px;
+}
+
+.adui-divider-dashed {
+    border-top-style: dashed;
+}
+
+.adui-divider-inner-text {
+    padding: 0 8px;
+    background: transparent;
+    color: var(--adui-color-text-muted);
+    font-size: 13px;
+}
+
+.adui-divider-left::before,
+.adui-divider-right::after,
+.adui-divider-center::before,
+.adui-divider-center::after {
+    content: "";
+    border-top: 1px solid var(--adui-color-border);
+    flex: 1;
+}
+
+.adui-divider-left { justify-content: flex-start; gap: 8px; }
+.adui-divider-center { justify-content: center; gap: 8px; }
+.adui-divider-right { justify-content: flex-end; gap: 8px; }
+
 .adui-text {
     font-size: inherit;
     line-height: 1.6;
@@ -153,6 +200,72 @@ pub const THEME_BASE_STYLE: &str = r#"
 .adui-title-4 { font-size: 20px; }
 .adui-title-5 { font-size: 16px; }
 
+.adui-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.adui-layout-header,
+.adui-layout-footer {
+    padding: 12px 16px;
+}
+
+.adui-layout-content {
+    padding: 16px;
+    flex: 1;
+}
+
+.adui-layout-sider {
+    min-height: 100%;
+    padding: 12px;
+}
+
+.adui-row {
+    width: 100%;
+    --adui-row-gutter: 0px;
+}
+
+.adui-col {
+    box-sizing: border-box;
+    padding-left: calc(var(--adui-row-gutter, 0px) / 2);
+    padding-right: calc(var(--adui-row-gutter, 0px) / 2);
+}
+
+.adui-space {
+    display: inline-flex;
+}
+
+.adui-masonry > * {
+    break-inside: avoid;
+    margin-bottom: var(--adui-masonry-gap, 16px);
+}
+
+.adui-splitter {
+    border: 1px solid var(--adui-color-border);
+    border-radius: var(--adui-radius);
+    padding: 8px;
+    background: var(--adui-color-bg-container);
+}
+
+.adui-splitter-pane {
+    background: var(--adui-color-bg-container);
+    border: 1px solid var(--adui-color-border);
+    border-radius: var(--adui-radius);
+    padding: 12px;
+    min-height: 60px;
+}
+
+.adui-splitter-gutter {
+    flex: 0 0 6px;
+    background: rgba(0,0,0,0.02);
+}
+.adui-splitter-horizontal .adui-splitter-gutter {
+    cursor: col-resize;
+}
+.adui-splitter-vertical .adui-splitter-gutter {
+    cursor: row-resize;
+}
 .adui-float-btn {
     position: fixed;
     z-index: 99;

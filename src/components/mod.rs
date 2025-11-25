@@ -1,4 +1,11 @@
 pub mod button;
+pub mod divider;
+pub mod flex;
 pub mod float_button;
+pub mod grid;
 pub mod icon;
+pub mod layout;
+pub mod masonry;
+pub mod space;
+pub mod splitter;
 pub mod typography;
