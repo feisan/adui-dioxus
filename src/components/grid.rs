@@ -1,4 +1,7 @@
 use dioxus::prelude::*;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+static COL_ID: AtomicUsize = AtomicUsize::new(0);
 
 /// Horizontal justification for a grid row.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -103,6 +106,15 @@ pub struct ColProps {
     pub span: u16,
     #[props(default)]
     pub offset: u16,
+    /// Span for screens <= 1200px
+    #[props(optional)]
+    pub span_lg: Option<u16>,
+    /// Span for screens <= 992px
+    #[props(optional)]
+    pub span_md: Option<u16>,
+    /// Span for screens <= 768px
+    #[props(optional)]
+    pub span_sm: Option<u16>,
     #[props(optional)]
     pub flex: Option<String>,
     #[props(optional)]
@@ -122,9 +134,14 @@ pub fn Col(props: ColProps) -> Element {
         class,
         style,
         children,
+        span_lg,
+        span_md,
+        span_sm,
     } = props;
 
     let mut class_list = vec!["adui-col".to_string()];
+    let id = COL_ID.fetch_add(1, Ordering::Relaxed);
+    class_list.push(format!("adui-col-{id}"));
     if let Some(extra) = class.as_ref() {
         class_list.push(extra.clone());
     }
@@ -145,10 +162,33 @@ pub fn Col(props: ColProps) -> Element {
         )
     };
 
+    let mut responsive_rules = String::new();
+    if let Some(sm) = span_sm {
+        let p = (sm as f32 / 24.0) * 100.0;
+        responsive_rules.push_str(&format!(
+            "@media (max-width: 768px) {{ .adui-col-{id} {{ flex:0 0 {p}%; max-width:{p}%; }} }} "
+        ));
+    }
+    if let Some(md) = span_md {
+        let p = (md as f32 / 24.0) * 100.0;
+        responsive_rules.push_str(&format!(
+            "@media (max-width: 992px) {{ .adui-col-{id} {{ flex:0 0 {p}%; max-width:{p}%; }} }} "
+        ));
+    }
+    if let Some(lg) = span_lg {
+        let p = (lg as f32 / 24.0) * 100.0;
+        responsive_rules.push_str(&format!(
+            "@media (max-width: 1200px) {{ .adui-col-{id} {{ flex:0 0 {p}%; max-width:{p}%; }} }} "
+        ));
+    }
+
     rsx! {
         div {
             class: "{class_attr}",
             style: "{style_attr}",
+            if !responsive_rules.is_empty() {
+                style { {responsive_rules} }
+            }
             {children}
         }
     }

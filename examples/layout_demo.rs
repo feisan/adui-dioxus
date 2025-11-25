@@ -75,16 +75,16 @@ fn LayoutDemo() -> Element {
                     gutter: Some(12.0),
                     justify: RowJustify::Start,
                     align: RowAlign::Top,
-                    Col { span: 6, {sample_box("col-6")} }
-                    Col { span: 6, {sample_box("col-6")} }
-                    Col { span: 6, {sample_box("col-6")} }
-                    Col { span: 6, {sample_box("col-6")} }
+                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
+                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
+                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
+                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
                 }
                 Row {
                     gutter: Some(12.0),
-                    Col { span: 8, {sample_box("col-8")} }
-                    Col { span: 8, {sample_box("col-8")} }
-                    Col { span: 8, {sample_box("col-8")} }
+                    Col { span: 8, span_sm: Some(24), {sample_box("8 / 24")} }
+                    Col { span: 8, span_sm: Some(24), {sample_box("8 / 24")} }
+                    Col { span: 8, span_sm: Some(24), {sample_box("8 / 24")} }
                 }
             })}
 
@@ -105,6 +105,7 @@ fn LayoutDemo() -> Element {
                 Masonry {
                     columns: 3,
                     gap: Some(12.0),
+                    min_column_width: Some(180.0),
                     {
                         (0..6).map(|i| {
                             let h = 60 + (i * 20) as i32;
