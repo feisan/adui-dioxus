@@ -1,4 +1,5 @@
-use crate::theme::use_theme;
+use crate::components::icon::{Icon, IconKind};
+use crate::theme::{ThemeTokens, use_theme};
 use dioxus::prelude::*;
 
 /// Shared layout props for container sections.
@@ -8,31 +9,35 @@ pub struct LayoutProps {
     pub class: Option<String>,
     #[props(optional)]
     pub style: Option<String>,
+    /// 标记该 Layout 是否包含 Sider，未设置则默认为 `false`。
+    #[props(optional)]
+    pub has_sider: Option<bool>,
     pub children: Element,
 }
 
-/// Root layout container with theme-aware background.
+/// Root layout container with optional sider awareness.
 #[component]
 pub fn Layout(props: LayoutProps) -> Element {
     let LayoutProps {
         class,
         style,
+        has_sider,
         children,
     } = props;
-    let theme = use_theme();
-    let tokens = theme.tokens();
 
-    let class_attr = format!("adui-layout {}", class.unwrap_or_default());
-    let style_attr = format!(
-        "background:{};{}",
-        tokens.color_bg_base,
-        style.unwrap_or_default()
-    );
+    let mut class_list = vec!["adui-layout".to_string()];
+    if has_sider.unwrap_or(false) {
+        class_list.push("adui-layout-has-sider".into());
+    }
+    if let Some(extra) = class {
+        class_list.push(extra);
+    }
+    let class_attr = class_list.join(" ");
 
     rsx! {
         div {
             class: "{class_attr}",
-            style: "{style_attr}",
+            style: style.unwrap_or_default(),
             {children}
         }
     }
@@ -41,11 +46,7 @@ pub fn Layout(props: LayoutProps) -> Element {
 /// Top navigation/header area.
 #[component]
 pub fn Header(props: LayoutProps) -> Element {
-    let LayoutProps {
-        class,
-        style,
-        children,
-    } = props;
+    let LayoutProps { class, style, .. } = props.clone();
     let theme = use_theme();
     let tokens = theme.tokens();
     let class_attr = format!("adui-layout-header {}", class.unwrap_or_default());
@@ -59,7 +60,7 @@ pub fn Header(props: LayoutProps) -> Element {
         header {
             class: "{class_attr}",
             style: "{style_attr}",
-            {children}
+            {props.children}
         }
     }
 }
@@ -71,6 +72,7 @@ pub fn Content(props: LayoutProps) -> Element {
         class,
         style,
         children,
+        ..
     } = props;
     let class_attr = format!("adui-layout-content {}", class.unwrap_or_default());
     rsx! {
@@ -89,13 +91,14 @@ pub fn Footer(props: LayoutProps) -> Element {
         class,
         style,
         children,
+        ..
     } = props;
     let theme = use_theme();
     let tokens = theme.tokens();
     let class_attr = format!("adui-layout-footer {}", class.unwrap_or_default());
     let style_attr = format!(
         "color:{};{}",
-        tokens.color_text_muted,
+        tokens.color_text_secondary,
         style.unwrap_or_default()
     );
     rsx! {
@@ -107,13 +110,39 @@ pub fn Footer(props: LayoutProps) -> Element {
     }
 }
 
+/// Theme variants for the side navigation.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum SiderTheme {
+    Light,
+    #[default]
+    Dark,
+}
+
 /// Properties for the side navigation container.
 #[derive(Props, Clone, PartialEq)]
 pub struct SiderProps {
     #[props(optional)]
     pub width: Option<f32>,
+    #[props(optional)]
+    pub collapsed_width: Option<f32>,
+    #[props(optional)]
+    pub collapsed: Option<bool>,
+    #[props(default)]
+    pub default_collapsed: bool,
+    #[props(default)]
+    pub collapsible: bool,
+    #[props(default)]
+    pub reverse_arrow: bool,
+    #[props(optional)]
+    pub trigger: Option<Element>,
+    #[props(optional)]
+    pub zero_width_trigger_style: Option<String>,
+    #[props(default = SiderTheme::Dark)]
+    pub theme: SiderTheme,
     #[props(default = true)]
     pub has_border: bool,
+    #[props(optional)]
+    pub on_collapse: Option<EventHandler<bool>>,
     #[props(optional)]
     pub class: Option<String>,
     #[props(optional)]
@@ -121,36 +150,169 @@ pub struct SiderProps {
     pub children: Element,
 }
 
-/// Side navigation panel with optional border and fixed width.
+/// Side navigation panel with optional collapse control.
 #[component]
 pub fn Sider(props: SiderProps) -> Element {
     let SiderProps {
         width,
+        collapsed_width,
+        collapsed,
+        default_collapsed,
+        collapsible,
+        reverse_arrow,
+        trigger,
+        zero_width_trigger_style,
+        theme,
         has_border,
+        on_collapse,
         class,
         style,
         children,
     } = props;
-    let theme = use_theme();
-    let tokens = theme.tokens();
-    let class_attr = format!("adui-layout-sider {}", class.unwrap_or_default());
-    let style_attr = format!(
-        "width:{w}px;min-width:{w}px;max-width:{w}px;background:{};color:{};border-right:{};{}",
-        tokens.color_bg_container,
-        tokens.color_text,
-        if has_border {
-            format!("1px solid {}", tokens.color_border)
-        } else {
-            "none".into()
-        },
-        style.unwrap_or_default(),
-        w = width.unwrap_or(200.0),
+
+    let width_value = width.unwrap_or(200.0).max(0.0);
+    let collapsed_value = collapsed_width.unwrap_or(80.0).max(0.0);
+
+    let mut collapsed_state = use_signal(|| collapsed.unwrap_or(default_collapsed));
+    if let Some(external) = collapsed {
+        collapsed_state.set(external);
+    }
+
+    let theme_handle = use_theme();
+    let tokens = theme_handle.tokens();
+    let (bg_color, text_color) = sider_palette(&tokens, theme);
+    let border_color = if has_border {
+        format!("1px solid {}", tokens.color_border)
+    } else {
+        "none".into()
+    };
+
+    let is_collapsed = *collapsed_state.read();
+    let current_width = if is_collapsed {
+        collapsed_value
+    } else {
+        width_value
+    };
+    let width_str = format!("{}px", current_width);
+
+    let mut class_list = vec!["adui-layout-sider".to_string()];
+    class_list.push(match theme {
+        SiderTheme::Light => "adui-layout-sider-light".into(),
+        SiderTheme::Dark => "adui-layout-sider-dark".into(),
+    });
+    if is_collapsed {
+        class_list.push("adui-layout-sider-collapsed".into());
+    }
+    if collapsible {
+        class_list.push("adui-layout-sider-collapsible".into());
+    }
+    if collapsed_value == 0.0 {
+        class_list.push("adui-layout-sider-zero-width".into());
+    }
+    if let Some(extra) = class.as_ref() {
+        class_list.push(extra.clone());
+    }
+    let class_attr = class_list.join(" ");
+
+    let trigger_content = trigger
+        .clone()
+        .unwrap_or_else(|| default_trigger_icon(is_collapsed, reverse_arrow));
+
+    let mut toggle = {
+        let mut collapsed_signal = collapsed_state;
+        let collapsible_flag = collapsible;
+        let handler = on_collapse;
+        move || {
+            if !collapsible_flag {
+                return;
+            }
+            let next = !*collapsed_signal.read();
+            collapsed_signal.set(next);
+            if let Some(cb) = handler.as_ref() {
+                cb.call(next);
+            }
+        }
+    };
+
+    let zero_width_trigger = if collapsible && collapsed_value == 0.0 {
+        let trigger_style = zero_width_trigger_style.unwrap_or_default();
+        let trigger_icon = trigger_content.clone();
+        Some(rsx! {
+            span {
+                class: format_args!(
+                    "{} {}",
+                    "adui-layout-sider-zero-trigger",
+                    if reverse_arrow { "adui-layout-sider-zero-trigger-right" } else { "adui-layout-sider-zero-trigger-left" }
+                ),
+                style: trigger_style,
+                onclick: move |_| toggle(),
+                {trigger_icon}
+            }
+        })
+    } else {
+        None
+    };
+
+    let inline_trigger = if collapsible && collapsed_value > 0.0 {
+        let trigger_icon = trigger_content;
+        Some(rsx! {
+            div {
+                class: "adui-layout-sider-trigger",
+                style: format!("width:{width_str};"),
+                onclick: move |_| toggle(),
+                {trigger_icon}
+            }
+        })
+    } else {
+        None
+    };
+
+    let mut style_buffer = format!(
+        "flex:0 0 {w};max-width:{w};min-width:{w};width:{w};background:{};color:{};border-right:{};",
+        bg_color,
+        text_color,
+        border_color,
+        w = width_str
     );
+    if let Some(extra) = style.as_ref() {
+        style_buffer.push_str(extra);
+    }
+
     rsx! {
         aside {
             class: "{class_attr}",
-            style: "{style_attr}",
-            {children}
+            style: "{style_buffer}",
+            role: "complementary",
+            "aria-expanded": (!is_collapsed).to_string(),
+            div {
+                class: "adui-layout-sider-children",
+                {children}
+            }
+            if let Some(trigger) = zero_width_trigger {
+                {trigger}
+            } else if let Some(trigger) = inline_trigger {
+                {trigger}
+            }
         }
+    }
+}
+
+fn default_trigger_icon(collapsed: bool, reverse_arrow: bool) -> Element {
+    let should_point_right = if reverse_arrow { !collapsed } else { collapsed };
+    let icon_kind = if should_point_right {
+        IconKind::ArrowRight
+    } else {
+        IconKind::ArrowLeft
+    };
+    rsx!(Icon {
+        kind: icon_kind,
+        size: 16.0
+    })
+}
+
+fn sider_palette(tokens: &ThemeTokens, theme: SiderTheme) -> (String, String) {
+    match theme {
+        SiderTheme::Light => (tokens.color_bg_container.clone(), tokens.color_text.clone()),
+        SiderTheme::Dark => (tokens.color_bg_layout.clone(), "#fafafa".into()),
     }
 }

@@ -1,12 +1,34 @@
 use crate::theme::{ThemeTokens, use_theme};
 use dioxus::prelude::*;
 
-/// Supported button visual types.
+/// Supported button visual types（兼容旧 API）.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ButtonType {
     #[default]
     Default,
     Primary,
+    Dashed,
+    Text,
+    Link,
+}
+
+/// Button tone（新 API，向后兼容 danger 开关）。
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ButtonColor {
+    #[default]
+    Default,
+    Primary,
+    Success,
+    Warning,
+    Danger,
+}
+
+/// Button variant（新 API）。
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ButtonVariant {
+    Solid,
+    #[default]
+    Outlined,
     Dashed,
     Text,
     Link,
@@ -30,6 +52,73 @@ pub enum ButtonShape {
     Circle,
 }
 
+/// Icon placement relative to content.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ButtonIconPlacement {
+    #[default]
+    Start,
+    End,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct ButtonGroupContext {
+    size: Option<ButtonSize>,
+    shape: Option<ButtonShape>,
+    color: Option<ButtonColor>,
+    variant: Option<ButtonVariant>,
+}
+
+/// Container that forwards size/variant hints to child buttons.
+#[derive(Props, Clone, PartialEq)]
+pub struct ButtonGroupProps {
+    #[props(optional)]
+    pub size: Option<ButtonSize>,
+    #[props(optional)]
+    pub shape: Option<ButtonShape>,
+    #[props(optional)]
+    pub color: Option<ButtonColor>,
+    #[props(optional)]
+    pub variant: Option<ButtonVariant>,
+    #[props(optional)]
+    pub class: Option<String>,
+    #[props(optional)]
+    pub style: Option<String>,
+    pub children: Element,
+}
+
+/// Wrap multiple buttons with shared styling hints.
+#[component]
+pub fn ButtonGroup(props: ButtonGroupProps) -> Element {
+    let ButtonGroupProps {
+        size,
+        shape,
+        color,
+        variant,
+        class,
+        style,
+        children,
+    } = props;
+    use_context_provider(|| ButtonGroupContext {
+        size,
+        shape,
+        color,
+        variant,
+    });
+    let mut class_list = vec!["adui-btn-group".to_string()];
+    if let Some(extra) = class {
+        class_list.push(extra);
+    }
+    let class_attr = class_list.join(" ");
+    let style_attr = style.unwrap_or_default();
+    rsx! {
+        div {
+            class: "{class_attr}",
+            style: "{style_attr}",
+            {children}
+        }
+    }
+}
+
 /// Props for the Ant Design flavored button.
 #[derive(Props, Clone, PartialEq)]
 pub struct ButtonProps {
@@ -47,14 +136,47 @@ pub struct ButtonProps {
     pub block: bool,
     #[props(default)]
     pub loading: bool,
+    /// Optional loading delay in milliseconds before showing spinner.
+    #[props(optional)]
+    pub loading_delay: Option<u64>,
+    /// Custom loading icon.
+    #[props(optional)]
+    pub loading_icon: Option<Element>,
+    /// If true, inserts a space between two CJK chars (antd behavior).
+    #[props(default = true)]
+    pub auto_insert_space: bool,
+    /// Optional label text used for auto spacing/icon-only detection; if set, overrides children text for button content.
+    #[props(optional)]
+    pub label: Option<String>,
+    /// Mark as icon-only (adds class); if unset, derives from `label` being empty with an icon.
+    #[props(optional)]
+    pub icon_only: Option<bool>,
     #[props(default)]
     pub disabled: bool,
+    #[props(optional)]
+    pub color: Option<ButtonColor>,
+    #[props(optional)]
+    pub variant: Option<ButtonVariant>,
+    #[props(default)]
+    pub icon_placement: ButtonIconPlacement,
     #[props(optional)]
     pub icon: Option<Element>,
     #[props(optional)]
     pub href: Option<String>,
     #[props(optional)]
     pub class: Option<String>,
+    /// Extra class applied to button element (aligned to antd classNames.root).
+    #[props(optional)]
+    pub class_names_root: Option<String>,
+    /// Extra class applied to icon span.
+    #[props(optional)]
+    pub class_names_icon: Option<String>,
+    /// Extra class applied to content span.
+    #[props(optional)]
+    pub class_names_content: Option<String>,
+    /// Extra inline style applied to root.
+    #[props(optional)]
+    pub styles_root: Option<String>,
     #[props(optional)]
     pub onclick: Option<EventHandler<MouseEvent>>,
     pub children: Element,
@@ -71,33 +193,131 @@ pub fn Button(props: ButtonProps) -> Element {
         ghost,
         block,
         loading,
+        loading_delay,
+        loading_icon,
+        auto_insert_space,
+        label,
+        icon_only,
         disabled,
+        color,
+        variant,
+        icon_placement,
         icon,
         href,
         class,
+        class_names_root,
+        class_names_icon,
+        class_names_content,
+        styles_root,
         onclick,
         children,
     } = props;
 
-    let theme = use_theme();
-    let tokens = theme.tokens();
+    let mut size = size;
+    let mut shape = shape;
+    let mut variant = variant;
+    let mut color = color;
+    if let Some(ctx) = try_use_context::<ButtonGroupContext>() {
+        if let Some(shared_size) = ctx.size {
+            size = shared_size;
+        }
+        if let Some(shared_shape) = ctx.shape {
+            shape = shared_shape;
+        }
+        if variant.is_none() {
+            variant = ctx.variant;
+        }
+        if color.is_none() {
+            color = ctx.color;
+        }
+    }
 
-    let visuals = visuals(&tokens, r#type, danger, ghost);
+    let theme = use_theme();
+
+    // Derive variant/color from legacy type/danger if not provided.
+    let derived_variant = variant.unwrap_or(match r#type {
+        ButtonType::Primary => ButtonVariant::Solid,
+        ButtonType::Dashed => ButtonVariant::Dashed,
+        ButtonType::Text => ButtonVariant::Text,
+        ButtonType::Link => ButtonVariant::Link,
+        ButtonType::Default => ButtonVariant::Outlined,
+    });
+    let derived_color = color.unwrap_or({
+        if danger {
+            ButtonColor::Danger
+        } else {
+            match r#type {
+                ButtonType::Primary => ButtonColor::Primary,
+                _ => ButtonColor::Default,
+            }
+        }
+    });
+
+    // Loading delay handling: debounce before showing spinner.
+    let inner_loading = use_signal(|| loading);
+    {
+        let mut state = inner_loading;
+        let delay_ms = loading_delay.unwrap_or(0);
+        use_effect(move || {
+            if loading {
+                if delay_ms == 0 {
+                    state.set(true);
+                } else {
+                    let mut delayed_state = state;
+                    let delay = delay_ms;
+                    // Fallback: block current task; avoids Send requirement on signals.
+                    std::thread::sleep(std::time::Duration::from_millis(delay));
+                    delayed_state.set(true);
+                }
+            } else {
+                state.set(false);
+            }
+        });
+    }
+
+    let tokens = theme.tokens();
+    let visuals = visuals(&tokens, derived_variant, derived_color, ghost);
     let metrics = metrics(&tokens, size, shape);
 
-    let disabled = disabled || loading;
+    let disabled = disabled || *inner_loading.read();
     let mut class_list = vec!["adui-btn".to_string()];
+    class_list.push(match derived_variant {
+        ButtonVariant::Solid => "adui-btn-solid".into(),
+        ButtonVariant::Outlined => "adui-btn-outlined".into(),
+        ButtonVariant::Dashed => "adui-btn-dashed".into(),
+        ButtonVariant::Text => "adui-btn-text".into(),
+        ButtonVariant::Link => "adui-btn-link".into(),
+    });
+    class_list.push(match derived_color {
+        ButtonColor::Primary => "adui-btn-primary".into(),
+        ButtonColor::Success => "adui-btn-success".into(),
+        ButtonColor::Warning => "adui-btn-warning".into(),
+        ButtonColor::Danger => "adui-btn-danger".into(),
+        ButtonColor::Default => "adui-btn-default".into(),
+    });
     if block {
         class_list.push("adui-btn-block".into());
+    }
+    if ghost {
+        class_list.push("adui-btn-ghost".into());
     }
     if disabled {
         class_list.push("adui-btn-disabled".into());
     }
-    if loading {
+    if *inner_loading.read() {
         class_list.push("adui-btn-loading".into());
     }
     if let Some(extra) = class.as_ref() {
         class_list.push(extra.clone());
+    }
+    if let Some(extra) = class_names_root.as_ref() {
+        class_list.push(extra.clone());
+    }
+    let icon_only_flag = icon_only.unwrap_or_else(|| {
+        label.as_ref().map(|s| s.trim().is_empty()).unwrap_or(false) && icon.is_some()
+    });
+    if icon_only_flag {
+        class_list.push("adui-btn-icon-only".into());
     }
     let class_attr = class_list.join(" ");
 
@@ -132,14 +352,66 @@ pub fn Button(props: ButtonProps) -> Element {
         visuals.focus_shadow
     );
 
-    let render_contents = rsx! {
-        if loading {
-            span { class: "adui-btn-spinner adui-btn-icon" }
-        }
-        if let Some(icon_node) = icon {
-            span { class: "adui-btn-icon", {icon_node} }
-        }
-        span { class: "adui-btn-content", {children} }
+    let spinner = loading_icon.unwrap_or_else(|| {
+        rsx!(span {
+            class: "adui-btn-spinner adui-btn-icon"
+        })
+    });
+    let mut icon_class = "adui-btn-icon".to_string();
+    if let Some(extra) = class_names_icon.as_ref() {
+        icon_class.push(' ');
+        icon_class.push_str(extra);
+    }
+    let mut content_class = "adui-btn-content".to_string();
+    if let Some(extra) = class_names_content.as_ref() {
+        content_class.push(' ');
+        content_class.push_str(extra);
+    }
+    let mut content_text = label.clone();
+    if let Some(text) = content_text.as_mut()
+        && auto_insert_space
+        && is_two_cjk(text)
+    {
+        let mut chars = text.chars();
+        let first = chars.next().unwrap_or_default();
+        let second = chars.next().unwrap_or_default();
+        *text = format!("{} {}", first, second);
+    }
+
+    let icon_node = icon.map(|node| {
+        let cls = icon_class.clone();
+        rsx!(span { class: "{cls}", {node} })
+    });
+
+    let contents = match icon_placement {
+        ButtonIconPlacement::Start => rsx! {
+            if *inner_loading.read() {
+                {spinner.clone()}
+            } else if let Some(icon_el) = icon_node.clone() {
+                {icon_el}
+            }
+            span { class: "{content_class}",
+                if let Some(text) = content_text.clone() {
+                    "{text}"
+                } else {
+                    {children.clone()}
+                }
+            }
+        },
+        ButtonIconPlacement::End => rsx! {
+            span { class: "{content_class}",
+                if let Some(text) = content_text.clone() {
+                    "{text}"
+                } else {
+                    {children.clone()}
+                }
+            }
+            if *inner_loading.read() {
+                {spinner.clone()}
+            } else if let Some(icon_el) = icon_node.clone() {
+                {icon_el}
+            }
+        },
     };
 
     if let Some(href) = href {
@@ -147,22 +419,23 @@ pub fn Button(props: ButtonProps) -> Element {
         return rsx! {
             a {
                 class: "{class_attr}",
-                style: "{style}",
+                style: format!("{style}{}", styles_root.clone().unwrap_or_default()),
                 href: "{href}",
                 role: "button",
                 "aria-disabled": disabled,
-                "aria-busy": loading,
+                "aria-busy": *inner_loading.read(),
                 tabindex: if disabled { "-1" } else { "0" },
                 onclick: move |evt| {
-                    if disabled || loading {
+                    if disabled || *inner_loading.read() {
                         evt.stop_propagation();
+                        evt.prevent_default();
                         return;
                     }
                     if let Some(h) = handler.as_ref() {
                         h.call(evt);
                     }
                 },
-                {render_contents}
+                {contents}
             }
         };
     }
@@ -171,14 +444,14 @@ pub fn Button(props: ButtonProps) -> Element {
     rsx! {
         button {
             class: "{class_attr}",
-            style: "{style}",
+            style: format!("{style}{}", styles_root.unwrap_or_default()),
             r#type: "button",
             role: "button",
             disabled: disabled,
             "aria-disabled": disabled,
-            "aria-busy": loading,
+            "aria-busy": *inner_loading.read(),
             onclick: move |evt| {
-                if disabled || loading {
+                if disabled || *inner_loading.read() {
                     evt.stop_propagation();
                     return;
                 }
@@ -186,7 +459,7 @@ pub fn Button(props: ButtonProps) -> Element {
                     h.call(evt);
                 }
             },
-            {render_contents}
+            {contents}
         }
     }
 }
@@ -251,149 +524,244 @@ fn metrics(tokens: &ThemeTokens, size: ButtonSize, shape: ButtonShape) -> Button
     }
 }
 
-fn visuals(tokens: &ThemeTokens, kind: ButtonType, danger: bool, ghost: bool) -> ButtonVisuals {
-    let (accent, accent_hover, accent_active) = if danger {
-        (
-            tokens.color_error.clone(),
-            tokens.color_error_hover.clone(),
-            tokens.color_error_active.clone(),
-        )
-    } else {
-        (
-            tokens.color_primary.clone(),
-            tokens.color_primary_hover.clone(),
-            tokens.color_primary_active.clone(),
-        )
+fn is_two_cjk(text: &str) -> bool {
+    let mut chars = text.chars();
+    let first = chars.next();
+    let second = chars.next();
+    second.is_some()
+        && chars.next().is_none()
+        && first.map(is_cjk).unwrap_or(false)
+        && second.map(is_cjk).unwrap_or(false)
+}
+
+fn is_cjk(ch: char) -> bool {
+    matches!(ch as u32,
+        0x4E00..=0x9FFF // CJK Unified Ideographs
+        | 0x3400..=0x4DBF // Extension A
+        | 0x20000..=0x2A6DF // Extension B
+        | 0x2A700..=0x2B73F
+        | 0x2B740..=0x2B81F
+        | 0x2B820..=0x2CEAF
+        | 0xF900..=0xFAFF // Compatibility Ideographs
+    )
+}
+
+fn visuals(
+    tokens: &ThemeTokens,
+    variant: ButtonVariant,
+    color: ButtonColor,
+    ghost: bool,
+) -> ButtonVisuals {
+    match variant {
+        ButtonVariant::Solid => solid_visuals(tokens, color, ghost),
+        ButtonVariant::Link => link_visuals(tokens, color),
+        ButtonVariant::Text => text_visuals(tokens, color),
+        ButtonVariant::Dashed | ButtonVariant::Outlined => outline_visuals(
+            tokens,
+            color,
+            ghost,
+            matches!(variant, ButtonVariant::Dashed),
+        ),
+    }
+}
+
+fn solid_visuals(tokens: &ThemeTokens, color: ButtonColor, ghost: bool) -> ButtonVisuals {
+    let mut visuals = match color {
+        ButtonColor::Primary
+        | ButtonColor::Success
+        | ButtonColor::Warning
+        | ButtonColor::Danger => {
+            let (accent, hover, active) = tone_palette(tokens, color);
+            ButtonVisuals {
+                bg: accent.clone(),
+                bg_hover: hover.clone(),
+                bg_active: active.clone(),
+                color: "#ffffff".into(),
+                color_hover: "#ffffff".into(),
+                color_active: "#ffffff".into(),
+                border: accent.clone(),
+                border_hover: hover.clone(),
+                border_active: active.clone(),
+                border_style: "solid".into(),
+                shadow: tokens.shadow.clone(),
+                focus_shadow: focus_ring(color, "0 0 0 2px rgba(22, 119, 255, 0.28)"),
+            }
+        }
+        ButtonColor::Default => ButtonVisuals {
+            bg: tokens.color_bg_container.clone(),
+            bg_hover: tokens.color_bg_base.clone(),
+            bg_active: tokens.color_bg_base.clone(),
+            color: tokens.color_text.clone(),
+            color_hover: tokens.color_text.clone(),
+            color_active: tokens.color_text.clone(),
+            border: tokens.color_border.clone(),
+            border_hover: tokens.color_border_hover.clone(),
+            border_active: tokens.color_border_hover.clone(),
+            border_style: "solid".into(),
+            shadow: tokens.shadow.clone(),
+            focus_shadow: "0 0 0 2px rgba(0, 0, 0, 0.08)".into(),
+        },
     };
 
-    match kind {
-        ButtonType::Primary => ButtonVisuals {
-            bg: if ghost {
-                "transparent".into()
+    if ghost {
+        visuals.bg = "transparent".into();
+        visuals.bg_hover = "transparent".into();
+        visuals.bg_active = "transparent".into();
+        visuals.color = visuals.border.clone();
+        visuals.color_hover = visuals.border_hover.clone();
+        visuals.color_active = visuals.border_active.clone();
+        visuals.shadow = "none".into();
+    }
+
+    visuals
+}
+
+fn link_visuals(tokens: &ThemeTokens, color: ButtonColor) -> ButtonVisuals {
+    let (accent, hover, active) = if color == ButtonColor::Default {
+        (
+            tokens.color_link.clone(),
+            tokens.color_link_hover.clone(),
+            tokens.color_link_active.clone(),
+        )
+    } else {
+        tone_palette(tokens, color)
+    };
+
+    ButtonVisuals {
+        bg: "transparent".into(),
+        bg_hover: "transparent".into(),
+        bg_active: "transparent".into(),
+        color: accent.clone(),
+        color_hover: hover.clone(),
+        color_active: active.clone(),
+        border: "transparent".into(),
+        border_hover: "transparent".into(),
+        border_active: "transparent".into(),
+        border_style: "solid".into(),
+        shadow: "none".into(),
+        focus_shadow: focus_ring(color, "0 0 0 2px rgba(22, 119, 255, 0.16)"),
+    }
+}
+
+fn text_visuals(tokens: &ThemeTokens, color: ButtonColor) -> ButtonVisuals {
+    let (accent, hover, active) = match color {
+        ButtonColor::Default => (
+            tokens.color_text.clone(),
+            tokens.color_primary.clone(),
+            tokens.color_primary_active.clone(),
+        ),
+        _ => tone_palette(tokens, color),
+    };
+
+    ButtonVisuals {
+        bg: "transparent".into(),
+        bg_hover: "rgba(0,0,0,0.03)".into(),
+        bg_active: "rgba(0,0,0,0.06)".into(),
+        color: accent.clone(),
+        color_hover: hover.clone(),
+        color_active: active.clone(),
+        border: "transparent".into(),
+        border_hover: "transparent".into(),
+        border_active: "transparent".into(),
+        border_style: "solid".into(),
+        shadow: "none".into(),
+        focus_shadow: focus_ring(color, "0 0 0 2px rgba(22, 119, 255, 0.12)"),
+    }
+}
+
+fn outline_visuals(
+    tokens: &ThemeTokens,
+    color: ButtonColor,
+    ghost: bool,
+    dashed: bool,
+) -> ButtonVisuals {
+    let mut visuals = match color {
+        ButtonColor::Default => ButtonVisuals {
+            bg: tokens.color_bg_container.clone(),
+            bg_hover: tokens.color_bg_container.clone(),
+            bg_active: tokens.color_bg_container.clone(),
+            color: tokens.color_text.clone(),
+            color_hover: tokens.color_primary.clone(),
+            color_active: tokens.color_primary_active.clone(),
+            border: tokens.color_border.clone(),
+            border_hover: tokens.color_primary.clone(),
+            border_active: tokens.color_primary_active.clone(),
+            border_style: if dashed {
+                "dashed".into()
             } else {
-                accent.clone()
+                "solid".into()
             },
-            bg_hover: if ghost {
-                "transparent".into()
-            } else {
-                accent_hover.clone()
-            },
-            bg_active: if ghost {
-                "transparent".into()
-            } else {
-                accent_active.clone()
-            },
-            color: if ghost {
-                accent.clone()
-            } else {
-                "#ffffff".into()
-            },
-            color_hover: if ghost {
-                accent_hover.clone()
-            } else {
-                "#ffffff".into()
-            },
-            color_active: if ghost {
-                accent_active.clone()
-            } else {
-                "#ffffff".into()
-            },
-            border: accent.clone(),
-            border_hover: accent_hover.clone(),
-            border_active: accent_active.clone(),
-            border_style: "solid".into(),
-            shadow: if ghost {
-                "none".into()
-            } else {
-                tokens.shadow.clone()
-            },
-            focus_shadow: if danger {
-                "0 0 0 2px rgba(255, 77, 79, 0.26)".into()
-            } else {
-                "0 0 0 2px rgba(22, 119, 255, 0.28)".into()
-            },
-        },
-        ButtonType::Link => ButtonVisuals {
-            bg: "transparent".into(),
-            bg_hover: "transparent".into(),
-            bg_active: "transparent".into(),
-            color: accent.clone(),
-            color_hover: accent_hover.clone(),
-            color_active: accent_active.clone(),
-            border: "transparent".into(),
-            border_hover: "transparent".into(),
-            border_active: "transparent".into(),
-            border_style: "solid".into(),
             shadow: "none".into(),
-            focus_shadow: if danger {
-                "0 0 0 2px rgba(255, 77, 79, 0.16)".into()
-            } else {
-                "0 0 0 2px rgba(22, 119, 255, 0.16)".into()
-            },
+            focus_shadow: "0 0 0 2px rgba(22, 119, 255, 0.12)".into(),
         },
-        ButtonType::Text => ButtonVisuals {
-            bg: "transparent".into(),
-            bg_hover: "rgba(0,0,0,0.03)".into(),
-            bg_active: "rgba(0,0,0,0.06)".into(),
-            color: accent.clone(),
-            color_hover: accent_hover.clone(),
-            color_active: accent_active.clone(),
-            border: "transparent".into(),
-            border_hover: "transparent".into(),
-            border_active: "transparent".into(),
-            border_style: "solid".into(),
-            shadow: "none".into(),
-            focus_shadow: if danger {
-                "0 0 0 2px rgba(255, 77, 79, 0.12)".into()
-            } else {
-                "0 0 0 2px rgba(22, 119, 255, 0.12)".into()
-            },
-        },
-        ButtonType::Dashed | ButtonType::Default => {
-            let mut visuals = ButtonVisuals {
+        _ => {
+            let (accent, hover, active) = tone_palette(tokens, color);
+            ButtonVisuals {
                 bg: tokens.color_bg_container.clone(),
                 bg_hover: tokens.color_bg_container.clone(),
                 bg_active: tokens.color_bg_container.clone(),
-                color: if danger {
-                    accent.clone()
-                } else {
-                    tokens.color_text.clone()
-                },
-                color_hover: accent_hover.clone(),
-                color_active: accent_active.clone(),
-                border: if danger {
-                    accent.clone()
-                } else {
-                    tokens.color_border.clone()
-                },
-                border_hover: if danger {
-                    accent_hover.clone()
-                } else {
-                    tokens.color_border_hover.clone()
-                },
-                border_active: accent_active.clone(),
-                border_style: if matches!(kind, ButtonType::Dashed) {
+                color: accent.clone(),
+                color_hover: hover.clone(),
+                color_active: active.clone(),
+                border: accent.clone(),
+                border_hover: hover.clone(),
+                border_active: active.clone(),
+                border_style: if dashed {
                     "dashed".into()
                 } else {
                     "solid".into()
                 },
                 shadow: "none".into(),
-                focus_shadow: "0 0 0 2px rgba(22, 119, 255, 0.15)".into(),
-            };
-
-            if ghost {
-                visuals.bg = "transparent".into();
-                visuals.bg_hover = "transparent".into();
-                visuals.bg_active = "transparent".into();
-                visuals.color = accent.clone();
-                visuals.color_hover = accent_hover.clone();
-                visuals.color_active = accent_active.clone();
-                visuals.border = accent.clone();
-                visuals.border_hover = accent_hover.clone();
-                visuals.border_active = accent_active.clone();
+                focus_shadow: focus_ring(color, "0 0 0 2px rgba(22, 119, 255, 0.15)"),
             }
-
-            visuals
         }
+    };
+
+    if ghost {
+        visuals.bg = "transparent".into();
+        visuals.bg_hover = "transparent".into();
+        visuals.bg_active = "transparent".into();
+    }
+
+    visuals
+}
+
+fn tone_palette(tokens: &ThemeTokens, color: ButtonColor) -> (String, String, String) {
+    match color {
+        ButtonColor::Primary => (
+            tokens.color_primary.clone(),
+            tokens.color_primary_hover.clone(),
+            tokens.color_primary_active.clone(),
+        ),
+        ButtonColor::Success => (
+            tokens.color_success.clone(),
+            tokens.color_success_hover.clone(),
+            tokens.color_success_active.clone(),
+        ),
+        ButtonColor::Warning => (
+            tokens.color_warning.clone(),
+            tokens.color_warning_hover.clone(),
+            tokens.color_warning_active.clone(),
+        ),
+        ButtonColor::Danger => (
+            tokens.color_error.clone(),
+            tokens.color_error_hover.clone(),
+            tokens.color_error_active.clone(),
+        ),
+        ButtonColor::Default => (
+            tokens.color_text.clone(),
+            tokens.color_text_muted.clone(),
+            tokens.color_text_secondary.clone(),
+        ),
+    }
+}
+
+fn focus_ring(color: ButtonColor, fallback: &str) -> String {
+    match color {
+        ButtonColor::Primary => "0 0 0 2px rgba(22, 119, 255, 0.28)".into(),
+        ButtonColor::Success => "0 0 0 2px rgba(82, 196, 26, 0.26)".into(),
+        ButtonColor::Warning => "0 0 0 2px rgba(250, 173, 20, 0.26)".into(),
+        ButtonColor::Danger => "0 0 0 2px rgba(255, 77, 79, 0.26)".into(),
+        ButtonColor::Default => fallback.into(),
     }
 }

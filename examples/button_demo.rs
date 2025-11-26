@@ -1,5 +1,6 @@
 use adui_dioxus::{
-    Button, ButtonShape, ButtonSize, ButtonType, Theme, ThemeMode, ThemeProvider, use_theme,
+    Button, ButtonColor, ButtonGroup, ButtonIconPlacement, ButtonShape, ButtonSize, ButtonType,
+    ButtonVariant, Theme, ThemeMode, ThemeProvider, use_theme,
 };
 use dioxus::prelude::*;
 
@@ -57,15 +58,18 @@ fn DemoShell() -> Element {
                 class: "demo-toolbar",
                 style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px;",
                 span { "主题：" }
-                Button {
-                    r#type: ButtonType::Default,
-                    onclick: move |_| *mode.write() = ThemeMode::Light,
-                    "Light"
-                }
-                Button {
-                    r#type: ButtonType::Default,
-                    onclick: move |_| *mode.write() = ThemeMode::Dark,
-                    "Dark"
+                ButtonGroup {
+                    size: Some(ButtonSize::Small),
+                    Button {
+                        r#type: ButtonType::Default,
+                        onclick: move |_| *mode.write() = ThemeMode::Light,
+                        "Light"
+                    }
+                    Button {
+                        r#type: ButtonType::Default,
+                        onclick: move |_| *mode.write() = ThemeMode::Dark,
+                        "Dark"
+                    }
                 }
                 span { style: "margin-left: 12px;", "主色：" }
                 {
@@ -209,6 +213,20 @@ fn DemoShell() -> Element {
                         shape: ButtonShape::Circle,
                         size: ButtonSize::Large,
                         icon: rsx!(span { "★" }),
+                    }
+                }
+
+                div {
+                    style: "border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 12px; background: var(--adui-color-bg-container); display: flex; flex-direction: column; gap: 12px;",
+                    div { style: "font-weight: 600; margin-bottom: 4px; color: var(--adui-color-text);", "Button Group" }
+                    span { style: "color: var(--adui-color-text-secondary); font-size: 13px;", "size/variant/color 来自 ButtonGroup，上方按钮未显式传入。" }
+                    ButtonGroup {
+                        size: Some(ButtonSize::Small),
+                        variant: Some(ButtonVariant::Solid),
+                        color: Some(ButtonColor::Primary),
+                        Button { label: Some("上一页".into()), icon: rsx!(span { "←" }) }
+                        Button { label: Some("刷新".into()), icon: rsx!(span { "↻" }) }
+                        Button { label: Some("下一页".into()), icon_placement: ButtonIconPlacement::End, icon: rsx!(span { "→" }) }
                     }
                 }
             }

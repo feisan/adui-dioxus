@@ -1,31 +1,41 @@
+use super::layout_utils::{GapPreset, compose_gap_style, push_gap_preset_class};
 use dioxus::core::DynamicNode;
 use dioxus::prelude::*;
 
 /// Layout direction for spaced items.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum SpaceDirection {
+    #[default]
     Horizontal,
     Vertical,
 }
 
-impl Default for SpaceDirection {
-    fn default() -> Self {
-        SpaceDirection::Horizontal
-    }
-}
-
 /// Cross-axis alignment strategy for space items.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum SpaceAlign {
+    #[default]
     Start,
     End,
     Center,
     Baseline,
 }
 
-impl Default for SpaceAlign {
-    fn default() -> Self {
-        SpaceAlign::Start
+/// Preset sizes that map to theme spacing tokens.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum SpaceSize {
+    Small,
+    #[default]
+    Middle,
+    Large,
+}
+
+impl From<SpaceSize> for GapPreset {
+    fn from(value: SpaceSize) -> Self {
+        match value {
+            SpaceSize::Small => GapPreset::Small,
+            SpaceSize::Middle => GapPreset::Middle,
+            SpaceSize::Large => GapPreset::Large,
+        }
     }
 }
 
@@ -34,12 +44,18 @@ impl Default for SpaceAlign {
 pub struct SpaceProps {
     #[props(default)]
     pub direction: SpaceDirection,
+    #[props(default)]
+    pub size: SpaceSize,
     #[props(optional)]
     pub gap: Option<f32>,
+    #[props(optional)]
+    pub gap_cross: Option<f32>,
     #[props(optional)]
     pub wrap: Option<bool>,
     #[props(default)]
     pub align: SpaceAlign,
+    #[props(default)]
+    pub compact: bool,
     #[props(optional)]
     pub split: Option<Element>,
     #[props(optional)]
@@ -55,9 +71,12 @@ pub struct SpaceProps {
 pub fn Space(props: SpaceProps) -> Element {
     let SpaceProps {
         direction,
+        size,
         gap,
+        gap_cross,
         wrap,
         align,
+        compact,
         split,
         class,
         style,
@@ -66,32 +85,42 @@ pub fn Space(props: SpaceProps) -> Element {
 
     let nodes = collect_children(children)?;
 
+    let should_wrap = wrap.unwrap_or(matches!(direction, SpaceDirection::Horizontal));
+
     let mut class_list = vec!["adui-space".to_string()];
+    class_list.push(match direction {
+        SpaceDirection::Horizontal => "adui-space-horizontal".into(),
+        SpaceDirection::Vertical => "adui-space-vertical".into(),
+    });
+    if should_wrap && matches!(direction, SpaceDirection::Horizontal) {
+        class_list.push("adui-space-wrap".into());
+    }
+    class_list.push(match align {
+        SpaceAlign::Start => "adui-space-align-start".into(),
+        SpaceAlign::End => "adui-space-align-end".into(),
+        SpaceAlign::Center => "adui-space-align-center".into(),
+        SpaceAlign::Baseline => "adui-space-align-baseline".into(),
+    });
+    if compact {
+        class_list.push("adui-space-compact".into());
+    } else if gap.is_none() && gap_cross.is_none() {
+        push_gap_preset_class(&mut class_list, "adui-space-size", Some(size.into()));
+    }
     if let Some(extra) = class.as_ref() {
         class_list.push(extra.clone());
     }
     let class_attr = class_list.join(" ");
-    let gap_val = gap.unwrap_or(8.0);
-    let style_attr = format!(
-        "display:flex;flex-direction:{};flex-wrap:{};align-items:{};gap:{}px;{}",
-        match direction {
-            SpaceDirection::Horizontal => "row",
-            SpaceDirection::Vertical => "column",
-        },
-        if wrap.unwrap_or(direction == SpaceDirection::Horizontal) {
-            "wrap"
-        } else {
-            "nowrap"
-        },
-        match align {
-            SpaceAlign::Start => "flex-start",
-            SpaceAlign::End => "flex-end",
-            SpaceAlign::Center => "center",
-            SpaceAlign::Baseline => "baseline",
-        },
-        gap_val,
-        style.unwrap_or_default()
-    );
+    let row_gap_override = if matches!(direction, SpaceDirection::Horizontal) {
+        gap_cross
+    } else {
+        None
+    };
+    let column_gap_override = if matches!(direction, SpaceDirection::Vertical) {
+        gap_cross
+    } else {
+        None
+    };
+    let style_attr = compose_gap_style(style, gap, row_gap_override, column_gap_override);
 
     if let Some(separator) = split {
         let sep_node: VNode = separator?;

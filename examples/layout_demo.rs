@@ -1,8 +1,8 @@
 use adui_dioxus::{
     Button, ButtonType, Col, Content, Divider, DividerOrientation, Flex, FlexAlign, FlexDirection,
-    FlexJustify, Footer, Header, Layout, Masonry, Row, RowAlign, RowJustify, Sider, Space,
-    SpaceDirection, Splitter, SplitterOrientation, Text, TextType, ThemeMode, ThemeProvider, Title,
-    TitleLevel,
+    FlexJustify, Footer, Header, Layout, Masonry, MasonryResponsive, Row, RowAlign, RowJustify,
+    Sider, SiderTheme, Space, SpaceDirection, Splitter, SplitterOrientation, Text, TextType,
+    ThemeMode, ThemeProvider, Title, TitleLevel,
 };
 use dioxus::prelude::*;
 
@@ -22,6 +22,8 @@ fn app() -> Element {
 fn LayoutDemo() -> Element {
     let mut mode = use_signal(|| ThemeMode::Light);
     let split_ratio = use_signal(|| 0.4f32);
+    let sider_collapsed = use_signal(|| false);
+    let mini_collapsed = use_signal(|| true);
     let action_buttons = [
         (ButtonType::Primary, "Action"),
         (ButtonType::Default, "Cancel"),
@@ -43,9 +45,9 @@ fn LayoutDemo() -> Element {
             }
 
             {section_card("Divider", rsx! {
-                Divider { orientation: DividerOrientation::Left, content: Some(rsx!(span { "Left" })) }
-                Divider { orientation: DividerOrientation::Center, content: Some(rsx!(span { "Center" })) }
-                Divider { orientation: DividerOrientation::Right, dashed: true, content: Some(rsx!(span { "Right Dashed" })) }
+                Divider { orientation: DividerOrientation::Left, content: Some(rsx!("Left")) }
+                Divider { orientation: DividerOrientation::Center, content: Some(rsx!("Center")) }
+                Divider { orientation: DividerOrientation::Right, dashed: true, orientation_margin: Some("24px".into()), content: Some(rsx!("Right Dashed")) }
                 Divider { vertical: true }
                 Text { r#type: TextType::Secondary, "Inline vertical divider above." }
             })}
@@ -75,40 +77,94 @@ fn LayoutDemo() -> Element {
                     gutter: Some(12.0),
                     justify: RowJustify::Start,
                     align: RowAlign::Top,
-                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
-                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
-                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
-                    Col { span: 6, span_md: Some(12), span_sm: Some(24), {sample_box("6 / 12 / 24")} }
+                    Col { span: 6, {sample_box("6") } }
+                    Col { span: 6, {sample_box("6") } }
+                    Col { span: 6, {sample_box("6") } }
+                    Col { span: 6, {sample_box("6") } }
                 }
                 Row {
                     gutter: Some(12.0),
-                    Col { span: 8, span_sm: Some(24), {sample_box("8 / 24")} }
-                    Col { span: 8, span_sm: Some(24), {sample_box("8 / 24")} }
-                    Col { span: 8, span_sm: Some(24), {sample_box("8 / 24")} }
+                    Col { span: 8, {sample_box("8")} }
+                    Col { span: 8, {sample_box("8")} }
+                    Col { span: 8, {sample_box("8")} }
                 }
             })}
 
             {section_card("Layout", rsx! {
+                Text { r#type: TextType::Secondary, "Sider 支持 collapsible + 受控 collapsed" }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: {
+                        let mut sig = sider_collapsed;
+                        move |_| {
+                            let next = {
+                                let current = *sig.read();
+                                !current
+                            };
+                            sig.set(next);
+                        }
+                    },
+                    if *sider_collapsed.read() { "展开" } else { "收起" }
+                }
                 Layout {
-                    Header { {sample_bar("Header")} }
-                    Flex {
-                        direction: FlexDirection::Row,
-                        gap: Some(12.0),
-                        Sider { width: 160.0, has_border: true, {sample_bar("Sider")} }
-                        Content { {sample_bar("Content")} }
+                    has_sider: Some(true),
+                    Sider {
+                        collapsible: true,
+                        theme: SiderTheme::Dark,
+                        width: Some(220.0),
+                        collapsed_width: Some(72.0),
+                        collapsed: Some(*sider_collapsed.read()),
+                        on_collapse: {
+                            let mut sig = sider_collapsed;
+                            move |next| sig.set(next)
+                        },
+                        {sample_bar("导航菜单")}
                     }
-                    Footer { {sample_bar("Footer")} }
+                    Layout {
+                        Header { {sample_bar("Header")} }
+                        Content { {sample_bar("Content")} }
+                        Footer { {sample_bar("Footer")} }
+                    }
+                }
+                Divider { }
+                Text { r#type: TextType::Secondary, "Zero Width Trigger（collapsed_width = 0）" }
+                Layout {
+                    has_sider: Some(true),
+                    Sider {
+                        theme: SiderTheme::Light,
+                        collapsible: true,
+                        collapsed_width: Some(0.0),
+                        width: Some(180.0),
+                        zero_width_trigger_style: Some("top: 24px;".into()),
+                        collapsed: Some(*mini_collapsed.read()),
+                        on_collapse: {
+                            let mut sig = mini_collapsed;
+                            move |next| sig.set(next)
+                        },
+                        {sample_bar("Mini Sider")}
+                    }
+                    Content {
+                        {sample_bar("Content Area")}
+                    }
                 }
             })}
 
             {section_card("Masonry", rsx! {
                 Masonry {
-                    columns: 3,
+                    columns: 4,
+                    responsive: Some(MasonryResponsive {
+                        xs: Some(1),
+                        sm: Some(2),
+                        md: Some(3),
+                        lg: Some(4),
+                        ..Default::default()
+                    }),
                     gap: Some(12.0),
+                    row_gap: Some(20.0),
                     min_column_width: Some(180.0),
                     {
                         (0..6).map(|i| {
-                            let h = 60 + (i * 20) as i32;
+                            let h = 60 + i * 20;
                             rsx!(
                                 div {
                                     style: format!("background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 8px; height:{}px;", h),
@@ -129,9 +185,9 @@ fn LayoutDemo() -> Element {
                 Text { r#type: TextType::Secondary, "拖动中线可调整 Pane 宽度" }
                 Splitter {
                     orientation: SplitterOrientation::Horizontal,
-                    split: *split_ratio.read(),
+                    split: Some(*split_ratio.read()),
                     on_change: {
-                        let mut ratio_sig = split_ratio.clone();
+                        let mut ratio_sig = split_ratio;
                         move |v| {
                             ratio_sig.set(v);
                             println!("split changed to {:.2}", v);

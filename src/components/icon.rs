@@ -13,6 +13,8 @@ pub enum IconKind {
     ArrowRight,
     ArrowLeft,
     Search,
+    Copy,
+    Edit,
     Loading,
 }
 
@@ -33,6 +35,11 @@ pub struct IconProps {
     pub class: Option<String>,
     #[props(optional)]
     pub aria_label: Option<String>,
+    #[props(optional)]
+    pub view_box: Option<String>,
+    /// 自定义 SVG 内容，若提供则忽略内置 `kind`。
+    #[props(optional)]
+    pub custom: Option<Element>,
 }
 
 /// SVG-based icon component with small built-in set.
@@ -46,6 +53,8 @@ pub fn Icon(props: IconProps) -> Element {
         spin,
         class,
         aria_label,
+        view_box,
+        custom,
     } = props;
 
     let def = icon_def(kind);
@@ -67,25 +76,31 @@ pub fn Icon(props: IconProps) -> Element {
 
     let stroke_color = color.clone().unwrap_or_else(|| "currentColor".into());
 
+    let aria_text = aria_label.unwrap_or_else(|| format!("{:?}", kind));
+    let view_box_attr = view_box.unwrap_or_else(|| def.view_box.to_string());
+
     rsx! {
         svg {
             class: "{class_attr}",
             style: "{style}",
             width: "{size}",
             height: "{size}",
-            view_box: "{def.view_box}",
+            view_box: "{view_box_attr}",
             fill: if def.fill { stroke_color.clone() } else { "none".into() },
             stroke: if def.fill { "none" } else { stroke_color.as_str() },
             stroke_width: "1.6",
             stroke_linecap: "round",
             stroke_linejoin: "round",
             role: "img",
-            "aria-label": aria_label.unwrap_or_else(|| format!("{:?}", kind)),
-            {
-                def.paths.iter().map(|d| {
+            "aria-label": aria_text.clone(),
+            "aria-hidden": if aria_text.is_empty() { "true" } else { "false" },
+            if let Some(content) = custom {
+                {content}
+            } else {
+                {def.paths.iter().map(|d| {
                     let fill = if def.fill { "currentColor" } else { "none" };
                     rsx!(path { d: "{d}", fill: "{fill}" })
-                })
+                })}
             }
         }
     }
@@ -151,6 +166,22 @@ fn icon_def(kind: IconKind) -> IconDef {
             view_box: "0 0 24 24",
             fill: false,
             paths: &["M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z", "M21 21l-4.35-4.35"],
+        },
+        IconKind::Copy => IconDef {
+            view_box: "0 0 24 24",
+            fill: false,
+            paths: &[
+                "M9 9V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4",
+                "M5 9h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z",
+            ],
+        },
+        IconKind::Edit => IconDef {
+            view_box: "0 0 24 24",
+            fill: false,
+            paths: &[
+                "M4 20h4l10.5-10.5a2.121 2.121 0 0 0-3-3L5 17v3Z",
+                "M14.5 6.5l3 3",
+            ],
         },
         IconKind::Loading => IconDef {
             view_box: "0 0 24 24",

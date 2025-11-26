@@ -1,5 +1,6 @@
 use adui_dioxus::{
     Button, ButtonType, Paragraph, Text, TextType, ThemeMode, ThemeProvider, Title, TitleLevel,
+    TypographyCopyable, TypographyEditable, TypographyEllipsis,
 };
 use dioxus::prelude::*;
 
@@ -26,6 +27,8 @@ fn TypographyPlayground() -> Element {
     let code = use_signal(|| false);
     let ellipsis = use_signal(|| true);
     let mut tone = use_signal(|| TextType::Default);
+    let mut paragraph_text =
+        use_signal(|| "这是一个可编辑段落，点击右侧图标即可切换为输入状态。".to_string());
 
     use_effect(move || {
         // propagate theme mode if toggled
@@ -45,6 +48,8 @@ fn TypographyPlayground() -> Element {
                 span { style: "margin-left: 12px;", "Tone：" }
                 Button { r#type: ButtonType::Text, onclick: move |_| *tone.write() = TextType::Default, "Default" }
                 Button { r#type: ButtonType::Text, onclick: move |_| *tone.write() = TextType::Secondary, "Secondary" }
+                Button { r#type: ButtonType::Text, onclick: move |_| *tone.write() = TextType::Success, "Success" }
+                Button { r#type: ButtonType::Text, onclick: move |_| *tone.write() = TextType::Warning, "Warning" }
                 Button { r#type: ButtonType::Text, onclick: move |_| *tone.write() = TextType::Danger, "Danger" }
                 Button { r#type: ButtonType::Text, onclick: move |_| *tone.write() = TextType::Disabled, "Disabled" }
                 span { style: "margin-left: 12px;", "修饰：" }
@@ -110,6 +115,26 @@ fn TypographyPlayground() -> Element {
                         "{sample_long}"
                     }
                 })}
+                {demo_card("Copyable + Ellipsis", rsx! {
+                    Text {
+                        r#type: TextType::Secondary,
+                        ellipsis: true,
+                        ellipsis_config: Some(TypographyEllipsis {
+                            rows: Some(2),
+                            expandable: true,
+                            tooltip: Some("多行省略，点击展开".into()),
+                            ..Default::default()
+                        }),
+                        copyable: Some(TypographyCopyable {
+                            text: sample_long.to_string(),
+                            icon: None,
+                            copied_icon: None,
+                            tooltips: Some(("复制内容".into(), "内容已复制".into())),
+                        }),
+                        style: Some("max-width: 320px; display: inline-block;".into()),
+                        "{sample_long}"
+                    }
+                })}
 
                 {demo_card("Paragraph", rsx! {
                     Paragraph {
@@ -120,6 +145,18 @@ fn TypographyPlayground() -> Element {
                         r#type: TextType::Danger,
                         underline: true,
                         "警示段落，可与 danger/underline 组合。"
+                    }
+                    Paragraph {
+                        r#type: TextType::Default,
+                        editable: Some(TypographyEditable {
+                            text: Some(paragraph_text.read().clone()),
+                            placeholder: Some("请输入段落内容".into()),
+                            auto_focus: true,
+                            ..Default::default()
+                        }),
+                        on_edit: move |value: String| paragraph_text.set(value),
+                        on_edit_cancel: move |_| {},
+                        "{paragraph_text.read().clone()}"
                     }
                 })}
             }
