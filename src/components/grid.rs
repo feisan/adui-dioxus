@@ -439,3 +439,69 @@ fn responsive_col_rules(id: usize, responsive: Option<&ColResponsive>) -> Option
 fn column_percent(value: i16) -> f32 {
     (value as f32 / 24.0) * 100.0
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn responsive_row_rules_emits_media_queries() {
+        let mut horizontal = ResponsiveValue::default();
+        horizontal.sm = Some(16.0);
+        horizontal.xl = Some(24.0);
+        let mut vertical = ResponsiveValue::default();
+        vertical.xs = Some(8.0);
+        let responsive = ResponsiveGutter {
+            horizontal,
+            vertical: Some(vertical),
+        };
+        let rules = responsive_row_rules(1, 12.0, 4.0, Some(&responsive)).unwrap();
+        assert!(rules.contains("--adui-row-gutter-x:12"));
+        assert!(rules.contains("@media (min-width: 576px)"));
+        assert!(rules.contains("--adui-row-gutter-x:16"));
+        assert!(rules.contains("--adui-row-gutter-y:8"));
+    }
+
+    #[test]
+    fn responsive_col_rules_emits_breakpoints() {
+        let mut col = ColResponsive::default();
+        col.sm = Some(ColSize {
+            span: Some(12),
+            offset: Some(6),
+            ..Default::default()
+        });
+        col.xl = Some(ColSize {
+            span: Some(8),
+            flex: Some("1 1 auto".into()),
+            ..Default::default()
+        });
+        let rules = responsive_col_rules(7, Some(&col)).unwrap();
+        assert!(rules.contains("@media (min-width: 576px)"));
+        let offset_pct = format!("margin-left:{}%;", column_percent(6));
+        assert!(rules.contains(&offset_pct));
+        let span_pct = format!("flex:0 0 {}%;", column_percent(8));
+        assert!(rules.contains(&span_pct));
+        assert!(rules.contains("flex:1 1 auto"));
+    }
+
+    #[test]
+    fn row_component_renders_expected_class() {
+        let vnode = Row(RowProps {
+            gutter: Some(24.0),
+            gutter_vertical: None,
+            responsive_gutter: None,
+            gutter_spec: None,
+            justify: RowJustify::Start,
+            align: RowAlign::Top,
+            class: None,
+            style: None,
+            children: rsx! {
+                Col { span: 12, "Left" }
+                Col { span: 12, "Right" }
+            },
+        })
+        .expect("node");
+        let debug = format!("{vnode:?}");
+        assert!(debug.contains("adui-row"));
+    }
+}

@@ -10,6 +10,8 @@ adui-dioxus 是一个基于 Dioxus 的 UI 库，提供了丰富的组件和样�
 - FloatButton：悬浮按钮，支持圆/方形、primary/default、danger、tooltip、可配置位置
 - Icon：内置常用图标集（plus/minus/check/close/info/question/search/arrow/loading），支持旋转、大小、颜色
 - Typography：Title/Text/Paragraph，支持 tone（default/secondary/success/warning/danger/disabled）、strong/italic/underline/delete/code/mark、ellipsis（单/多行 + 展开）、copyable、editable、禁用态语义
+- Form：`Form`/`FormItem`/`use_form_item_control`，支持 required/min/max/pattern/custom rule、布局控制、必填标记、上下文 Hook
+- Upload：点击选择/拖拽上传、列表（text/picture/picture-card）、`before_upload`、XHR 上传进度/abort、受控/非受控列表
 - 布局：Divider/Flex/Grid（支持基础断点 span）/Layout（Sider 支持 collapsible/trigger/theme/手动 has_sider）/Masonry（列数可响应式 + gap/row_gap/min width）/Space/Splitter（可拖拽分栏），覆盖常用布局场景
 
 ## 本地运行
@@ -23,7 +25,9 @@ adui-dioxus 是一个基于 Dioxus 的 UI 库，提供了丰富的组件和样�
 - 布局示例（浏览器）：`dx serve --example layout_demo`
 - Flex/Space 示例（浏览器）：`dx serve --example flex_space_demo`
 - Grid 示例（浏览器）：`dx serve --example grid_demo`
-- 更多文档见 `docs/` 目录（如 `docs/button.md`、`docs/float_button.md`、`docs/layout.md`、`docs/masonry.md`、`docs/splitter.md`、`docs/icon.md` 等）。
+- Form 示例（浏览器）：`dx serve --example form_demo`
+- Upload 示例（浏览器）：`dx serve --example upload_demo`
+- 更多文档见 `docs/` 目录（如 `docs/button.md`、`docs/float_button.md`、`docs/layout.md`、`docs/masonry.md`、`docs/splitter.md`、`docs/icon.md`、`docs/form.md`、`docs/upload.md` 等）。
 
 ## 示例功能概览
 - `button_demo`：主题切换（Light/Dark）、主色预设、按钮 type/size/shape 及状态开关
@@ -33,3 +37,5 @@ adui-dioxus 是一个基于 Dioxus 的 UI 库，提供了丰富的组件和样�
 - `layout_demo`：展示 Divider、Flex、Space、Grid、Layout（含 Sider 折叠/Zero Trigger）、Masonry、Splitter（拖拽调整分栏比例）
 - `grid_demo`：展示 Row 水平/垂直/响应式 gutter 以及 Col 的 span/offset/order/push/pull/flex 响应式配置
 - `flex_space_demo`：演示 `FlexConfigProvider`、gap 预设、wrap、Space size/split/compact 等布局能力
+- `form_demo`：展示 `Form` 基本校验、布局、重置/提交回调与自定义控件接入
+- `upload_demo`：展示基础上传、图片列表、dragger 拖拽区域，验证 `before_upload`、列表移除与上传日志

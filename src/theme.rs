@@ -518,6 +518,101 @@ macro_rules! adui_flex_style {
     };
 }
 
+macro_rules! adui_form_style {
+    () => {
+        r#"
+.adui-form {
+    width: 100%;
+    display: block;
+}
+
+.adui-form-inline {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.adui-form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.adui-form-horizontal .adui-form-item {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.adui-form-horizontal .adui-form-item-label {
+    width: 120px;
+    padding-inline-end: 12px;
+    text-align: right;
+}
+
+.adui-form-vertical .adui-form-item-label,
+.adui-form-inline .adui-form-item-label {
+    text-align: left;
+    padding-inline-end: 0;
+    margin-bottom: 4px;
+}
+
+.adui-form-item-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 32px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+    font-size: 14px;
+}
+
+.adui-form-item-required {
+    color: var(--adui-color-error);
+    margin-inline-end: 4px;
+}
+
+.adui-form-item-control {
+    flex: 1;
+    min-width: 0;
+}
+
+.adui-form-item-control > *:first-child {
+    width: 100%;
+}
+
+.adui-form-item-help {
+    font-size: 13px;
+    color: var(--adui-color-error);
+    margin-top: 2px;
+}
+
+.adui-form-item-extra {
+    font-size: 12px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-form-item-has-error .adui-form-item-control > *:first-child {
+    border-color: var(--adui-color-error);
+    box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1);
+}
+
+.adui-form-item-has-feedback .adui-form-item-label {
+    position: relative;
+}
+
+.adui-form-small .adui-form-item-label {
+    min-height: 24px;
+}
+
+.adui-form-large .adui-form-item-label {
+    min-height: 40px;
+}
+"#
+    };
+}
+
 macro_rules! adui_masonry_style {
     () => {
         r#"
@@ -713,6 +808,7 @@ pub const LAYOUT_STYLE: &str = adui_layout_style!();
 pub const GRID_STYLE: &str = adui_grid_style!();
 pub const SPACE_STYLE: &str = adui_space_style!();
 pub const FLEX_STYLE: &str = adui_flex_style!();
+pub const FORM_STYLE: &str = adui_form_style!();
 pub const MASONRY_STYLE: &str = adui_masonry_style!();
 pub const SPLITTER_STYLE: &str = adui_splitter_style!();
 pub const FLOAT_BUTTON_STYLE: &str = adui_float_button_style!();
@@ -727,6 +823,7 @@ pub const THEME_BASE_STYLE: &str = concat!(
     adui_layout_style!(),
     adui_grid_style!(),
     adui_flex_style!(),
+    adui_form_style!(),
     adui_space_style!(),
     adui_masonry_style!(),
     adui_splitter_style!(),
@@ -1105,4 +1202,32 @@ fn tokens_to_css_vars(tokens: &ThemeTokens) -> String {
         tokens.shadow,
         tokens.shadow_secondary,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tokens_to_css_vars_emits_expected_variables() {
+        let tokens = ThemeTokens::light();
+        let css = tokens_to_css_vars(&tokens);
+        assert!(
+            css.contains("--adui-color-primary:#1677ff;"),
+            "primary color missing: {css}"
+        );
+        assert!(css.contains("--adui-color-bg-container:#ffffff;"));
+        assert!(css.contains("--adui-font-size:14px;"));
+        assert!(css.contains("--adui-shadow-secondary:0 6px 16px rgba(0,0,0,0.08);"));
+    }
+
+    #[test]
+    fn tokens_to_css_vars_reflect_custom_updates() {
+        let mut tokens = ThemeTokens::light();
+        tokens.color_primary = "#000000".into();
+        tokens.font_size = 18.0;
+        let css = tokens_to_css_vars(&tokens);
+        assert!(css.contains("--adui-color-primary:#000000;"));
+        assert!(css.contains("--adui-font-size:18px;"));
+    }
 }

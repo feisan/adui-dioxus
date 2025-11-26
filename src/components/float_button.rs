@@ -137,6 +137,50 @@ pub fn FloatButtonGroup(props: FloatButtonGroupProps) -> Element {
     }
 }
 
+/// Static panel version of float buttons, matching AntD `FloatButton.PurePanel`.
+#[derive(Props, Clone, PartialEq)]
+pub struct FloatButtonPurePanelProps {
+    #[props(default)]
+    pub shape: FloatButtonShape,
+    #[props(default)]
+    pub r#type: FloatButtonType,
+    #[props(default = 12.0)]
+    pub gap: f32,
+    #[props(optional)]
+    pub class: Option<String>,
+    #[props(optional)]
+    pub style: Option<String>,
+    pub children: Element,
+}
+
+#[component]
+pub fn FloatButtonPurePanel(props: FloatButtonPurePanelProps) -> Element {
+    let FloatButtonPurePanelProps {
+        shape,
+        r#type,
+        gap,
+        class,
+        style,
+        children,
+    } = props;
+    rsx! {
+        FloatButtonGroup {
+            shape,
+            r#type,
+            gap,
+            pure: true,
+            class,
+            style,
+            right: None,
+            left: None,
+            top: None,
+            bottom: None,
+            z_index: None,
+            {children}
+        }
+    }
+}
+
 /// Floating action button props.
 #[derive(Props, Clone, PartialEq)]
 pub struct FloatButtonProps {
@@ -546,5 +590,39 @@ fn visuals(tokens: &ThemeTokens, kind: FloatButtonType, danger: bool) -> FloatVi
             border_active: tokens.color_primary_active.clone(),
             shadow: "0 6px 16px rgba(0,0,0,0.12)".into(),
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::theme::ThemeTokens;
+
+    #[test]
+    fn metrics_reflect_shape_rules() {
+        let circle = metrics(FloatButtonShape::Circle);
+        assert_eq!(circle.padding_inline, 0.0);
+        assert_eq!(circle.size, 56.0);
+        assert!((circle.radius - 28.0).abs() < f32::EPSILON);
+
+        let square = metrics(FloatButtonShape::Square);
+        assert_eq!(square.padding_inline, 12.0);
+        assert!(square.radius < circle.radius);
+    }
+
+    #[test]
+    fn visuals_switch_between_danger_and_default() {
+        let tokens = ThemeTokens::light();
+        let primary = visuals(&tokens, FloatButtonType::Primary, false);
+        assert_eq!(primary.bg, tokens.color_primary);
+        assert_eq!(primary.color, "#ffffff");
+
+        let danger = visuals(&tokens, FloatButtonType::Primary, true);
+        assert_eq!(danger.bg, tokens.color_error);
+        assert_eq!(danger.border, tokens.color_error);
+
+        let default_style = visuals(&tokens, FloatButtonType::Default, false);
+        assert_eq!(default_style.bg, tokens.color_bg_container);
+        assert_eq!(default_style.color, tokens.color_text);
     }
 }

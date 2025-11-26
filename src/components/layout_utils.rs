@@ -48,3 +48,26 @@ pub(crate) fn compose_gap_style(
     }
     buffer
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn push_gap_preset_adds_suffix() {
+        let mut classes = vec!["adui-space".into()];
+        push_gap_preset_class(&mut classes, "adui-space", Some(GapPreset::Middle));
+        assert_eq!(
+            classes,
+            vec!["adui-space".to_string(), "adui-space-middle".to_string()]
+        );
+    }
+
+    #[test]
+    fn compose_gap_style_merges_values() {
+        let style = compose_gap_style(Some("color:red;".into()), Some(8.0), None, Some(4.0));
+        assert!(style.contains("gap:8"));
+        assert!(style.contains("column-gap:4"));
+        assert!(style.ends_with("color:red;"));
+    }
+}

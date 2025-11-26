@@ -158,16 +158,19 @@ fn TypographyBase(props: TypographyBaseProps) -> Element {
     let ellipsis_expandable = ellipsis_cfg.expandable;
     let ellipsis_expand_text = ellipsis_cfg
         .expand_text
+        .clone()
         .unwrap_or_else(|| "展开".to_string());
     let ellipsis_collapse_text = ellipsis_cfg
         .collapse_text
+        .clone()
         .unwrap_or_else(|| "收起".to_string());
-    let ellipsis_tooltip = ellipsis_cfg.tooltip;
-    let ellipsis_enabled = ellipsis || ellipsis_expandable || ellipsis_cfg.rows.is_some();
+    let ellipsis_tooltip = ellipsis_cfg.tooltip.clone();
 
     let copy_status = use_signal(|| false);
     let editing = use_signal(|| false);
     let ellipsis_expanded = use_signal(|| false);
+    let (ellipsis_enabled, ellipsis_active) =
+        ellipsis_flags(ellipsis, &ellipsis_cfg, *ellipsis_expanded.read());
     let edit_value = use_signal(|| {
         editable
             .as_ref()
@@ -212,7 +215,6 @@ fn TypographyBase(props: TypographyBaseProps) -> Element {
     if disabled {
         class_list.push("adui-text-disabled".into());
     }
-    let ellipsis_active = ellipsis_enabled && (!ellipsis_expandable || !*ellipsis_expanded.read());
     if ellipsis_active {
         class_list.push("adui-text-ellipsis".into());
         if ellipsis_rows > 1 {
@@ -645,6 +647,12 @@ pub fn Title(props: TitleProps) -> Element {
     TypographyBase(props.into())
 }
 
+fn ellipsis_flags(prop_enabled: bool, cfg: &TypographyEllipsis, expanded: bool) -> (bool, bool) {
+    let enabled = prop_enabled || cfg.expandable || cfg.rows.is_some();
+    let active = enabled && (!cfg.expandable || !expanded);
+    (enabled, active)
+}
+
 fn resolve_color(tokens: &crate::theme::ThemeTokens, tone: TextType, disabled: bool) -> String {
     if disabled {
         return tokens.color_text_disabled.clone();
@@ -1020,9 +1028,13 @@ fn trigger_copy(text: String, handler: Option<EventHandler<String>>, mut copy_st
 }
 
 fn matches_key_activate(evt: &KeyboardEvent) -> bool {
-    match evt.key() {
+    key_triggers_activation(&evt.key())
+}
+
+fn key_triggers_activation(key: &Key) -> bool {
+    match key {
         Key::Enter => true,
-        Key::Character(ref c) if c == " " => true,
+        Key::Character(text) if text == " " => true,
         _ => false,
     }
 }
@@ -1045,3 +1057,60 @@ fn schedule_copy_reset(state: Signal<bool>) {
 #[cfg(not(target_arch = "wasm32"))]
 #[allow(dead_code)]
 fn schedule_copy_reset(_state: Signal<bool>) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::theme::ThemeTokens;
+
+    #[test]
+    fn resolve_color_respects_tone_and_disabled_state() {
+        let tokens = ThemeTokens::light();
+        let disabled = resolve_color(&tokens, TextType::Danger, true);
+        assert_eq!(disabled, tokens.color_text_disabled);
+
+        let success = resolve_color(&tokens, TextType::Success, false);
+        assert_eq!(success, tokens.color_success);
+    }
+
+    #[test]
+    fn text_decoration_combines_flags() {
+        assert_eq!(text_decoration(true, false), "underline");
+        assert_eq!(text_decoration(false, true), "line-through");
+        assert_eq!(text_decoration(true, true), "underline line-through");
+        assert_eq!(text_decoration(false, false), "none");
+    }
+
+    #[test]
+    fn level_index_maps_levels() {
+        assert_eq!(level_index(TitleLevel::H1), 1);
+        assert_eq!(level_index(TitleLevel::H4), 4);
+    }
+
+    #[test]
+    fn ellipsis_flags_follow_expand_state() {
+        let cfg = TypographyEllipsis {
+            rows: Some(2),
+            expandable: true,
+            ..Default::default()
+        };
+        let (enabled, active) = ellipsis_flags(false, &cfg, false);
+        assert!(enabled);
+        assert!(active);
+
+        let (_, active_after_expand) = ellipsis_flags(false, &cfg, true);
+        assert!(!active_after_expand);
+
+        let cfg_disabled = TypographyEllipsis::default();
+        let (enabled_none, active_none) = ellipsis_flags(false, &cfg_disabled, false);
+        assert!(!enabled_none);
+        assert!(!active_none);
+    }
+
+    #[test]
+    fn key_activation_matches_enter_and_space() {
+        assert!(key_triggers_activation(&Key::Enter));
+        assert!(key_triggers_activation(&Key::Character(" ".into())));
+        assert!(!key_triggers_activation(&Key::Character("a".into())));
+    }
+}

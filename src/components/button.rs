@@ -765,3 +765,45 @@ fn focus_ring(color: ButtonColor, fallback: &str) -> String {
         ButtonColor::Default => fallback.into(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::theme::ThemeTokens;
+
+    #[test]
+    fn metrics_respect_size_and_shape() {
+        let tokens = ThemeTokens::light();
+        let circle = metrics(&tokens, ButtonSize::Small, ButtonShape::Circle);
+        assert_eq!(circle.height, tokens.control_height_small);
+        assert!((circle.radius - circle.height / 2.0).abs() < f32::EPSILON);
+
+        let round = metrics(&tokens, ButtonSize::Large, ButtonShape::Round);
+        assert!(round.radius >= tokens.border_radius);
+        assert!(round.padding_inline > circle.padding_inline);
+    }
+
+    #[test]
+    fn detects_two_cjk_characters() {
+        assert!(is_two_cjk("按钮"));
+        assert!(!is_two_cjk("按钮A"));
+        assert!(!is_two_cjk("btn"));
+    }
+
+    #[test]
+    fn visuals_follow_variant_and_tone_rules() {
+        let tokens = ThemeTokens::light();
+        let solid = visuals(&tokens, ButtonVariant::Solid, ButtonColor::Primary, false);
+        assert_eq!(solid.bg, tokens.color_primary);
+        assert_eq!(solid.color, "#ffffff");
+
+        let ghost = visuals(&tokens, ButtonVariant::Solid, ButtonColor::Primary, true);
+        assert_eq!(ghost.bg, "transparent");
+        assert_eq!(ghost.color, ghost.border);
+
+        let link_style = visuals(&tokens, ButtonVariant::Link, ButtonColor::Default, false);
+        assert_eq!(link_style.bg, "transparent");
+        assert_eq!(link_style.border, "transparent");
+        assert_eq!(link_style.color, tokens.color_link);
+    }
+}

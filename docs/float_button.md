@@ -19,6 +19,17 @@ FloatButtonGroup {
 }
 ```
 
+## FloatButtonPurePanel
+- `FloatButtonPurePanel` 是 `FloatButtonGroup` 的精简包装（`pure=true`、无定位），适合在卡片/抽屉内展示快捷操作面板。
+- Props：`shape`、`type`、`gap`、`class`、`style`、`children`。其余定位属性会被忽略。
+- 示例：
+```rust
+FloatButtonPurePanel {
+    FloatButton { icon: rsx!(span { "?" }), tooltip: Some("帮助中心".into()) }
+    FloatButton { icon: rsx!(span { "!" }), danger: true, tooltip: Some("告警".into()) }
+}
+```
+
 ## BackTop
 - 封装 `FloatButton` + 滚动逻辑，新增 `type/shape/danger/content/description/badge/right/left/top/bottom/z_index` Props，便于与主按钮统一样式。
 - `onclick` 仍可监听，触发顺序为：用户回调 -> `window.scroll_to(0,0)`；若需异步滚动可在外部覆盖。
