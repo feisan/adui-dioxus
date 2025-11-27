@@ -1,8 +1,9 @@
 use adui_dioxus::{
+    Button, ButtonHtmlType, ButtonType, Form, FormItem, FormList, Input, ThemeProvider,
     components::form::{
-        form_list_get, form_list_set, FormFinishEvent, FormFinishFailedEvent, FormRule,
+        FormFinishEvent, FormFinishFailedEvent, FormRule, form_list_get, form_list_set,
     },
-    Button, ButtonHtmlType, ButtonType, Form, FormItem, FormList, Input, ThemeProvider, use_form,
+    use_form,
 };
 use dioxus::prelude::*;
 use serde_json::Value;
@@ -63,7 +64,7 @@ fn FormListDemo() -> Element {
 
                 // 动态邮箱列表：emails 字段存储为 Value::Array
                 FormList {
-                    name: "emails".into(),
+                    name: "emails", // 字段名使用简单字符串键
                     initial_count: Some(1),
                     EmailList {}
                 }

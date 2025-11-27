@@ -211,3 +211,22 @@ fn FormDemo() -> Element {
   - 复杂路径（嵌套 List、多层级对象名路径）的完整兼容。
 
 上述能力的具体 API 与实现细节将随着 `plan/0005.md` 的推进逐步补充到本文档中。
+
+### FormList（动态字段列表）
+
+> 当前实现为 MVP，仅覆盖“一维数组 + 手动渲染子项”的场景，路径表达仍为简单字符串键（如 `"emails"`）。
+
+- 存储约定：
+  - 列表字段在 FormStore 中统一存为 `Value::Array`；
+  - 可通过 `form_list_get` / `form_list_set` / `form_list_len` / `form_list_insert` / `form_list_remove` 操作数组内容（`components::form` 模块下导出）。
+- 组件 API：
+  - `FormListProps { name: String, initial_count: Option<usize>, children: Element }`；
+  - `FormListContext { name: String, handle: FormHandle }`，通过 `use_form_list()` 获取，提供 `len/insert/remove` 方法；
+  - 目前不自动为子项生成 `FormItem` 名称，业务代码可自由约定列表元素的结构（如数组中的 `Value::String`）。
+- 示例：`examples/form_list_demo.rs`
+  - 演示如何在 `emails` 字段下维护一组邮箱地址：
+    - `FormList { name: "emails".into(), initial_count: Some(1), EmailList {} }`；
+    - `EmailList` 中使用 `use_form_list()` 获取 `FormListContext`，根据 `len()` 渲染若干 `EmailRow`；
+    - 每个 `EmailRow` 使用 `form_list_get`/`form_list_set` 读取/写入对应索引的 `Value::String`，并通过按钮调用 `remove(index)` 删除行。
+
+后续若要支持更完整的 `Form.List` 语义（如嵌套路径、`fields` 元数据与规则绑定等），可以在保持当前 API 的前提下进行向后兼容扩展。

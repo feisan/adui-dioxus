@@ -79,6 +79,15 @@ pub struct FormFinishFailedEvent {
     pub errors: FormErrors,
 }
 
+/// Event payload describing value changes at the Form level.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ValuesChangeEvent {
+    /// This update中实际发生变化的字段集合（通常只包含当前字段）。
+    pub changed_values: FormValues,
+    /// 变更后的完整字段快照。
+    pub all_values: FormValues,
+}
+
 #[derive(Clone)]
 struct FormStore {
     values: FormValues,
@@ -222,6 +231,7 @@ struct FormContext {
     _wrapper_col: Option<ColProps>,
     disabled: bool,
     registry: Rc<RefCell<HashMap<String, Vec<FormRule>>>>,
+    on_values_change: Option<EventHandler<ValuesChangeEvent>>,
 }
 
 #[derive(Clone)]
@@ -230,6 +240,9 @@ pub struct FormItemControlContext {
     handle: FormHandle,
     disabled: bool,
     registry: Rc<RefCell<HashMap<String, Vec<FormRule>>>>,
+    on_values_change: Option<EventHandler<ValuesChangeEvent>>,
+    value_prop_name: Option<String>,
+    get_value_from_event: Option<GetValueFromEventFn>,
 }
 
 impl FormItemControlContext {
@@ -241,12 +254,41 @@ impl FormItemControlContext {
         self.handle.get_field_value(&self.name)
     }
 
+    /// Optional metadata describing which prop should be treated as value
+    /// when integrating with custom controls (similar to AntD's valuePropName).
+    pub fn value_prop_name(&self) -> Option<&str> {
+        self.value_prop_name.as_deref()
+    }
+
+    /// Apply a raw `Value` coming from a custom event, passing it through
+    /// `get_value_from_event` if configured, then writing it into FormStore.
+    pub fn apply_mapped_value(&self, raw: Value) {
+        let mapped = if let Some(mapper) = self.get_value_from_event {
+            mapper(raw)
+        } else {
+            raw
+        };
+        self.set_value(mapped);
+    }
+
     pub fn set_value(&self, value: Value) {
         if self.disabled {
             return;
         }
         self.handle.set_field_value(&self.name, value);
         self.run_validation();
+
+        if let Some(cb) = self.on_values_change.as_ref() {
+            let mut changed = FormValues::new();
+            if let Some(current) = self.handle.get_field_value(&self.name) {
+                changed.insert(self.name.clone(), current);
+            }
+            let all = self.handle.values();
+            cb.call(ValuesChangeEvent {
+                changed_values: changed,
+                all_values: all,
+            });
+        }
     }
 
     pub fn set_string(&self, value: impl Into<String>) {
@@ -336,6 +378,9 @@ pub struct FormProps {
     pub on_finish: Option<EventHandler<FormFinishEvent>>,
     #[props(optional)]
     pub on_finish_failed: Option<EventHandler<FormFinishFailedEvent>>,
+    /// 表单字段值变更时的回调，主要用于字段联动与调试。
+    #[props(optional)]
+    pub on_values_change: Option<EventHandler<ValuesChangeEvent>>,
     pub children: Element,
 }
 
@@ -354,6 +399,7 @@ pub fn Form(props: FormProps) -> Element {
         form,
         on_finish,
         on_finish_failed,
+        on_values_change,
         children,
     } = props;
 
@@ -368,8 +414,9 @@ pub fn Form(props: FormProps) -> Element {
 
     // Registry 需要在整个 Form 生命周期内保持稳定的引用，不能每次渲染都重新创建。
     // 使用 signal 保证只在首次渲染时构建一次 Rc<RefCell<..>>。
-    let registry_signal =
-        use_signal::<Rc<RefCell<HashMap<String, Vec<FormRule>>>>>(|| Rc::new(RefCell::new(HashMap::new())));
+    let registry_signal = use_signal::<Rc<RefCell<HashMap<String, Vec<FormRule>>>>>(|| {
+        Rc::new(RefCell::new(HashMap::new()))
+    });
     let registry = registry_signal.read().clone();
     let context = FormContext {
         handle: handle.clone(),
@@ -382,6 +429,7 @@ pub fn Form(props: FormProps) -> Element {
         _wrapper_col: wrapper_col,
         disabled,
         registry: registry.clone(),
+        on_values_change: on_values_change.clone(),
     };
     use_context_provider(|| context);
 
@@ -522,6 +570,8 @@ pub fn FormList(props: FormListProps) -> Element {
     rsx! { div { class: "adui-form-list", {children} } }
 }
 
+pub type GetValueFromEventFn = fn(Value) -> Value;
+
 #[derive(Props, Clone, PartialEq)]
 pub struct FormItemProps {
     #[props(optional)]
@@ -536,6 +586,15 @@ pub struct FormItemProps {
     pub extra: Option<String>,
     #[props(optional)]
     pub rules: Option<Vec<FormRule>>,
+    /// 简化版 dependencies：当前 FormItem 依赖的其他字段名列表，用于渲染联动。
+    #[props(optional)]
+    pub dependencies: Option<Vec<String>>,
+    /// 自定义值映射：指定控件使用哪个 prop 作为值（类似 AntD 的 valuePropName）。
+    #[props(optional)]
+    pub value_prop_name: Option<String>,
+    /// 自定义值映射：从原始 Value 映射到写入 FormStore 的 Value，供自定义控件配合 `apply_mapped_value` 使用。
+    #[props(optional)]
+    pub get_value_from_event: Option<GetValueFromEventFn>,
     #[props(optional)]
     pub class: Option<String>,
     #[props(optional)]
@@ -555,6 +614,9 @@ pub fn FormItem(props: FormItemProps) -> Element {
         help,
         extra,
         rules,
+        dependencies,
+        value_prop_name,
+        get_value_from_event,
         class,
         style,
         has_feedback,
@@ -564,19 +626,23 @@ pub fn FormItem(props: FormItemProps) -> Element {
     let item_rules = rules.unwrap_or_default();
     let is_required = item_rules.iter().any(|rule| rule.required);
 
+    let item_scope = current_scope_id();
+
     if let Some(field_name) = name.clone() {
         {
             ctx.registry
                 .borrow_mut()
                 .insert(field_name.clone(), item_rules.clone());
         }
-        let item_scope = current_scope_id();
         ctx.handle.register_listener(&field_name, item_scope);
         let control_ctx = FormItemControlContext {
             name: field_name.clone(),
             handle: ctx.handle.clone(),
             disabled: ctx.disabled,
             registry: ctx.registry.clone(),
+            on_values_change: ctx.on_values_change.clone(),
+            value_prop_name: value_prop_name.clone(),
+            get_value_from_event,
         };
         use_context_provider(|| control_ctx);
         if !item_rules.is_empty() {
@@ -585,6 +651,13 @@ pub fn FormItem(props: FormItemProps) -> Element {
             use_effect(move || {
                 apply_validation_result(&handle, &registry, &field_name);
             });
+        }
+    }
+
+    // 简化版 dependencies：当依赖字段更新时，当前 FormItem scope 会被重新调度渲染。
+    if let Some(deps) = dependencies.as_ref() {
+        for dep in deps {
+            ctx.handle.register_listener(dep, item_scope);
         }
     }
 
@@ -907,7 +980,10 @@ mod tests {
     fn form_value_to_string_covers_common_variants() {
         assert_eq!(form_value_to_string(None), "");
         assert_eq!(form_value_to_string(Some(Value::Null)), "");
-        assert_eq!(form_value_to_string(Some(Value::String("abc".into()))), "abc");
+        assert_eq!(
+            form_value_to_string(Some(Value::String("abc".into()))),
+            "abc"
+        );
         assert_eq!(form_value_to_string(Some(Value::Number(42.into()))), "42");
         assert_eq!(form_value_to_string(Some(Value::Bool(true))), "true");
         assert_eq!(form_value_to_string(Some(Value::Bool(false))), "false");
@@ -919,10 +995,22 @@ mod tests {
         assert_eq!(form_value_to_bool(None, true), true);
         assert_eq!(form_value_to_bool(Some(Value::Bool(true)), false), true);
         assert_eq!(form_value_to_bool(Some(Value::Bool(false)), true), false);
-        assert_eq!(form_value_to_bool(Some(Value::Number(1.into())), false), true);
-        assert_eq!(form_value_to_bool(Some(Value::Number(0.into())), true), false);
-        assert_eq!(form_value_to_bool(Some(Value::String("true".into())), false), true);
-        assert_eq!(form_value_to_bool(Some(Value::String("false".into())), true), false);
+        assert_eq!(
+            form_value_to_bool(Some(Value::Number(1.into())), false),
+            true
+        );
+        assert_eq!(
+            form_value_to_bool(Some(Value::Number(0.into())), true),
+            false
+        );
+        assert_eq!(
+            form_value_to_bool(Some(Value::String("true".into())), false),
+            true
+        );
+        assert_eq!(
+            form_value_to_bool(Some(Value::String("false".into())), true),
+            false
+        );
     }
 
     #[test]

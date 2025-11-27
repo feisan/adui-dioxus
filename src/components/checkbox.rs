@@ -1,5 +1,7 @@
 use crate::components::control::{ControlStatus, push_status_class};
-use crate::components::form::{use_form_item_control, form_value_to_bool, form_value_to_string_vec};
+use crate::components::form::{
+    form_value_to_bool, form_value_to_string_vec, use_form_item_control,
+};
 use dioxus::prelude::*;
 use serde_json::Value;
 
@@ -172,12 +174,7 @@ fn handle_checkbox_toggle(
                 cb.call(next.clone());
             }
             if let Some(ctx) = form_control {
-                let json = Value::Array(
-                    next.iter()
-                        .cloned()
-                        .map(Value::String)
-                        .collect(),
-                );
+                let json = Value::Array(next.iter().cloned().map(Value::String).collect());
                 ctx.set_value(json);
             }
             if !group.controlled {
