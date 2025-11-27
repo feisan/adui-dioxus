@@ -1,5 +1,5 @@
 use crate::components::control::{ControlStatus, push_status_class};
-use crate::components::form::use_form_item_control;
+use crate::components::form::{use_form_item_control, form_value_to_bool, form_value_to_string_vec};
 use dioxus::prelude::*;
 use serde_json::Value;
 
@@ -133,7 +133,7 @@ pub fn Checkbox(props: CheckboxProps) -> Element {
 
 fn resolve_checked(
     group_ctx: &Option<CheckboxGroupContext>,
-    _form_control: &Option<crate::components::form::FormItemControlContext>,
+    form_control: &Option<crate::components::form::FormItemControlContext>,
     prop_checked: Option<bool>,
     value: Option<&str>,
     inner: Signal<bool>,
@@ -142,6 +142,9 @@ fn resolve_checked(
         if let Some(val) = value {
             return group.selected.read().contains(&val.to_string());
         }
+    }
+    if let Some(ctx) = form_control {
+        return form_value_to_bool(ctx.value(), false);
     }
     if let Some(c) = prop_checked {
         return c;
@@ -186,18 +189,21 @@ fn handle_checkbox_toggle(
         return;
     }
 
-    // Simple checkbox: toggle bool based on internal state, and mirror to Form when存在
-    let current = *inner.read();
-    let next = !current;
-
-    if let Some(ctx) = form_control {
+    // Simple checkbox: Form 模式下以 FormStore 为真相源，其他情况使用内部 state。
+    let next = if let Some(ctx) = form_control {
+        let current = form_value_to_bool(ctx.value(), false);
+        let next = !current;
         ctx.set_value(Value::Bool(next));
-    }
-
-    if !controlled_by_prop {
-        let mut state = *inner;
-        state.set(next);
-    }
+        next
+    } else {
+        let current = *inner.read();
+        let next = !current;
+        if !controlled_by_prop {
+            let mut state = *inner;
+            state.set(next);
+        }
+        next
+    };
 
     if let Some(cb) = on_change {
         cb.call(next);
@@ -266,25 +272,12 @@ pub fn CheckboxGroup(props: CheckboxGroupProps) -> Element {
 
     let form_control = crate::components::form::use_form_item_control();
 
-    let initial_from_form: Option<Vec<String>> = form_control
-        .as_ref()
-        .and_then(|ctx| ctx.value())
-        .and_then(|val| match val {
-            Value::Array(items) => Some(
-                items
-                    .into_iter()
-                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                    .collect(),
-            ),
-            _ => None,
-        });
-
     let controlled = value.is_some();
     let selected = use_signal(|| {
         if let Some(external) = value.clone() {
             external
-        } else if let Some(from_form) = initial_from_form.clone() {
-            from_form
+        } else if let Some(ctx) = form_control.as_ref() {
+            form_value_to_string_vec(ctx.value())
         } else {
             default_value.clone()
         }
@@ -299,13 +292,8 @@ pub fn CheckboxGroup(props: CheckboxGroupProps) -> Element {
             if let Some(external_value) = external.clone() {
                 selected_signal.set(external_value);
             } else if let Some(ctx) = form_ctx.as_ref() {
-                if let Some(Value::Array(items)) = ctx.value() {
-                    let next = items
-                        .into_iter()
-                        .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                        .collect();
-                    selected_signal.set(next);
-                }
+                let next = form_value_to_string_vec(ctx.value());
+                selected_signal.set(next);
             }
         });
     }

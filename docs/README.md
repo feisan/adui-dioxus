@@ -22,7 +22,7 @@
 - Space：Compact 模式当前只包含类名，缺少子按钮之间的边框合并；下一步计划在 Button/Inputs 中添加针对 `.adui-space-compact` 的样式。
 - Splitter：键盘操作目前仅提供 `tabindex`，未处理方向键/Enter 拖拽；后续需要添加键盘增量调整逻辑。
 - Typography：`editable.max_length` 仅作为输入属性，未向调用方暴露告警；计划增加回调/提示。
-- 表单控件扩展：`Input.Password` / `Input.Search`、`InputNumber`、`Select` 等扩展能力暂未实现，仅提供基础 `Input` / `TextArea` 与 Checkbox/Radio/Switch；计划在 `plan/0003.md` 的 Phase 2 中补充。
+- 表单控件扩展：`Input.Password` / `Input.Search`、`InputNumber`、`Select` 等扩展能力暂未实现，仅提供基础 `Input` / `TextArea` 与 Checkbox/Radio/Switch；Form 受控模式（`FormItem` 内由 FormStore 作为单一数据源）已基本对齐 Ant Design 6.x，后续将围绕此模型补充更多控件；扩展能力计划在 `plan/0003.md` 的 Phase 2 中补充。
 - 主题：缺少 token 自定义指南（目前仅 README 提示），后续考虑新增 `docs/theme.md` 展示可覆盖字段与暗色示例。
 
 > 以上缺口同步记录在 `plan/0001.md`，后续有新的组件或 API 时请更新此列表。

@@ -122,6 +122,15 @@ FormItem {
 
 提交表单时，`bio` 字段会出现在 `FormFinishEvent.values` 中，对应 `Value::String` 类型。
 
+### 关于 `default_value` 与 Form 初始值
+
+- 在 **不使用 Form** 时：
+  - `default_value` 仅在首次渲染时用于初始化内部 `Signal<String>`，之后控件完全由内部状态或受控 `value` 驱动。
+- 在 **`FormItem` 场景** 中：
+  - 推荐使用 `Form` 的 `initial_values` 或 `FormHandle::set_field_value` 设置初始值；
+  - 一旦存在 `FormItemControlContext`，Input/TextArea 会**完全忽略**自身的 `default_value`，始终以 `FormStore` 为唯一真相源（通过 `ctx.value()` 读取，通过 `ctx.set_string` 写回）；
+  - 调用 `FormHandle::reset_fields()` 时会清空字段值与错误，Input/TextArea 会立即渲染为空字符串，与当前 `FormStore` 状态保持一致。
+
 ## 与 Ant Design 的差异与注意事项
 
 - 当前版本未实现 `Input.Password` / `Input.Search` / `InputNumber` / `Select`，仅提供基础 `Input` / `TextArea` 能力；扩展能力会在后续计划中补齐（见 `plan/0003.md`）。

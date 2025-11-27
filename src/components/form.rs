@@ -262,8 +262,47 @@ impl FormItemControlContext {
     }
 }
 
+/// Context exposed by `FormList`, providing access to the parent list field
+/// and the underlying `FormHandle`.
+#[derive(Clone)]
+pub struct FormListContext {
+    pub name: String,
+    pub handle: FormHandle,
+}
+
+impl FormListContext {
+    /// Current length of the list field.
+    pub fn len(&self) -> usize {
+        form_list_len(&self.handle, &self.name)
+    }
+
+    /// Insert an item at the given index.
+    pub fn insert(&self, index: usize, item: Value) {
+        form_list_insert(&self.handle, &self.name, index, item);
+    }
+
+    /// Remove an item at the given index.
+    pub fn remove(&self, index: usize) {
+        form_list_remove(&self.handle, &self.name, index);
+    }
+}
+
+/// Access the nearest `FormListContext`, if any.
+pub fn use_form_list() -> Option<FormListContext> {
+    try_use_context::<FormListContext>()
+}
+
 pub fn use_form_item_control() -> Option<FormItemControlContext> {
-    try_use_context::<FormItemControlContext>()
+    if let Some(ctx) = try_use_context::<FormItemControlContext>() {
+        // Register the current scope as a listener for this field so that
+        // changes in the FormStore (set_field_value/reset_fields) will
+        // trigger a re-render of the component using this context.
+        let scope = current_scope_id();
+        ctx.handle.register_listener(ctx.name(), scope);
+        Some(ctx)
+    } else {
+        None
+    }
 }
 
 /// Create a standalone form handle (类似 `Form.useForm`).
@@ -327,7 +366,11 @@ pub fn Form(props: FormProps) -> Element {
         }
     }
 
-    let registry = Rc::new(RefCell::new(HashMap::new()));
+    // Registry 需要在整个 Form 生命周期内保持稳定的引用，不能每次渲染都重新创建。
+    // 使用 signal 保证只在首次渲染时构建一次 Rc<RefCell<..>>。
+    let registry_signal =
+        use_signal::<Rc<RefCell<HashMap<String, Vec<FormRule>>>>>(|| Rc::new(RefCell::new(HashMap::new())));
+    let registry = registry_signal.read().clone();
     let context = FormContext {
         handle: handle.clone(),
         _layout: layout,
@@ -384,17 +427,99 @@ fn validate_all(
     handle: &FormHandle,
     registry: &Rc<RefCell<HashMap<String, Vec<FormRule>>>>,
 ) -> bool {
-    let names = registry
-        .try_borrow()
-        .map(|map| map.keys().cloned().collect::<Vec<_>>())
-        .unwrap_or_default();
+    // Snapshot 所有字段名，若无法读取 registry（理论上不应该发生），则保守返回失败。
+    let names: Vec<String> = match registry.try_borrow() {
+        Ok(map) => map.keys().cloned().collect(),
+        Err(_) => {
+            // 不冒险在无法读取规则时放行提交。
+            return false;
+        }
+    };
+
+    // 如果存在 required 规则且当前表单值整体为空，
+    // 对所有带 required 的字段应用校验，并直接视为失败。
+    // 这是专门覆盖 reset 后尚未输入任何值就立刻提交的场景。
+    if handle.values().is_empty() {
+        let mut required_names = Vec::new();
+        let mut has_required = false;
+
+        if let Ok(map) = registry.try_borrow() {
+            for (name, rules) in map.iter() {
+                if rules.iter().any(|rule| rule.required) {
+                    has_required = true;
+                    required_names.push(name.clone());
+                }
+            }
+        } else {
+            // 无法读取规则时也不放行提交。
+            return false;
+        }
+
+        if has_required {
+            for name in &required_names {
+                apply_validation_result(handle, registry, name);
+            }
+            return false;
+        }
+    }
+
     let mut ok = true;
-    for name in names {
-        if !apply_validation_result(handle, registry, &name) {
+    for name in &names {
+        if !apply_validation_result(handle, registry, name) {
             ok = false;
         }
     }
+
     ok
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FormListItemMeta {
+    pub index: usize,
+    /// 完整字段名，例如 "users[0]"，供嵌套 FormItem 使用。
+    pub name: String,
+}
+
+#[derive(Props, Clone, PartialEq)]
+pub struct FormListProps {
+    /// 列表字段名，如 "users"。
+    pub name: String,
+    /// 可选的初始项数量，仅在 Form 中当前没有该字段值时生效。
+    #[props(optional)]
+    pub initial_count: Option<usize>,
+    /// 列表内部渲染的子节点，由使用方自行遍历索引并渲染 FormItem。
+    pub children: Element,
+}
+
+/// 占位实现：当前仅作为 API 声明，行为等同于普通 div 包裹 children。
+/// 后续 B3 步骤会补充动态增删项逻辑。
+#[component]
+pub fn FormList(props: FormListProps) -> Element {
+    let ctx = use_context::<FormContext>();
+    let FormListProps {
+        name,
+        initial_count,
+        children,
+    } = props;
+
+    // 若配置了 initial_count，且当前列表为空，则初始化指定数量的空元素。
+    if let Some(count) = initial_count {
+        if count > 0 && form_list_len(&ctx.handle, &name) == 0 {
+            let mut items = Vec::with_capacity(count);
+            for _ in 0..count {
+                items.push(Value::Null);
+            }
+            form_list_set(&ctx.handle, &name, items);
+        }
+    }
+
+    let list_ctx = FormListContext {
+        name: name.clone(),
+        handle: ctx.handle.clone(),
+    };
+    use_context_provider(|| list_ctx);
+
+    rsx! { div { class: "adui-form-list", {children} } }
 }
 
 #[derive(Props, Clone, PartialEq)]
@@ -668,4 +793,248 @@ fn value_to_string(value: Option<&Value>) -> Option<String> {
         Value::Null => None,
         Value::Array(_) | Value::Object(_) => None,
     })
+}
+
+// ---- Shared helpers for mapping serde_json::Value to primitive types ----
+
+/// Convert an optional `Value` into a `String` suitable for text inputs.
+///
+/// - `Null`/`None` → empty string
+/// - `String` → itself
+/// - `Number`/`Bool` → `to_string()`
+/// - `Array`/`Object` → empty string
+pub fn form_value_to_string(val: Option<Value>) -> String {
+    match val {
+        None | Some(Value::Null) => String::new(),
+        Some(Value::String(s)) => s,
+        Some(Value::Number(n)) => n.to_string(),
+        Some(Value::Bool(b)) => {
+            if b {
+                "true".into()
+            } else {
+                "false".into()
+            }
+        }
+        Some(Value::Array(_)) | Some(Value::Object(_)) => String::new(),
+    }
+}
+
+/// Convert an optional `Value` into a boolean, falling back to `default` when
+/// no useful information is present.
+pub fn form_value_to_bool(val: Option<Value>, default: bool) -> bool {
+    match val {
+        Some(Value::Bool(b)) => b,
+        Some(Value::Number(n)) => n.as_f64().map(|v| v != 0.0).unwrap_or(default),
+        Some(Value::String(s)) => match s.as_str() {
+            "true" | "1" => true,
+            "false" | "0" => false,
+            _ => default,
+        },
+        _ => default,
+    }
+}
+
+/// Convert an optional `Value` into a vector of strings (used by CheckboxGroup).
+/// Non-string entries in the array are ignored.
+pub fn form_value_to_string_vec(val: Option<Value>) -> Vec<String> {
+    match val {
+        Some(Value::Array(items)) => items
+            .into_iter()
+            .filter_map(|v| v.as_str().map(|s| s.to_string()))
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
+/// Convert an optional `Value` into a radio key string.
+/// Accepts strings, numbers and booleans and normalises them to `String`.
+pub fn form_value_to_radio_key(val: Option<Value>) -> Option<String> {
+    match val {
+        None | Some(Value::Null) => None,
+        Some(Value::String(s)) => Some(s),
+        Some(Value::Number(n)) => Some(n.to_string()),
+        Some(Value::Bool(b)) => Some(if b { "true".into() } else { "false".into() }),
+        Some(Value::Array(_)) | Some(Value::Object(_)) => None,
+    }
+}
+
+/// Helper: read the list value for a given field as a `Vec<Value>`.
+///
+/// If the field is missing or not an array, returns an empty vector.
+pub fn form_list_get(handle: &FormHandle, name: &str) -> Vec<Value> {
+    match handle.get_field_value(name) {
+        Some(Value::Array(items)) => items,
+        _ => Vec::new(),
+    }
+}
+
+/// Helper: set the list value for a given field from a `Vec<Value>`.
+pub fn form_list_set(handle: &FormHandle, name: &str, items: Vec<Value>) {
+    handle.set_field_value(name, Value::Array(items));
+}
+
+/// Helper: return the current length of a list field.
+pub fn form_list_len(handle: &FormHandle, name: &str) -> usize {
+    form_list_get(handle, name).len()
+}
+
+/// Helper: insert an item into a list field at the given index.
+///
+/// If the index is greater than the current length, the item is appended.
+pub fn form_list_insert(handle: &FormHandle, name: &str, index: usize, item: Value) {
+    let mut items = form_list_get(handle, name);
+    let idx = index.min(items.len());
+    items.insert(idx, item);
+    form_list_set(handle, name, items);
+}
+
+/// Helper: remove an item from a list field at the given index.
+///
+/// If the index is out of bounds, this is a no-op.
+pub fn form_list_remove(handle: &FormHandle, name: &str, index: usize) {
+    let mut items = form_list_get(handle, name);
+    if index < items.len() {
+        items.remove(index);
+        form_list_set(handle, name, items);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn form_value_to_string_covers_common_variants() {
+        assert_eq!(form_value_to_string(None), "");
+        assert_eq!(form_value_to_string(Some(Value::Null)), "");
+        assert_eq!(form_value_to_string(Some(Value::String("abc".into()))), "abc");
+        assert_eq!(form_value_to_string(Some(Value::Number(42.into()))), "42");
+        assert_eq!(form_value_to_string(Some(Value::Bool(true))), "true");
+        assert_eq!(form_value_to_string(Some(Value::Bool(false))), "false");
+    }
+
+    #[test]
+    fn form_value_to_bool_falls_back_to_default() {
+        assert_eq!(form_value_to_bool(None, false), false);
+        assert_eq!(form_value_to_bool(None, true), true);
+        assert_eq!(form_value_to_bool(Some(Value::Bool(true)), false), true);
+        assert_eq!(form_value_to_bool(Some(Value::Bool(false)), true), false);
+        assert_eq!(form_value_to_bool(Some(Value::Number(1.into())), false), true);
+        assert_eq!(form_value_to_bool(Some(Value::Number(0.into())), true), false);
+        assert_eq!(form_value_to_bool(Some(Value::String("true".into())), false), true);
+        assert_eq!(form_value_to_bool(Some(Value::String("false".into())), true), false);
+    }
+
+    #[test]
+    fn form_value_to_string_vec_extracts_strings() {
+        let val = Value::Array(vec![
+            Value::String("a".into()),
+            Value::Number(1.into()),
+            Value::String("b".into()),
+        ]);
+        let vec = form_value_to_string_vec(Some(val));
+        assert_eq!(vec, vec!["a".to_string(), "b".to_string()]);
+    }
+
+    #[test]
+    fn form_value_to_radio_key_converts_basic_types() {
+        assert_eq!(form_value_to_radio_key(None), None);
+        assert_eq!(
+            form_value_to_radio_key(Some(Value::String("x".into()))),
+            Some("x".into())
+        );
+        assert_eq!(
+            form_value_to_radio_key(Some(Value::Number(1.into()))),
+            Some("1".into())
+        );
+        assert_eq!(
+            form_value_to_radio_key(Some(Value::Bool(true))),
+            Some("true".into())
+        );
+    }
+
+    // This helper exercises list operations on top of FormStore. It requires
+    // the Dioxus runtime because `set_field_value` schedules updates, so we
+    // keep it ignored in the default test run.
+    #[test]
+    #[ignore]
+    fn form_list_helpers_operate_on_value_array() {
+        let handle = FormHandle::new();
+
+        // Initially there is no list value.
+        assert_eq!(form_list_len(&handle, "emails"), 0);
+        assert!(form_list_get(&handle, "emails").is_empty());
+
+        // Insert two items.
+        form_list_insert(&handle, "emails", 0, Value::String("a@example.com".into()));
+        form_list_insert(&handle, "emails", 1, Value::String("b@example.com".into()));
+
+        let items = form_list_get(&handle, "emails");
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0], Value::String("a@example.com".into()));
+        assert_eq!(items[1], Value::String("b@example.com".into()));
+
+        // Remove first item.
+        form_list_remove(&handle, "emails", 0);
+        let items_after_remove = form_list_get(&handle, "emails");
+        assert_eq!(items_after_remove.len(), 1);
+        assert_eq!(items_after_remove[0], Value::String("b@example.com".into()));
+    }
+
+    #[test]
+    fn validate_all_fails_for_required_when_values_empty() {
+        let handle = FormHandle::new();
+        let registry: Rc<RefCell<HashMap<String, Vec<FormRule>>>> =
+            Rc::new(RefCell::new(HashMap::new()));
+
+        registry.borrow_mut().insert(
+            "username".to_string(),
+            vec![FormRule {
+                required: true,
+                message: Some("请输入用户名".into()),
+                ..FormRule::default()
+            }],
+        );
+
+        // 初始状态：没有任何表单值，但存在 required 规则，应当校验失败。
+        let ok = validate_all(&handle, &registry);
+        assert!(!ok);
+        let errors = handle.errors();
+        assert_eq!(errors.get("username"), Some(&"请输入用户名".to_string()));
+    }
+
+    // This scenario depends on the Dioxus runtime because `set_field_value` and
+    // `reset_fields` will schedule view updates. In the library tests we don't
+    // bootstrap a full runtime, so we keep this test ignored to avoid panics.
+    #[test]
+    #[ignore]
+    fn validate_all_fails_again_after_reset() {
+        let handle = FormHandle::new();
+        let registry: Rc<RefCell<HashMap<String, Vec<FormRule>>>> =
+            Rc::new(RefCell::new(HashMap::new()));
+
+        registry.borrow_mut().insert(
+            "username".to_string(),
+            vec![FormRule {
+                required: true,
+                message: Some("请输入用户名".into()),
+                ..FormRule::default()
+            }],
+        );
+
+        // 填写并第一次提交：应当通过。
+        handle.set_field_value("username", Value::String("alice".into()));
+        let ok_first = validate_all(&handle, &registry);
+        assert!(ok_first);
+
+        // 重置后再次提交：应当失败。
+        handle.reset_fields();
+        let ok_after_reset = validate_all(&handle, &registry);
+        assert!(!ok_after_reset);
+        let errors_after_reset = handle.errors();
+        assert_eq!(
+            errors_after_reset.get("username"),
+            Some(&"请输入用户名".to_string())
+        );
+    }
 }

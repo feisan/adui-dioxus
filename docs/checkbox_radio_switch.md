@@ -174,6 +174,16 @@ FormItem {
 - 与 Checkbox / Radio 一样，Reset 时通过 `form_handle.read().reset_fields()` 清空字段值，控件会回到初始状态（由 `default_checked` 控制）。
 
 
+### 关于 `default_checked` / `default_value` 与 Form 初始值
+
+- 在 **不使用 Form** 时：
+  - `default_checked` / `default_value` 用于初始化内部 `Signal`（单 Checkbox/Switch 或 CheckboxGroup），后续状态完全由内部 state 或受控 `checked/value` 决定。
+- 在 **`FormItem` 场景** 中：
+  - 推荐通过 `Form` 的 `initial_values` 或 `FormHandle::set_field_value` 初始化布尔/数组/字符串字段；
+  - 单个 `Checkbox` / `CheckboxGroup` 在存在 `FormItemControlContext` 时，以 `FormStore` 中的值为唯一真相源，`default_checked` / `default_value` 不再参与后续渲染；
+  - `Switch` 在 Form 中仍会使用 `default_checked` 作为“无值时的 UI 初始状态”，但真正的字段值以 `FormStore` 为准（点击切换后写入 `Value::Bool`，`reset_fields()` 会清空字段值并使 UI 回到 `default_checked` 所对应的视觉状态）；
+  - 简而言之：**Form 中的 Checkbox/Radio/Switch 的真实值存放在 FormStore 中，控件负责渲染和写回，内部 state 仅作为 UI 过渡。**
+
 ## 小结与建议
 
 - 简单使用场景：

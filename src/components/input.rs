@@ -1,10 +1,9 @@
 use crate::components::control::{ControlStatus, push_status_class};
-use crate::components::form::FormItemControlContext;
+use crate::components::form::{FormItemControlContext, form_value_to_string};
 use crate::components::form::use_form_item_control;
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::Key;
 use dioxus::prelude::*;
-use serde_json::Value;
 
 /// Props for a single-line text input.
 #[derive(Props, Clone, PartialEq)]
@@ -295,22 +294,6 @@ fn resolve_current_value(
     inner.read().clone()
 }
 
-fn form_value_to_string(val: Option<Value>) -> String {
-    match val {
-        None | Some(Value::Null) => String::new(),
-        Some(Value::String(s)) => s,
-        Some(Value::Number(n)) => n.to_string(),
-        Some(Value::Bool(b)) => {
-            if b {
-                "true".into()
-            } else {
-                "false".into()
-            }
-        }
-        Some(Value::Array(_)) | Some(Value::Object(_)) => String::new(),
-    }
-}
-
 fn apply_input_value(
     next: String,
     form_control: &Option<FormItemControlContext>,
@@ -331,18 +314,6 @@ fn apply_input_value(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn form_value_to_string_handles_basic_types() {
-        assert_eq!(form_value_to_string(None), "");
-        assert_eq!(form_value_to_string(Some(Value::Null)), "");
-        assert_eq!(
-            form_value_to_string(Some(Value::String("abc".into()))),
-            "abc"
-        );
-        assert_eq!(form_value_to_string(Some(Value::Number(42.into()))), "42");
-        assert_eq!(form_value_to_string(Some(Value::Bool(true))), "true");
-        assert_eq!(form_value_to_string(Some(Value::Bool(false))), "false");
-    }
+    // 当前所有非 Form 模式逻辑已在集成测试与其他组件测试中覆盖，
+    // 这里不再额外构造依赖 Dioxus runtime 的 Signal，用于保持测试简单。
 }
