@@ -1,10 +1,15 @@
 pub mod button;
 pub use button::ButtonGroup;
+pub mod checkbox;
+pub mod control;
 pub mod divider;
 pub mod flex;
 pub mod float_button;
 pub mod form;
+pub mod input;
 mod layout_utils;
+pub mod radio;
+pub mod switch;
 pub use float_button::{BackTop, FloatButtonGroup};
 pub mod grid;
 pub mod icon;

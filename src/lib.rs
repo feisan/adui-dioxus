@@ -4,9 +4,10 @@ pub mod components;
 pub mod theme;
 
 pub use components::button::{
-    Button, ButtonColor, ButtonGroup, ButtonGroupProps, ButtonIconPlacement, ButtonProps,
-    ButtonShape, ButtonSize, ButtonType, ButtonVariant,
+    Button, ButtonColor, ButtonGroup, ButtonGroupProps, ButtonHtmlType, ButtonIconPlacement,
+    ButtonProps, ButtonShape, ButtonSize, ButtonType, ButtonVariant,
 };
+pub use components::checkbox::{Checkbox, CheckboxGroup, CheckboxGroupProps, CheckboxProps};
 pub use components::divider::{Divider, DividerOrientation, DividerProps};
 pub use components::flex::{
     Flex, FlexAlign, FlexComponent, FlexConfigProvider, FlexDirection, FlexGap, FlexJustify,
@@ -25,14 +26,17 @@ pub use components::grid::{
     RowGutter, RowJustify, RowProps,
 };
 pub use components::icon::{Icon, IconKind, IconProps};
+pub use components::input::{Input, InputProps, TextArea, TextAreaProps};
 pub use components::layout::{
     Content, Footer, Header, Layout, LayoutProps, Sider, SiderProps, SiderTheme,
 };
 pub use components::masonry::{Masonry, MasonryProps, MasonryResponsive};
+pub use components::radio::{Radio, RadioButton, RadioGroup, RadioGroupProps, RadioProps};
 pub use components::space::{Space, SpaceAlign, SpaceDirection, SpaceProps, SpaceSize};
 pub use components::splitter::{
     Splitter, SplitterOrientation, SplitterPane, SplitterPaneProps, SplitterProps,
 };
+pub use components::switch::{Switch, SwitchProps, SwitchSize};
 pub use components::typography::{
     Paragraph, ParagraphProps, Text, TextProps, TextType, Title, TitleLevel, TitleProps,
     TypographyCopyable, TypographyEditable, TypographyEllipsis,

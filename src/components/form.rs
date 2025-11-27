@@ -638,6 +638,8 @@ fn value_is_empty(value: Option<&Value>) -> bool {
         Some(Value::String(text)) => text.trim().is_empty(),
         Some(Value::Array(list)) => list.is_empty(),
         Some(Value::Object(map)) => map.is_empty(),
+        // 布尔值视 false 为“空”，便于在 Checkbox / Switch 等场景下用 required 表示“必须为 true”
+        Some(Value::Bool(flag)) => !flag,
         _ => false,
     }
 }

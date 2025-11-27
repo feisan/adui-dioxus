@@ -4,6 +4,8 @@
 - [Button](./button.md)：颜色/变体映射、ButtonGroup 上下文、auto insert space 说明。
 - [FloatButton](./float_button.md)：FloatButton/Group/BackTop 的 props、定位与 demo。
 - [Flex / Space](./flex_space.md)：FlexConfigProvider 继承方式与 Space gap/split。
+- [Input / TextArea](./input.md)：受控/非受控模式、`allow_clear`、与 Form 集成示例。
+- [Checkbox / Radio / Switch](./checkbox_radio_switch.md)：布尔控件与单选控件的 Group 行为与 Form 集成。
 - [Grid](./grid.md)：Row/Col 响应式 gutter 及断点语义。
 - [Typography](./typography.md)：Tone、copyable/ellipsis/editable 行为与示例。
 - [Layout](./layout.md)：Sider 折叠、zero width trigger、内容区主题。
@@ -20,6 +22,7 @@
 - Space：Compact 模式当前只包含类名，缺少子按钮之间的边框合并；下一步计划在 Button/Inputs 中添加针对 `.adui-space-compact` 的样式。
 - Splitter：键盘操作目前仅提供 `tabindex`，未处理方向键/Enter 拖拽；后续需要添加键盘增量调整逻辑。
 - Typography：`editable.max_length` 仅作为输入属性，未向调用方暴露告警；计划增加回调/提示。
+- 表单控件扩展：`Input.Password` / `Input.Search`、`InputNumber`、`Select` 等扩展能力暂未实现，仅提供基础 `Input` / `TextArea` 与 Checkbox/Radio/Switch；计划在 `plan/0003.md` 的 Phase 2 中补充。
 - 主题：缺少 token 自定义指南（目前仅 README 提示），后续考虑新增 `docs/theme.md` 展示可覆盖字段与暗色示例。
 
 > 以上缺口同步记录在 `plan/0001.md`，后续有新的组件或 API 时请更新此列表。

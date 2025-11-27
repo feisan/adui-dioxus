@@ -613,6 +613,304 @@ macro_rules! adui_form_style {
     };
 }
 
+macro_rules! adui_control_style {
+    () => {
+        r#"
+/* Text input controls */
+.adui-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 4px 11px;
+    border-radius: var(--adui-radius-sm, 4px);
+    border: 1px solid var(--adui-color-border);
+    background: var(--adui-color-bg-container);
+    color: var(--adui-color-text);
+    font-size: var(--adui-font-size, 14px);
+    line-height: var(--adui-line-height, 1.5715);
+    outline: none;
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+}
+
+.adui-input::placeholder {
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-input:hover {
+    border-color: var(--adui-color-border-hover);
+}
+
+.adui-input:focus,
+.adui-input:focus-visible {
+    border-color: var(--adui-color-primary);
+    box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12);
+}
+
+.adui-input[disabled] {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--adui-color-text-disabled, rgba(0,0,0,0.25));
+    cursor: not-allowed;
+}
+
+.adui-input-textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.adui-input-affix-wrapper {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 11px;
+    border-radius: var(--adui-radius-sm, 4px);
+    border: 1px solid var(--adui-color-border);
+    background: var(--adui-color-bg-container);
+    color: var(--adui-color-text);
+    font-size: var(--adui-font-size, 14px);
+    line-height: var(--adui-line-height, 1.5715);
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+}
+
+.adui-input-affix-wrapper:hover {
+    border-color: var(--adui-color-border-hover);
+}
+
+.adui-input-affix-wrapper:focus-within {
+    border-color: var(--adui-color-primary);
+    box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12);
+}
+
+.adui-input-prefix,
+.adui-input-suffix {
+    display: inline-flex;
+    align-items: center;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-input-prefix {
+    margin-right: 4px;
+}
+
+.adui-input-suffix {
+    margin-left: 4px;
+}
+
+.adui-input-clear {
+    margin-left: 4px;
+    cursor: pointer;
+}
+
+.adui-input-clear:hover {
+    color: var(--adui-color-text, inherit);
+}
+
+/* Checkbox */
+.adui-checkbox {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: var(--adui-font-size, 14px);
+    color: var(--adui-color-text);
+    gap: 8px;
+}
+
+.adui-checkbox-input {
+    position: absolute;
+    opacity: 0;
+}
+
+.adui-checkbox-inner {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--adui-color-border);
+    background: var(--adui-color-bg-container);
+    box-sizing: border-box;
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+}
+
+.adui-checkbox-checked .adui-checkbox-inner {
+    background: var(--adui-color-primary);
+    border-color: var(--adui-color-primary);
+}
+
+.adui-checkbox-checked .adui-checkbox-inner::after {
+    content: "";
+    position: absolute;
+    inset: 3px 2px;
+    border: 2px solid #fff;
+    border-top: 0;
+    border-right: 0;
+    transform: rotate(-45deg);
+}
+
+.adui-checkbox-indeterminate .adui-checkbox-inner::after {
+    content: "";
+    position: absolute;
+    inset: 50% 3px auto 3px;
+    height: 0;
+    border-bottom: 2px solid #fff;
+    transform: translateY(-50%);
+}
+
+.adui-checkbox-disabled {
+    cursor: not-allowed;
+    color: var(--adui-color-text-disabled, rgba(0,0,0,0.25));
+}
+
+.adui-checkbox-disabled .adui-checkbox-inner {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: var(--adui-color-border);
+}
+
+.adui-checkbox-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+/* Radio */
+.adui-radio {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: var(--adui-font-size, 14px);
+    color: var(--adui-color-text);
+    gap: 8px;
+}
+
+.adui-radio-input {
+    position: absolute;
+    opacity: 0;
+}
+
+.adui-radio-inner {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--adui-color-border);
+    background: var(--adui-color-bg-container);
+    box-sizing: border-box;
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+}
+
+.adui-radio-checked .adui-radio-inner {
+    border-color: var(--adui-color-primary);
+}
+
+.adui-radio-checked .adui-radio-inner::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--adui-color-primary);
+}
+
+.adui-radio-disabled {
+    cursor: not-allowed;
+    color: var(--adui-color-text-disabled, rgba(0,0,0,0.25));
+}
+
+.adui-radio-disabled .adui-radio-inner {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: var(--adui-color-border);
+}
+
+.adui-radio-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+/* Switch */
+.adui-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 44px;
+    height: 22px;
+    border-radius: 100px;
+    background: rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    border: none;
+    padding: 2px;
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+}
+
+.adui-switch-handle {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+}
+
+.adui-switch-checked {
+    background: var(--adui-color-primary);
+}
+
+.adui-switch-checked .adui-switch-handle {
+    left: calc(100% - 20px);
+}
+
+.adui-switch-inner {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    color: #fff;
+    pointer-events: none;
+}
+
+.adui-switch-small {
+    min-width: 32px;
+    height: 18px;
+}
+
+.adui-switch-small .adui-switch-handle {
+    width: 14px;
+    height: 14px;
+    top: 2px;
+    left: 2px;
+}
+
+.adui-switch-small.adui-switch-checked .adui-switch-handle {
+    left: calc(100% - 16px);
+}
+
+.adui-switch-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Generic status helpers (can be applied to wrappers) */
+.adui-control-status-success,
+.adui-control-status-success:focus,
+.adui-control-status-success:focus-within {
+    border-color: var(--adui-color-success);
+}
+
+.adui-control-status-warning,
+.adui-control-status-warning:focus,
+.adui-control-status-warning:focus-within {
+    border-color: var(--adui-color-warning);
+}
+
+.adui-control-status-error,
+.adui-control-status-error:focus,
+.adui-control-status-error:focus-within {
+    border-color: var(--adui-color-error);
+}
+"#
+    };
+}
+
 macro_rules! adui_masonry_style {
     () => {
         r#"
@@ -809,6 +1107,7 @@ pub const GRID_STYLE: &str = adui_grid_style!();
 pub const SPACE_STYLE: &str = adui_space_style!();
 pub const FLEX_STYLE: &str = adui_flex_style!();
 pub const FORM_STYLE: &str = adui_form_style!();
+pub const CONTROL_STYLE: &str = adui_control_style!();
 pub const MASONRY_STYLE: &str = adui_masonry_style!();
 pub const SPLITTER_STYLE: &str = adui_splitter_style!();
 pub const FLOAT_BUTTON_STYLE: &str = adui_float_button_style!();
@@ -824,6 +1123,7 @@ pub const THEME_BASE_STYLE: &str = concat!(
     adui_grid_style!(),
     adui_flex_style!(),
     adui_form_style!(),
+    adui_control_style!(),
     adui_space_style!(),
     adui_masonry_style!(),
     adui_splitter_style!(),

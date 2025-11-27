@@ -60,6 +60,15 @@ pub enum ButtonIconPlacement {
     End,
 }
 
+/// Native button `type` attribute.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ButtonHtmlType {
+    #[default]
+    Button,
+    Submit,
+    Reset,
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 struct ButtonGroupContext {
     size: Option<ButtonSize>,
@@ -177,6 +186,9 @@ pub struct ButtonProps {
     /// Extra inline style applied to root.
     #[props(optional)]
     pub styles_root: Option<String>,
+    /// Native button type, used when rendering as `<button>`.
+    #[props(default)]
+    pub html_type: ButtonHtmlType,
     #[props(optional)]
     pub onclick: Option<EventHandler<MouseEvent>>,
     pub children: Element,
@@ -209,6 +221,7 @@ pub fn Button(props: ButtonProps) -> Element {
         class_names_icon,
         class_names_content,
         styles_root,
+        html_type,
         onclick,
         children,
     } = props;
@@ -252,6 +265,12 @@ pub fn Button(props: ButtonProps) -> Element {
             }
         }
     });
+
+    let html_type_attr = match html_type {
+        ButtonHtmlType::Button => "button",
+        ButtonHtmlType::Submit => "submit",
+        ButtonHtmlType::Reset => "reset",
+    };
 
     // Loading delay handling: debounce before showing spinner.
     let inner_loading = use_signal(|| loading);
@@ -445,7 +464,7 @@ pub fn Button(props: ButtonProps) -> Element {
         button {
             class: "{class_attr}",
             style: format!("{style}{}", styles_root.unwrap_or_default()),
-            r#type: "button",
+            r#type: "{html_type_attr}",
             role: "button",
             disabled: disabled,
             "aria-disabled": disabled,
