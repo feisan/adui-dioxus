@@ -7,6 +7,7 @@
 - [Flex / Space](./flex_space.md)：FlexConfigProvider 继承方式与 Space gap/split。
 - [Input / TextArea](./input.md)：受控/非受控模式、`allow_clear`、与 Form 集成示例。
 - [Checkbox / Radio / Switch](./checkbox_radio_switch.md)：布尔控件与单选控件的 Group 行为与 Form 集成。
+- [Select / TreeSelect 等选择器家族](./select_family.md)：统一的 Option/Value 模型、下拉基础设施与 TreeSelect 当前能力说明。
 - [Grid](./grid.md)：Row/Col 响应式 gutter 及断点语义。
 - [Typography](./typography.md)：Tone、copyable/ellipsis/editable 行为与示例。
 - [Layout](./layout.md)：Sider 折叠、zero width trigger、内容区主题。

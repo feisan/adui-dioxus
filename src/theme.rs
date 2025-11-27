@@ -889,6 +889,155 @@ macro_rules! adui_control_style {
     opacity: 0.5;
 }
 
+/* Select */
+.adui-select-root {
+    display: inline-block;
+    min-width: 120px;
+}
+
+.adui-select {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 32px;
+    padding: 0 11px;
+    border-radius: var(--adui-radius-sm, 4px);
+    border: 1px solid var(--adui-color-border);
+    background: var(--adui-color-bg-container);
+    color: var(--adui-color-text);
+    font-size: var(--adui-font-size, 14px);
+    line-height: var(--adui-line-height, 1.5715);
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+    cursor: pointer;
+}
+
+.adui-select:hover:not(.adui-select-disabled) {
+    border-color: var(--adui-color-border-hover);
+}
+
+.adui-select:focus-visible,
+.adui-select:focus-within {
+    outline: none;
+    border-color: var(--adui-color-primary);
+    box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12);
+}
+
+.adui-select-disabled {
+    cursor: not-allowed;
+    color: var(--adui-color-text-disabled, rgba(0,0,0,0.25));
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.adui-select-sm {
+    min-height: 24px;
+    padding: 0 8px;
+    font-size: 13px;
+}
+
+.adui-select-lg {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 15px;
+}
+
+.adui-select-selector {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.adui-select-selection-placeholder {
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-select-selection-item {
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 4px;
+    border-radius: 2px;
+    background: transparent;
+    color: inherit;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.adui-select-multiple .adui-select-selection-item {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.adui-select-clear {
+    margin-left: 4px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.adui-select-clear:hover {
+    color: var(--adui-color-text, inherit);
+}
+
+.adui-select-dropdown {
+    margin-top: 4px;
+    border-radius: var(--adui-radius-sm, 4px);
+    border: 1px solid var(--adui-color-border);
+    background: var(--adui-color-bg-container);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    max-height: 240px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.adui-select-search {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--adui-color-border);
+}
+
+.adui-select-search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    border-radius: var(--adui-radius-sm, 4px);
+    border: 1px solid var(--adui-color-border);
+    background: var(--adui-color-bg-container);
+    font-size: var(--adui-font-size, 14px);
+}
+
+.adui-select-item-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+}
+
+.adui-select-item {
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: var(--adui-font-size, 14px);
+    color: var(--adui-color-text);
+    display: flex;
+    align-items: center;
+    transition: background 0.12s ease;
+}
+
+.adui-select-item-option-active:not(.adui-select-item-option-disabled) {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.adui-select-item-option-selected:not(.adui-select-item-option-disabled) {
+    background: rgba(22, 119, 255, 0.08);
+    color: var(--adui-color-primary);
+}
+
+.adui-select-item-option-disabled {
+    cursor: not-allowed;
+    color: var(--adui-color-text-disabled, rgba(0,0,0,0.25));
+}
+
 /* Generic status helpers (can be applied to wrappers) */
 .adui-control-status-success,
 .adui-control-status-success:focus,

@@ -191,7 +191,25 @@
   - `examples/modal_demo.rs`：基础受控 Modal；
   - `examples/drawer_demo.rs`：右侧 Drawer 示例。
 
-## 7. 后续可扩展方向（非本轮目标）
+## 7. 选择器家族（规划）
+
+- 选择器家族包括：`Select` / `TreeSelect` / `Cascader` / `AutoComplete`。
+- 共同特性：
+  - 基于下拉浮层展示候选项，复用 OverlayManager 管理 z-index 与挂载容器；
+  - 与 Form 深度集成，使用统一的 `serde_json::Value` 作为值模型；
+  - 受 ConfigProvider 控制 `size` / `disabled` 等全局属性。
+- 本轮（Phase 4）计划的 MVP 范围：
+  - Select：单选、多选（含 tags 样式子集）、基础搜索（前端过滤），Form 集成；
+  - TreeSelect：基于本地树数据的单选/多选（简单勾选），不支持异步加载/虚拟滚动；
+  - Cascader：多级级联路径选择，支持基础搜索，高亮与复杂选中策略可后续扩展；
+  - AutoComplete：基于 Input 的建议列表，默认使用前端过滤，也支持通过 `on_search` 驱动外部数据源。
+- 后续可扩展能力：
+  - 大数据量场景虚拟滚动；
+  - 更复杂的 `labelInValue` / `tagRender` 行为；
+  - 远程搜索（联动网络请求）与 debounce；
+  - 更丰富的键盘交互与无障碍（ARIA）支持。
+
+## 8. 后续可扩展方向（非本轮目标）
 
 - 完整的动态主题算法与组件级 token 配置；
 - 更丰富的 Notification 能力（进度、悬停暂停、分组等）；

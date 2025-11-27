@@ -28,12 +28,16 @@ pub use components::form::{
     Form, FormHandle, FormItem, FormItemProps, FormLayout, FormList, FormListContext,
     FormListItemMeta, FormListProps, RequiredMark, use_form, use_form_item_control, use_form_list,
 };
+pub use components::auto_complete::{AutoComplete, AutoCompleteProps};
+pub use components::cascader::{Cascader, CascaderProps};
 pub use components::grid::{
     Col, ColProps, ColResponsive, ColSize, ResponsiveGutter, ResponsiveValue, Row, RowAlign,
     RowGutter, RowJustify, RowProps,
 };
 pub use components::icon::{Icon, IconKind, IconProps};
 pub use components::input::{Input, InputProps, TextArea, TextAreaProps};
+pub use components::select::{PublicSelectOption as SelectOption, Select, SelectProps};
+pub use components::tree_select::{TreeSelect, TreeSelectProps};
 pub use components::layout::{
     Content, Footer, Header, Layout, LayoutProps, Sider, SiderProps, SiderTheme,
 };
@@ -49,6 +53,7 @@ pub use components::splitter::{
     Splitter, SplitterOrientation, SplitterPane, SplitterPaneProps, SplitterProps,
 };
 pub use components::switch::{Switch, SwitchProps, SwitchSize};
+pub use components::TreeNode;
 pub use components::typography::{
     Paragraph, ParagraphProps, Text, TextProps, TextType, Title, TitleLevel, TitleProps,
     TypographyCopyable, TypographyEditable, TypographyEllipsis,

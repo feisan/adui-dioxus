@@ -7,6 +7,8 @@ use std::collections::HashMap;
 /// extend this enum without breaking existing behaviour.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum OverlayKind {
+    /// Lightweight dropdown-like overlays used by selector components.
+    Dropdown,
     Message,
     Notification,
     Modal,
