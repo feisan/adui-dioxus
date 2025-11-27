@@ -1,3 +1,4 @@
+use crate::components::config_provider::use_config;
 use crate::components::control::{ControlStatus, push_status_class};
 use crate::components::form::use_form_item_control;
 use crate::components::form::{FormItemControlContext, form_value_to_string};
@@ -62,6 +63,8 @@ pub fn Input(props: InputProps) -> Element {
 
     let placeholder_str = placeholder.unwrap_or_default();
 
+    let config = use_config();
+
     let form_control = use_form_item_control();
     let controlled_by_prop = value.is_some();
 
@@ -70,7 +73,8 @@ pub fn Input(props: InputProps) -> Element {
     let inner_value = use_signal(|| initial_inner);
 
     let current_value = resolve_current_value(&form_control, value.clone(), inner_value);
-    let is_disabled = disabled || form_control.as_ref().is_some_and(|ctx| ctx.is_disabled());
+    let is_disabled =
+        disabled || config.disabled || form_control.as_ref().is_some_and(|ctx| ctx.is_disabled());
 
     let has_prefix = prefix.is_some();
     let has_user_suffix = suffix.is_some();
@@ -87,7 +91,7 @@ pub fn Input(props: InputProps) -> Element {
     let input_node = rsx! {
         input {
             class: "adui-input",
-            disabled: is_disabled,
+            disabled: is_disabled || config.disabled,
             value: "{current_value}",
             placeholder: "{placeholder_str}",
             oninput: move |evt| {
@@ -172,7 +176,7 @@ pub fn Input(props: InputProps) -> Element {
             input {
                 class: "{class_attr}",
                 style: "{style_attr}",
-                disabled: is_disabled,
+                disabled: is_disabled || config.disabled,
                 value: "{current_value}",
                 placeholder: "{placeholder_str}",
                 oninput: move |evt| {

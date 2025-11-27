@@ -1,3 +1,4 @@
+use crate::components::config_provider::{ComponentSize, use_config};
 use crate::theme::{ThemeTokens, use_theme};
 use dioxus::prelude::*;
 
@@ -41,6 +42,16 @@ pub enum ButtonSize {
     #[default]
     Middle,
     Large,
+}
+
+impl ButtonSize {
+    fn from_global(size: ComponentSize) -> Self {
+        match size {
+            ComponentSize::Small => ButtonSize::Small,
+            ComponentSize::Large => ButtonSize::Large,
+            ComponentSize::Middle => ButtonSize::Middle,
+        }
+    }
 }
 
 /// Shape variants for the button outline.
@@ -226,10 +237,12 @@ pub fn Button(props: ButtonProps) -> Element {
         children,
     } = props;
 
+    // Merge size/shape/variant/color from ButtonGroup and global ConfigProvider.
     let mut size = size;
     let mut shape = shape;
     let mut variant = variant;
     let mut color = color;
+
     if let Some(ctx) = try_use_context::<ButtonGroupContext>() {
         if let Some(shared_size) = ctx.size {
             size = shared_size;
@@ -243,6 +256,11 @@ pub fn Button(props: ButtonProps) -> Element {
         if color.is_none() {
             color = ctx.color;
         }
+    } else if matches!(size, ButtonSize::Middle) {
+        // Fall back to global ConfigProvider size when not inside a ButtonGroup
+        // and the user did not explicitly specify size.
+        let cfg = use_config();
+        size = ButtonSize::from_global(cfg.size);
     }
 
     let theme = use_theme();

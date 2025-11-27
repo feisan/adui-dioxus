@@ -3,12 +3,19 @@
 pub mod components;
 pub mod theme;
 
+pub use components::app::{
+    App, AppContextValue, AppProps, ModalApi, use_app, use_message, use_modal, use_notification,
+};
 pub use components::button::{
     Button, ButtonColor, ButtonGroup, ButtonGroupProps, ButtonHtmlType, ButtonIconPlacement,
     ButtonProps, ButtonShape, ButtonSize, ButtonType, ButtonVariant,
 };
 pub use components::checkbox::{Checkbox, CheckboxGroup, CheckboxGroupProps, CheckboxProps};
+pub use components::config_provider::{
+    ComponentSize, ConfigContextValue, ConfigProvider, ConfigProviderProps, use_config,
+};
 pub use components::divider::{Divider, DividerOrientation, DividerProps};
+pub use components::drawer::{Drawer, DrawerPlacement, DrawerProps};
 pub use components::flex::{
     Flex, FlexAlign, FlexComponent, FlexConfigProvider, FlexDirection, FlexGap, FlexJustify,
     FlexOrientation, FlexProps, FlexSharedConfig, FlexWrap,
@@ -31,6 +38,11 @@ pub use components::layout::{
     Content, Footer, Header, Layout, LayoutProps, Sider, SiderProps, SiderTheme,
 };
 pub use components::masonry::{Masonry, MasonryProps, MasonryResponsive};
+pub use components::message::{MessageApi, MessageConfig, MessageType};
+pub use components::modal::{Modal, ModalProps};
+pub use components::notification::{
+    NotificationApi, NotificationConfig, NotificationPlacement, NotificationType,
+};
 pub use components::radio::{Radio, RadioButton, RadioGroup, RadioGroupProps, RadioProps};
 pub use components::space::{Space, SpaceAlign, SpaceDirection, SpaceProps, SpaceSize};
 pub use components::splitter::{

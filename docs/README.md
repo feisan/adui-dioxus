@@ -1,6 +1,7 @@
 # 文档索引
 
 ## 已撰写的组件说明
+- [App & ConfigProvider & 全局反馈](./app_config.md)：App/use_* API、ConfigProvider 全局配置、OverlayManager 抽象，Message/Notification/Modal/Drawer 的 MVP 设计。
 - [Button](./button.md)：颜色/变体映射、ButtonGroup 上下文、auto insert space 说明。
 - [FloatButton](./float_button.md)：FloatButton/Group/BackTop 的 props、定位与 demo。
 - [Flex / Space](./flex_space.md)：FlexConfigProvider 继承方式与 Space gap/split。
