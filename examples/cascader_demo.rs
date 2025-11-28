@@ -1,7 +1,8 @@
 use adui_dioxus::{
     Button, ButtonHtmlType, ButtonType, Cascader, Form, FormItem, FormLayout, ThemeProvider,
     TreeNode,
-    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule}, use_form,
+    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule},
+    use_form,
 };
 use dioxus::prelude::*;
 
@@ -28,14 +29,12 @@ fn region_options() -> Vec<TreeNode> {
                     key: "hangzhou".into(),
                     label: "Hangzhou".into(),
                     disabled: false,
-                    children: vec![
-                        TreeNode {
-                            key: "xihu".into(),
-                            label: "West Lake".into(),
-                            disabled: false,
-                            children: vec![],
-                        },
-                    ],
+                    children: vec![TreeNode {
+                        key: "xihu".into(),
+                        label: "West Lake".into(),
+                        disabled: false,
+                        children: vec![],
+                    }],
                 },
                 TreeNode {
                     key: "ningbo".into(),
@@ -85,7 +84,13 @@ fn CascaderDemo() -> Element {
 fn BasicCascaderSection() -> Element {
     let options = region_options();
 
-    let path_value = use_signal(|| vec!["zhejiang".to_string(), "hangzhou".to_string(), "xihu".to_string()]);
+    let path_value = use_signal(|| {
+        vec![
+            "zhejiang".to_string(),
+            "hangzhou".to_string(),
+            "xihu".to_string(),
+        ]
+    });
     let last_path = use_signal(|| Vec::<String>::new());
 
     let path_dbg = {

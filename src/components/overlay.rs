@@ -3,12 +3,18 @@ use std::collections::HashMap;
 
 /// Kinds of overlay layers that share a common z-index space.
 ///
-/// This is intentionally small. If we need more kinds in the future we can
-/// extend this enum without breaking existing behaviour.
+/// This enum is intentionally small. If we need more kinds in the future we can
+/// extend it without breaking existing behaviour. Tooltip/Popover/DropdownMenu
+/// 都会以合适的 kind 挂到 OverlayManager 上，便于统一分配 z-index。
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum OverlayKind {
-    /// Lightweight dropdown-like overlays used by selector components.
+    /// Lightweight dropdown-like overlays used by selector components and
+    /// other popup menus.
     Dropdown,
+    /// Simple, non-interactive tooltip bubbles.
+    Tooltip,
+    /// Rich popup panels such as Popover/Popconfirm.
+    Popup,
     Message,
     Notification,
     Modal,

@@ -1,11 +1,8 @@
-use crate::components::config_provider::{use_config, ComponentSize};
+use crate::components::config_provider::{ComponentSize, use_config};
 use crate::components::control::{ControlStatus, push_status_class};
 use crate::components::form::{form_value_to_string, use_form_item_control};
 use crate::components::select_base::{
-    filter_options_by_query,
-    DropdownLayer,
-    SelectOption,
-    use_dropdown_layer,
+    DropdownLayer, SelectOption, filter_options_by_query, use_dropdown_layer,
 };
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
@@ -119,7 +116,7 @@ pub fn AutoComplete(props: AutoCompleteProps) -> Element {
         let mut open_for_global = open_state;
         let mut internal_flag = internal_click_flag;
         use_effect(move || {
-            use wasm_bindgen::{closure::Closure, JsCast};
+            use wasm_bindgen::{JsCast, closure::Closure};
 
             if let Some(window) = web_sys::window() {
                 if let Some(document) = window.document() {
@@ -149,7 +146,10 @@ pub fn AutoComplete(props: AutoCompleteProps) -> Element {
 
     let placeholder_str = placeholder.unwrap_or_default();
 
-    let has_any_options = options.as_ref().map(|opts| !opts.is_empty()).unwrap_or(false);
+    let has_any_options = options
+        .as_ref()
+        .map(|opts| !opts.is_empty())
+        .unwrap_or(false);
 
     // Filter options by current input value.
     let filtered_options: Vec<SelectOption> = if let Some(opts) = options.as_ref() {

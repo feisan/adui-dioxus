@@ -1,6 +1,7 @@
 use adui_dioxus::{
     AutoComplete, Button, ButtonHtmlType, ButtonType, Form, FormItem, FormLayout, ThemeProvider,
-    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule}, use_form,
+    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule},
+    use_form,
 };
 use dioxus::prelude::*;
 
@@ -18,10 +19,26 @@ fn app() -> Element {
 
 fn city_options() -> Vec<adui_dioxus::SelectOption> {
     vec![
-        adui_dioxus::SelectOption { key: "hangzhou".into(), label: "Hangzhou".into(), disabled: false },
-        adui_dioxus::SelectOption { key: "shanghai".into(), label: "Shanghai".into(), disabled: false },
-        adui_dioxus::SelectOption { key: "beijing".into(), label: "Beijing".into(), disabled: false },
-        adui_dioxus::SelectOption { key: "shenzhen".into(), label: "Shenzhen".into(), disabled: false },
+        adui_dioxus::SelectOption {
+            key: "hangzhou".into(),
+            label: "Hangzhou".into(),
+            disabled: false,
+        },
+        adui_dioxus::SelectOption {
+            key: "shanghai".into(),
+            label: "Shanghai".into(),
+            disabled: false,
+        },
+        adui_dioxus::SelectOption {
+            key: "beijing".into(),
+            label: "Beijing".into(),
+            disabled: false,
+        },
+        adui_dioxus::SelectOption {
+            key: "shenzhen".into(),
+            label: "Shenzhen".into(),
+            disabled: false,
+        },
     ]
 }
 
@@ -47,9 +64,18 @@ fn BasicAutoCompleteSection() -> Element {
     let mut last_search = use_signal(|| String::new());
     let mut last_select = use_signal(|| String::new());
 
-    let value_dbg = { let v = value.read(); format!("{:?}", *v) };
-    let search_dbg = { let v = last_search.read(); format!("{:?}", *v) };
-    let select_dbg = { let v = last_select.read(); format!("{:?}", *v) };
+    let value_dbg = {
+        let v = value.read();
+        format!("{:?}", *v)
+    };
+    let search_dbg = {
+        let v = last_search.read();
+        format!("{:?}", *v)
+    };
+    let select_dbg = {
+        let v = last_select.read();
+        format!("{:?}", *v)
+    };
 
     rsx! {
         div {

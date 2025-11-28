@@ -1,17 +1,10 @@
-use crate::components::config_provider::{use_config, ComponentSize};
+use crate::components::config_provider::{ComponentSize, use_config};
 use crate::components::control::{ControlStatus, push_status_class};
 use crate::components::form::{FormItemControlContext, use_form_item_control};
 use crate::components::select_base::{
-    handle_option_list_key_event,
-    option_key_to_value,
-    option_keys_to_value,
-    toggle_option_key,
-    value_to_option_key,
+    DropdownLayer, OptionKey, TreeNode, handle_option_list_key_event, option_key_to_value,
+    option_keys_to_value, toggle_option_key, use_dropdown_layer, value_to_option_key,
     value_to_option_keys,
-    DropdownLayer,
-    OptionKey,
-    TreeNode,
-    use_dropdown_layer,
 };
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
@@ -171,7 +164,7 @@ pub fn TreeSelect(props: TreeSelectProps) -> Element {
         let mut open_for_global = open_state;
         let mut internal_flag = internal_click_flag;
         use_effect(move || {
-            use wasm_bindgen::{closure::Closure, JsCast};
+            use wasm_bindgen::{JsCast, closure::Closure};
 
             if let Some(window) = web_sys::window() {
                 if let Some(document) = window.document() {

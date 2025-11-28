@@ -1,8 +1,8 @@
 use adui_dioxus::{
-    AutoComplete, Cascader, Form, FormItem, FormLayout, Select, SelectOption, ThemeProvider,
-    TreeNode, TreeSelect,
-    Button, ButtonHtmlType, ButtonType,
-    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule}, use_form,
+    AutoComplete, Button, ButtonHtmlType, ButtonType, Cascader, Form, FormItem, FormLayout, Select,
+    SelectOption, ThemeProvider, TreeNode, TreeSelect,
+    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule},
+    use_form,
 };
 use dioxus::prelude::*;
 
@@ -20,9 +20,21 @@ fn app() -> Element {
 
 fn base_select_options() -> Vec<SelectOption> {
     vec![
-        SelectOption { key: "basic".into(), label: "Basic".into(), disabled: false },
-        SelectOption { key: "advanced".into(), label: "Advanced".into(), disabled: false },
-        SelectOption { key: "expert".into(), label: "Expert".into(), disabled: false },
+        SelectOption {
+            key: "basic".into(),
+            label: "Basic".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "advanced".into(),
+            label: "Advanced".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "expert".into(),
+            label: "Expert".into(),
+            disabled: false,
+        },
     ]
 }
 
@@ -32,44 +44,54 @@ fn region_tree() -> Vec<TreeNode> {
             key: "zhejiang".into(),
             label: "Zhejiang".into(),
             disabled: false,
-            children: vec![
-                TreeNode {
-                    key: "hangzhou".into(),
-                    label: "Hangzhou".into(),
+            children: vec![TreeNode {
+                key: "hangzhou".into(),
+                label: "Hangzhou".into(),
+                disabled: false,
+                children: vec![TreeNode {
+                    key: "xihu".into(),
+                    label: "West Lake".into(),
                     disabled: false,
-                    children: vec![
-                        TreeNode {
-                            key: "xihu".into(),
-                            label: "West Lake".into(),
-                            disabled: false,
-                            children: vec![],
-                        },
-                    ],
-                },
-            ],
+                    children: vec![],
+                }],
+            }],
         },
         TreeNode {
             key: "jiangsu".into(),
             label: "Jiangsu".into(),
             disabled: false,
-            children: vec![
-                TreeNode {
-                    key: "nanjing".into(),
-                    label: "Nanjing".into(),
-                    disabled: false,
-                    children: vec![],
-                },
-            ],
+            children: vec![TreeNode {
+                key: "nanjing".into(),
+                label: "Nanjing".into(),
+                disabled: false,
+                children: vec![],
+            }],
         },
     ]
 }
 
 fn city_options() -> Vec<SelectOption> {
     vec![
-        SelectOption { key: "hangzhou".into(), label: "Hangzhou".into(), disabled: false },
-        SelectOption { key: "shanghai".into(), label: "Shanghai".into(), disabled: false },
-        SelectOption { key: "beijing".into(), label: "Beijing".into(), disabled: false },
-        SelectOption { key: "shenzhen".into(), label: "Shenzhen".into(), disabled: false },
+        SelectOption {
+            key: "hangzhou".into(),
+            label: "Hangzhou".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "shanghai".into(),
+            label: "Shanghai".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "beijing".into(),
+            label: "Beijing".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "shenzhen".into(),
+            label: "Shenzhen".into(),
+            disabled: false,
+        },
     ]
 }
 
@@ -210,4 +232,3 @@ fn SelectFamilyIntegrationDemo() -> Element {
         }
     }
 }
-

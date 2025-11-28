@@ -1,7 +1,8 @@
 use adui_dioxus::{
-    Button, ButtonHtmlType, ButtonType, Form, FormItem, FormLayout, TreeNode, TreeSelect,
-    ThemeProvider,
-    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule}, use_form,
+    Button, ButtonHtmlType, ButtonType, Form, FormItem, FormLayout, ThemeProvider, TreeNode,
+    TreeSelect,
+    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule},
+    use_form,
 };
 use dioxus::prelude::*;
 
@@ -42,14 +43,12 @@ fn demo_tree_data() -> Vec<TreeNode> {
                     key: "hangzhou".into(),
                     label: "Hangzhou".into(),
                     disabled: false,
-                    children: vec![
-                        TreeNode {
-                            key: "xihu".into(),
-                            label: "West Lake".into(),
-                            disabled: false,
-                            children: vec![],
-                        },
-                    ],
+                    children: vec![TreeNode {
+                        key: "xihu".into(),
+                        label: "West Lake".into(),
+                        disabled: false,
+                        children: vec![],
+                    }],
                 },
                 TreeNode {
                     key: "ningbo".into(),
@@ -222,4 +221,3 @@ fn FormTreeSelectSection() -> Element {
         }
     }
 }
-

@@ -1,13 +1,8 @@
-use crate::components::config_provider::{use_config, ComponentSize};
+use crate::components::config_provider::{ComponentSize, use_config};
 use crate::components::control::{ControlStatus, push_status_class};
 use crate::components::form::{FormItemControlContext, use_form_item_control};
 use crate::components::select_base::{
-    path_to_value,
-    value_to_path,
-    CascaderNode,
-    DropdownLayer,
-    OptionKey,
-    use_dropdown_layer,
+    CascaderNode, DropdownLayer, OptionKey, path_to_value, use_dropdown_layer, value_to_path,
 };
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
@@ -122,7 +117,7 @@ pub fn Cascader(props: CascaderProps) -> Element {
         let mut open_for_global = open_state;
         let mut internal_flag = internal_click_flag;
         use_effect(move || {
-            use wasm_bindgen::{closure::Closure, JsCast};
+            use wasm_bindgen::{JsCast, closure::Closure};
 
             if let Some(window) = web_sys::window() {
                 if let Some(document) = window.document() {

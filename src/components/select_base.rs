@@ -3,11 +3,8 @@ use serde_json::Value;
 
 use dioxus::{events::KeyboardEvent, prelude::*};
 
-use crate::components::form::{
-    form_value_to_radio_key,
-    form_value_to_string_vec,
-};
-use crate::components::overlay::{use_overlay, OverlayKey, OverlayKind};
+use crate::components::form::{form_value_to_radio_key, form_value_to_string_vec};
+use crate::components::overlay::{OverlayKey, OverlayKind, use_overlay};
 
 /// Shared key type used by selector-like components.
 ///
@@ -124,40 +121,41 @@ pub fn toggle_option_key(current: &[OptionKey], key: &str) -> Vec<OptionKey> {
 // ---- Dropdown layer & keyboard helpers ------------------------------------
 
 /// Lightweight handle describing an overlay entry reserved for a dropdown.
-///
-/// Components using selector-style dropdowns can consume this via
-/// `use_dropdown_layer` and place their popup content using the provided
-/// `z_index`.
 #[derive(Clone, Copy)]
 pub struct DropdownLayer {
     pub key: Signal<Option<OverlayKey>>,
     pub z_index: Signal<i32>,
 }
 
-/// Hook: register/unregister a dropdown entry with the global `OverlayManager`.
+/// Generic overlay handle for floating layers (tooltip, popover, dropdown, ...).
+#[derive(Clone, Copy)]
+pub struct FloatingLayer {
+    pub key: Signal<Option<OverlayKey>>,
+    pub z_index: Signal<i32>,
+}
+
+/// Internal helper: register/unregister a floating entry with the global
+/// `OverlayManager` for a given [`OverlayKind`].
 ///
-/// - When `open` is true, ensures an overlay entry of kind `Dropdown` exists
-///   and exposes its z-index via the returned `DropdownLayer`.
-/// - When `open` becomes false, releases the overlay entry so that z-index
-///   space can be reused.
-///
-/// If no overlay provider is present in the tree, this falls back to a fixed
-/// z-index of 1000.
-pub fn use_dropdown_layer(open: bool) -> DropdownLayer {
+/// - 当 `open` 为 true 时，确保存在对应 kind 的 overlay entry，并通过返回的
+///   [`FloatingLayer`] 暴露 z-index；
+/// - 当 `open` 变为 false 时，释放对应 entry，便于 z-index 复用；
+/// - 若当前树中不存在 OverlayProvider，则回退到固定 z-index（1000）。
+pub fn use_floating_layer(kind: OverlayKind, open: bool) -> FloatingLayer {
     let overlay = use_overlay();
-    let dropdown_key: Signal<Option<OverlayKey>> = use_signal(|| None);
+    let entry_key: Signal<Option<OverlayKey>> = use_signal(|| None);
     let z_index: Signal<i32> = use_signal(|| 1000);
 
     {
         let overlay = overlay.clone();
-        let mut key_signal = dropdown_key;
+        let mut key_signal = entry_key;
         let mut z_signal = z_index;
         use_effect(move || {
             if let Some(handle) = overlay.clone() {
                 let current_key = *key_signal.read();
                 if open {
                     if current_key.is_none() {
-                        let (key, meta) = handle.open(OverlayKind::Dropdown, false);
+                        let (key, meta) = handle.open(kind, false);
                         z_signal.set(meta.z_index);
                         key_signal.set(Some(key));
                     }
@@ -169,10 +167,21 @@ pub fn use_dropdown_layer(open: bool) -> DropdownLayer {
         });
     }
 
-    DropdownLayer {
-        key: dropdown_key,
+    FloatingLayer {
+        key: entry_key,
         z_index,
     }
+}
+
+/// Hook: 专门为选择器系列组件保留的下拉浮层注册函数。
+///
+/// 目前等价于 `use_floating_layer(OverlayKind::Dropdown, open)`，单独保留函数是为了
+/// 保持现有 Select/TreeSelect/Cascader 等调用点稳定，也方便后续在下拉类 Overlay
+/// 上做额外元信息扩展。
+pub fn use_dropdown_layer(open: bool) -> DropdownLayer {
+    let FloatingLayer { key, z_index } = use_floating_layer(OverlayKind::Dropdown, open);
+
+    DropdownLayer { key, z_index }
 }
 
 /// Internal helper: compute the next active index in a linear option list.
@@ -290,9 +299,21 @@ mod tests {
     #[test]
     fn filter_options_by_query_matches_label_case_insensitively() {
         let options = vec![
-            SelectOption { key: "1".into(), label: "Apple".into(), disabled: false },
-            SelectOption { key: "2".into(), label: "Banana".into(), disabled: false },
-            SelectOption { key: "3".into(), label: "Cherry".into(), disabled: false },
+            SelectOption {
+                key: "1".into(),
+                label: "Apple".into(),
+                disabled: false,
+            },
+            SelectOption {
+                key: "2".into(),
+                label: "Banana".into(),
+                disabled: false,
+            },
+            SelectOption {
+                key: "3".into(),
+                label: "Cherry".into(),
+                disabled: false,
+            },
         ];
         let filtered = filter_options_by_query(&options, "an");
         let labels: Vec<String> = filtered.into_iter().map(|o| o.label).collect();

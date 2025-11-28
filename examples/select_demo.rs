@@ -1,6 +1,8 @@
 use adui_dioxus::{
     Button, ButtonHtmlType, ButtonType, Form, FormItem, FormLayout, Select, SelectOption,
-    ThemeProvider, components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule}, use_form,
+    ThemeProvider,
+    components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule},
+    use_form,
 };
 use dioxus::prelude::*;
 
@@ -33,9 +35,21 @@ fn SelectDemo() -> Element {
 #[component]
 fn BasicSelectSection() -> Element {
     let options = vec![
-        SelectOption { key: "apple".into(), label: "Apple".into(), disabled: false },
-        SelectOption { key: "banana".into(), label: "Banana".into(), disabled: false },
-        SelectOption { key: "cherry".into(), label: "Cherry".into(), disabled: false },
+        SelectOption {
+            key: "apple".into(),
+            label: "Apple".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "banana".into(),
+            label: "Banana".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "cherry".into(),
+            label: "Cherry".into(),
+            disabled: false,
+        },
     ];
 
     let single_value = use_signal(|| Some("banana".to_string()));
@@ -120,9 +134,21 @@ fn FormSelectSection() -> Element {
     let submit_message = use_signal(|| "尚未提交".to_string());
 
     let options = vec![
-        SelectOption { key: "weekly".into(), label: "Weekly".into(), disabled: false },
-        SelectOption { key: "monthly".into(), label: "Monthly".into(), disabled: false },
-        SelectOption { key: "yearly".into(), label: "Yearly".into(), disabled: false },
+        SelectOption {
+            key: "weekly".into(),
+            label: "Weekly".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "monthly".into(),
+            label: "Monthly".into(),
+            disabled: false,
+        },
+        SelectOption {
+            key: "yearly".into(),
+            label: "Yearly".into(),
+            disabled: false,
+        },
     ];
 
     rsx! {
