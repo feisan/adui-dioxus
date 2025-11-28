@@ -193,3 +193,5 @@ fn TableDemoShell() -> Element {
 1. 排序与分页回调：在 `TableProps` 中增加排序状态与 `on_change` 回调；
 2. 更丰富的数据模型：支持泛型记录类型与自定义单元格渲染；
 3. 复杂布局：支持分组表头、固定列、横向滚动和行选择等特性。
+
+此外，`data_view_demo` 展示了 Table 与 Layout/Breadcrumb/Pagination/Empty/Spin/Skeleton 的组合，而 `dashboard_demo` 则侧重展示 List + Tabs + Card + Tag + Badge + Avatar + Pagination 的仪表盘视图，两个示例可以结合参考。

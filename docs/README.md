@@ -20,6 +20,11 @@
 - [Grid](./grid.md)：Row/Col 响应式 gutter 及断点语义。
 - [Typography](./typography.md)：Tone、copyable/ellipsis/editable 行为与示例。
 - [Layout](./layout.md)：Sider 折叠、zero width trigger、内容区主题。
+- [Tabs](./tabs.md)：页签导航，支持 items 模式与受控 `active_key`，常与 Layout/Card/List 组合。
+- [Card](./card.md)：卡片容器，承载统计卡片、列表块和设置表单等内容。
+- [Tag](./tag.md)：状态/类别标签，支持预设色、可关闭、简单 checkable 用法。
+- [Badge](./badge.md)：数量角标与小红点，适用于 Menu/Button/Avatar 的未读提示。
+- [Avatar](./avatar.md)：头像组件，支持图片/文字/分组，常用于顶部用户信息区域。
 - [Divider](./divider.md)：水平/垂直/带文字/虚线的 API。
 - [Masonry](./masonry.md)：列数、gap、响应式配置。
 - [Splitter](./splitter.md)：拖拽/受控 split、ARIA 属性。

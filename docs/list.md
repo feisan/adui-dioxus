@@ -191,3 +191,5 @@ fn ListDemoShell() -> Element {
   - 加载态统一复用 `Spin`，骨架屏可以结合 `Skeleton` 在 `children` 内部使用。
 
 后续若需要，可以进一步靠拢 AntD：引入 `data` + `render_item` 模式，增加 grid 布局和 `loadMore` 等功能。
+
+此外，综合示例 `dashboard_demo` 展示了 List 与 Layout + Tabs + Card + Tag + Badge + Avatar + Pagination 的组合，用于构建用户列表/概览型仪表盘页面，可作为实际项目的模板参考。

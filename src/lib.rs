@@ -8,11 +8,16 @@ pub use components::app::{
     App, AppContextValue, AppProps, ModalApi, use_app, use_message, use_modal, use_notification,
 };
 pub use components::auto_complete::{AutoComplete, AutoCompleteProps};
+pub use components::avatar::{
+    Avatar, AvatarGroup, AvatarGroupProps, AvatarProps, AvatarShape, AvatarSize,
+};
+pub use components::badge::{Badge, BadgeProps, BadgeStatus};
 pub use components::breadcrumb::{Breadcrumb, BreadcrumbItem, BreadcrumbProps};
 pub use components::button::{
     Button, ButtonColor, ButtonGroup, ButtonGroupProps, ButtonHtmlType, ButtonIconPlacement,
     ButtonProps, ButtonShape, ButtonSize, ButtonType, ButtonVariant,
 };
+pub use components::card::{Card, CardProps};
 pub use components::cascader::{Cascader, CascaderProps};
 pub use components::checkbox::{Checkbox, CheckboxGroup, CheckboxGroupProps, CheckboxProps};
 pub use components::config_provider::{
@@ -66,6 +71,8 @@ pub use components::splitter::{
 };
 pub use components::switch::{Switch, SwitchProps, SwitchSize};
 pub use components::table::{ColumnAlign, Table, TableColumn, TableProps};
+pub use components::tabs::{TabItem, Tabs, TabsProps};
+pub use components::tag::{Tag, TagColor, TagProps};
 pub use components::tooltip::{Tooltip, TooltipPlacement, TooltipProps, TooltipTrigger};
 pub use components::tree_select::{TreeSelect, TreeSelectProps};
 pub use components::typography::{

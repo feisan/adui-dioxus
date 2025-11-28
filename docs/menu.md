@@ -242,7 +242,14 @@ fn MenuDemoShell() -> Element {
 
 ---
 
-## 7. 与 Ant Design 的差异
+## 7. 综合示例与组合建议
+
+- `layout_navigation_demo`：展示 Menu 与 Layout/Sider/Header/Breadcrumb/Pagination 的基础组合，用于典型列表页导航。
+- `dashboard_demo`：在上述基础上进一步引入 Tabs + Card + Tag + Badge + Avatar + List/Pagination，构成完整的仪表盘/用户中心布局，适合作为中后台首页或概览页模板。
+
+---
+
+## 8. 与 Ant Design 的差异
 
 与 AntD 6.x 的 `Menu` 相比，当前实现的差异主要在于：
 

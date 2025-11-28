@@ -286,7 +286,32 @@
 
 这些规划将通过 `plan/0010.md` 中的任务逐步落地，并在 `docs/list.md` / `docs/table.md` / `docs/empty.md` / `docs/spin.md` / `docs/skeleton.md` 中细化。内置示例 `examples/data_view_demo.rs` 进一步展示了 Layout + Breadcrumb + Table/List + Pagination + Empty/Spin/Skeleton 的组合，作为典型“用户列表页”模板参考。
 
-## 6. App 与 ConfigProvider 的协同能力
+## 6. 导航 + 卡片 + 标签/角标 组合规划（Tabs / Card / Tag / Badge / Avatar）
+
+在完成列表/表格与加载/空状态组件后，下一步是补齐「导航 + 信息卡片 + 状态标签/角标」这一层，支撑常见的用户中心、仪表盘和设置页：
+
+- `Tabs`：
+  - 负责单页内视图切换，例如「基础信息 / 安全设置 / 通知偏好」；
+  - 建议与 Layout/Header/Breadcrumb 组合，形成「页面级导航 + 页签级导航」；
+- `Card`：
+  - 作为中型内容容器，承载统计信息块、配置表单、列表卡片等；
+  - 建议与 Grid/Masonry/List 组合，形成仪表盘式卡片布局；
+- `Tag`：
+  - 用于表达状态/标签/筛选条件，例如 Table 列中的“启用/停用”标记，或者列表项的分类标签；
+- `Badge`：
+  - 作为数量角标/小红点，挂在 Menu/Icon/Button/Avatar 上表达未读通知、待办数量等；
+- `Avatar`：
+  - 用于展示用户/应用头像，常与 Dropdown/Menu/Badge 组合构成顶部用户信息区域。
+
+组合建议：
+
+- 顶部导航区域：Layout.Header + Menu + Avatar(+Dropdown) + Badge，用于全局导航和用户信息；
+- 内容区：Tabs + Card + List/Table/Empty/Spin/Skeleton，用于不同视图下的列表/表单/统计卡片；
+- 状态展示：在 Table/List 行内使用 Tag 表达状态（成功/警告/错误/处理中），在按钮/图标上使用 Badge 表达数量。
+
+这些组件的迁移与实现将在 `plan/0011.md` 中逐步落地，对应文档为 `docs/tabs.md` / `docs/card.md` / `docs/tag.md` / `docs/badge.md` / `docs/avatar.md`。
+
+## 7. App 与 ConfigProvider 的协同能力
 
 - （以下内容保持原有结构，仅略微调整标题编号，未改变语义）
 
