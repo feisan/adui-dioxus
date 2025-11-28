@@ -1,6 +1,4 @@
-use adui_dioxus::{
-    Alert, AlertProps, AlertType, App, Button, ButtonType, ComponentSize, ConfigProvider,
-};
+use adui_dioxus::{Alert, AlertType, App, Button, ButtonType, ComponentSize, ConfigProvider};
 use dioxus::prelude::*;
 
 fn main() {
@@ -17,7 +15,7 @@ fn app() -> Element {
 
 #[component]
 fn AlertDemoShell() -> Element {
-    let mut show_success = use_signal(|| true);
+    let show_success = use_signal(|| true);
 
     rsx! {
         div { style: "padding: 16px; min-height: 100vh; background: var(--adui-color-bg-base);",
@@ -27,7 +25,10 @@ fn AlertDemoShell() -> Element {
             div { style: "margin-bottom: 16px; display: flex; gap: 8px;",
                 Button {
                     r#type: ButtonType::Default,
-                    onclick: move |_| show_success.set(true),
+                    onclick: {
+                        let mut show_success = show_success;
+                        move |_| show_success.set(true)
+                    },
                     "重置成功提示"
                 }
             }
@@ -37,7 +38,10 @@ fn AlertDemoShell() -> Element {
                     r#type: AlertType::Success,
                     show_icon: true,
                     closable: true,
-                    on_close: move |_| show_success.set(false),
+                    on_close: {
+                        let mut show_success = show_success;
+                        move |_| show_success.set(false)
+                    },
                     message: rsx!("操作成功"),
                     description: Some(rsx!("用于展示表单提交或任务完成后的成功提示。")),
                 }

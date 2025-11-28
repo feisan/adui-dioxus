@@ -38,13 +38,13 @@ fn FormDemo() -> Element {
             Form {
                 form: Some(form_signal.read().clone()),
                 on_finish: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishEvent| {
                         submit_message.set(format!("提交成功: {:?}", evt.values));
                     }
                 },
                 on_finish_failed: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishFailedEvent| {
                         submit_message.set(format!("提交失败: {:?}", evt.errors));
                     }
@@ -95,8 +95,7 @@ fn FormDemo() -> Element {
                 Button {
                     r#type: ButtonType::Text,
                     onclick: {
-                        let form_signal = form_signal.clone();
-                        let mut submit_message = submit_message.clone();
+                        let mut submit_message = submit_message;
                         move |_| {
                             let handle = form_signal.read().clone();
                             handle.reset_fields();

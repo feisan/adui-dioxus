@@ -6,31 +6,21 @@ use dioxus::prelude::Key;
 use dioxus::prelude::*;
 
 /// Placement of the tooltip bubble relative to the trigger.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum TooltipPlacement {
+    #[default]
     Top,
     Bottom,
     Left,
     Right,
 }
 
-impl Default for TooltipPlacement {
-    fn default() -> Self {
-        TooltipPlacement::Top
-    }
-}
-
 /// Trigger mode for opening/closing the tooltip.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum TooltipTrigger {
+    #[default]
     Hover,
     Click,
-}
-
-impl Default for TooltipTrigger {
-    fn default() -> Self {
-        TooltipTrigger::Hover
-    }
 }
 
 /// Props for the Tooltip component (MVP subset).
@@ -172,7 +162,7 @@ pub fn Tooltip(props: TooltipProps) -> Element {
                         disabled_flag,
                         is_controlled_flag,
                         open_for_handlers,
-                        on_open_change.clone(),
+                        on_open_change,
                         true,
                     );
                 }
@@ -183,7 +173,7 @@ pub fn Tooltip(props: TooltipProps) -> Element {
                         disabled_flag,
                         is_controlled_flag,
                         open_for_handlers,
-                        on_open_change.clone(),
+                        on_open_change,
                         false,
                     );
                 }
@@ -199,7 +189,7 @@ pub fn Tooltip(props: TooltipProps) -> Element {
                     disabled_flag,
                     is_controlled_flag,
                     open_for_handlers,
-                    on_open_change.clone(),
+                    on_open_change,
                     !current_open_flag,
                 );
             },
@@ -216,7 +206,7 @@ pub fn Tooltip(props: TooltipProps) -> Element {
                                 disabled_flag,
                                 is_controlled_flag,
                                 open_for_handlers,
-                                on_open_change.clone(),
+                                on_open_change,
                                 false,
                             );
                         }

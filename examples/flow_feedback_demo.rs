@@ -21,10 +21,10 @@ fn app() -> Element {
 
 #[component]
 fn FlowFeedbackDemoShell() -> Element {
-    let mut current_step = use_signal(|| 0usize);
+    let current_step = use_signal(|| 0usize);
     let form_handle = use_signal(use_form);
-    let mut progress = use_signal(|| 0.0f32);
-    let mut last_error = use_signal(|| None::<String>);
+    let progress = use_signal(|| 0.0f32);
+    let last_error = use_signal(|| None::<String>);
     let message_api = use_message();
 
     let items = vec![
@@ -53,10 +53,13 @@ fn FlowFeedbackDemoShell() -> Element {
                         Steps {
                             items: items.clone(),
                             current: Some(current),
-                            on_change: move |next| {
-                                // 仅允许回退，不允许跳过未完成步骤
-                                if next <= *current_step.read() {
-                                    current_step.set(next);
+                            on_change: {
+                                let mut current_step = current_step;
+                                move |next| {
+                                    // 仅允许回退，不允许跳过未完成步骤
+                                    if next <= *current_step.read() {
+                                        current_step.set(next);
+                                    }
                                 }
                             },
                         }
@@ -80,9 +83,9 @@ fn FlowFeedbackDemoShell() -> Element {
                                     Form {
                                         form: Some(form_handle.read().clone()),
                                         on_finish: {
-                                            let mut current_step = current_step.clone();
-                                            let mut progress = progress.clone();
-                                            let mut last_error = last_error.clone();
+                                            let mut current_step = current_step;
+                                            let mut progress = progress;
+                                            let mut last_error = last_error;
                                             move |_evt: FormFinishEvent| {
                                                 last_error.set(None);
                                                 progress.set(40.0);
@@ -90,7 +93,7 @@ fn FlowFeedbackDemoShell() -> Element {
                                             }
                                         },
                                         on_finish_failed: {
-                                            let mut last_error = last_error.clone();
+                                            let mut last_error = last_error;
                                             move |evt: FormFinishFailedEvent| {
                                                 last_error.set(Some(format!("请检查字段: {:?}", evt.errors)));
                                             }
@@ -142,7 +145,7 @@ fn FlowFeedbackDemoShell() -> Element {
                                         Button {
                                             r#type: ButtonType::Default,
                                             onclick: {
-                                                let mut progress = progress.clone();
+                                                let mut progress = progress;
                                                 move |_| {
                                                     let next = (*progress.read() + 20.0).min(100.0);
                                                     progress.set(next);
@@ -153,7 +156,7 @@ fn FlowFeedbackDemoShell() -> Element {
                                         Button {
                                             r#type: ButtonType::Default,
                                             onclick: {
-                                                let mut current_step = current_step.clone();
+                                                let mut current_step = current_step;
                                                 move |_| current_step.set(0)
                                             },
                                             "上一步"
@@ -161,8 +164,8 @@ fn FlowFeedbackDemoShell() -> Element {
                                         Button {
                                             r#type: ButtonType::Primary,
                                             onclick: {
-                                                let mut current_step = current_step.clone();
-                                                let mut progress = progress.clone();
+                                                let mut current_step = current_step;
+                                                let mut progress = progress;
                                                 let api = message_api.clone();
                                                 move |_| {
                                                     progress.set(100.0);
@@ -187,7 +190,14 @@ fn FlowFeedbackDemoShell() -> Element {
                                         title: Some(rsx!("提交成功")),
                                         sub_title: Some(rsx!("可以返回第一步重新填写，或关闭页面。")),
                                         extra: Some(rsx!(
-                                            Button { r#type: ButtonType::Primary, onclick: move |_| current_step.set(0), "重新开始" }
+                                            Button {
+                                                r#type: ButtonType::Primary,
+                                                onclick: {
+                                                    let mut current_step = current_step;
+                                                    move |_| current_step.set(0)
+                                                },
+                                                "重新开始"
+                                            }
                                         )),
                                     }
                                     div { style: "margin-top: 16px;",

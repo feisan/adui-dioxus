@@ -61,6 +61,7 @@ pub struct SelectProps {
 }
 
 /// Ant Design flavored Select (MVP).
+#[allow(clippy::collapsible_if)]
 #[component]
 pub fn Select(props: SelectProps) -> Element {
     let SelectProps {
@@ -169,7 +170,7 @@ pub fn Select(props: SelectProps) -> Element {
     }
 
     // Search query (when show_search = true).
-    let search_query: Signal<String> = use_signal(|| String::new());
+    let search_query: Signal<String> = use_signal(String::new);
 
     let open_flag = *open_state.read();
     let DropdownLayer { z_index, .. } = use_dropdown_layer(open_flag);
@@ -232,13 +233,11 @@ pub fn Select(props: SelectProps) -> Element {
                 }
             }
         }
+    } else if let Some(first) = selected_keys.first() {
+        let label = find_label(first);
+        rsx! { span { class: "adui-select-selection-item", "{label}" } }
     } else {
-        if let Some(first) = selected_keys.get(0) {
-            let label = find_label(first);
-            rsx! { span { class: "adui-select-selection-item", "{label}" } }
-        } else {
-            rsx! { span { class: "adui-select-selection-placeholder", "{placeholder_str}" } }
-        }
+        rsx! { span { class: "adui-select-selection-placeholder", "{placeholder_str}" } }
     };
 
     // Shared helpers for event handlers.
@@ -248,18 +247,18 @@ pub fn Select(props: SelectProps) -> Element {
     let multiple_flag = multiple;
     let controlled_flag = controlled_by_prop;
 
-    let mut open_for_toggle = open_state;
+    let open_for_toggle = open_state;
     let is_disabled_flag = is_disabled;
 
-    let mut search_for_input = search_query;
+    let search_for_input = search_query;
 
-    let mut active_for_keydown = active_index;
+    let active_for_keydown = active_index;
     let internal_selected_for_keydown = internal_selected;
     let form_for_keydown = form_for_handlers.clone();
-    let mut open_for_keydown = open_for_toggle;
+    let open_for_keydown = open_for_toggle;
 
     // Local copies of the internal click flag for different handlers.
-    let mut internal_click_for_toggle = internal_click_flag;
+    let internal_click_for_toggle = internal_click_flag;
     let internal_click_for_keydown = internal_click_flag;
 
     let dropdown_class_attr = {
@@ -418,8 +417,8 @@ pub fn Select(props: SelectProps) -> Element {
                             let selected_snapshot = selected_keys.clone();
                             let form_for_click = form_control.clone();
                             let internal_selected_for_click = internal_selected;
-                            let mut open_for_click = open_state;
-                            let mut internal_click_for_item = internal_click_flag;
+                            let open_for_click = open_state;
+                            let internal_click_for_item = internal_click_flag;
 
                             rsx! {
                                 li {
@@ -491,7 +490,7 @@ fn apply_selected_keys(
         if multiple {
             let json = option_keys_to_value(&new_keys);
             ctx.set_value(json);
-        } else if let Some(first) = new_keys.get(0) {
+        } else if let Some(first) = new_keys.first() {
             let json = option_key_to_value(first);
             ctx.set_value(json);
         } else {

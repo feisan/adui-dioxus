@@ -1,4 +1,4 @@
-use adui_dioxus::{Button, ButtonSize, ComponentSize, ConfigProvider, Input, ThemeProvider};
+use adui_dioxus::{Button, ButtonSize, ComponentSize, ConfigProvider, Input};
 use dioxus::prelude::*;
 
 fn main() {

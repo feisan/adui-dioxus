@@ -18,7 +18,7 @@ fn app() -> Element {
 fn OverlayDemo() -> Element {
     // Install an overlay provider for this demo tree.
     let handle = use_overlay_provider();
-    let mut last_key = use_signal(|| None::<u64>);
+    let last_key = use_signal(|| None::<u64>);
 
     let snapshot = handle.snapshot();
     let overlays: Vec<_> = snapshot

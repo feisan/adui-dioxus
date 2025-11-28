@@ -92,7 +92,7 @@ pub fn Popconfirm(props: PopconfirmProps) -> Element {
     let disabled_flag = disabled;
     let is_controlled_flag = is_controlled;
     let open_for_handlers = open_state;
-    let on_open_change_cb = on_open_change.clone();
+    let on_open_change_cb = on_open_change;
 
     let ok_label = ok_text.unwrap_or_else(|| "确定".to_string());
     let cancel_label = cancel_text.unwrap_or_else(|| "取消".to_string());
@@ -121,7 +121,7 @@ pub fn Popconfirm(props: PopconfirmProps) -> Element {
                     disabled_flag,
                     is_controlled_flag,
                     open_for_handlers,
-                    on_open_change_cb.clone(),
+                    on_open_change_cb,
                     next,
                 );
             },
@@ -148,7 +148,7 @@ pub fn Popconfirm(props: PopconfirmProps) -> Element {
                                     disabled_flag,
                                     is_controlled_flag,
                                     open_for_handlers,
-                                    on_open_change_cb.clone(),
+                                    on_open_change_cb,
                                     false,
                                 );
                             },
@@ -165,7 +165,7 @@ pub fn Popconfirm(props: PopconfirmProps) -> Element {
                                     disabled_flag,
                                     is_controlled_flag,
                                     open_for_handlers,
-                                    on_open_change_cb.clone(),
+                                    on_open_change_cb,
                                     false,
                                 );
                             },

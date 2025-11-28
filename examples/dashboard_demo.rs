@@ -1,7 +1,7 @@
 use adui_dioxus::{
-    App, Avatar, AvatarGroup, Badge, BadgeStatus, Breadcrumb, BreadcrumbItem, Button, ButtonType,
-    Card, ComponentSize, ConfigProvider, Content, Header, Layout, List, Menu, MenuItemNode,
-    MenuMode, Pagination, TabItem, Tabs, Tag,
+    App, Avatar, AvatarGroup, Badge, Breadcrumb, BreadcrumbItem, Button, ButtonType, Card,
+    ComponentSize, ConfigProvider, Content, Header, Layout, List, Menu, MenuItemNode, MenuMode,
+    TabItem, Tabs, Tag,
 };
 use dioxus::prelude::*;
 
@@ -46,9 +46,9 @@ fn breadcrumb_for(key: &str) -> Vec<BreadcrumbItem> {
 
 #[component]
 fn DashboardShell() -> Element {
-    let mut sider_selected = use_signal(|| vec!["overview".to_string()]);
-    let mut tab_active = use_signal(|| "overview-dashboard".to_string());
-    let mut current_page = use_signal(|| 1u32);
+    let sider_selected = use_signal(|| vec!["overview".to_string()]);
+    let tab_active = use_signal(|| "overview-dashboard".to_string());
+    let current_page = use_signal(|| 1u32);
     let page_size: u32 = 5;
 
     const TOTAL_USERS: u32 = 23;
@@ -61,7 +61,7 @@ fn DashboardShell() -> Element {
     let breadcrumb_items = breadcrumb_for(&current_menu);
 
     let page = (*current_page.read()).max(1);
-    let total_pages = ((TOTAL_USERS + page_size - 1) / page_size).max(1);
+    let total_pages = TOTAL_USERS.div_ceil(page_size);
     let page_clamped = page.min(total_pages);
     let start_index = ((page_clamped - 1) * page_size) as usize;
     let end_index = (start_index as u32 + page_size).min(TOTAL_USERS) as usize;
@@ -158,8 +158,11 @@ fn DashboardShell() -> Element {
                                     TabItem::new("settings", "设置", None),
                                 ],
                                 active_key: Some((*tab_active.read()).clone()),
-                                on_change: move |key: String| {
-                                    tab_active.set(key);
+                                on_change: {
+                                    let mut tab_active = tab_active;
+                                    move |key: String| {
+                                        tab_active.set(key);
+                                    }
                                 },
                             }
 

@@ -2,32 +2,22 @@ use crate::theme::{Theme, ThemeProvider, ThemeTokens};
 use dioxus::prelude::*;
 
 /// Global size for components when they do not specify an explicit size.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ComponentSize {
     Small,
+    #[default]
     Middle,
     Large,
 }
 
-impl Default for ComponentSize {
-    fn default() -> Self {
-        ComponentSize::Middle
-    }
-}
-
 /// Simple locale flag for components that need basic language switching.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Locale {
     /// Simplified Chinese.
+    #[default]
     ZhCN,
     /// English (US).
     EnUS,
-}
-
-impl Default for Locale {
-    fn default() -> Self {
-        Locale::ZhCN
-    }
 }
 
 /// Global configuration shared by components.

@@ -67,7 +67,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
     let is_size_controlled = page_size.is_some();
 
     let page_size_value = page_size.unwrap_or(*page_size_internal.read());
-    let total_pages = ((total + page_size_value - 1) / page_size_value).max(1);
+    let total_pages = total.div_ceil(page_size_value).max(1);
     let current_value = current.unwrap_or_else(|| current_internal.read().clamp(1, total_pages));
 
     let class_attr = {
@@ -85,7 +85,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
     let size_signal = page_size_internal;
 
     let update_state = move |next_page: u32, next_size: u32, emit_size_change: bool| {
-        let next_page = next_page.clamp(1, ((total + next_size - 1) / next_size).max(1));
+        let next_page = next_page.clamp(1, total.div_ceil(next_size).max(1));
 
         if !is_page_controlled {
             let mut sig = current_signal;
@@ -99,10 +99,8 @@ pub fn Pagination(props: PaginationProps) -> Element {
         if let Some(cb) = on_change_cb {
             cb.call((next_page, next_size));
         }
-        if emit_size_change {
-            if let Some(cb) = on_page_size_change_cb {
-                cb.call((next_page, next_size));
-            }
+        if emit_size_change && let Some(cb) = on_page_size_change_cb {
+            cb.call((next_page, next_size));
         }
     };
 
@@ -134,7 +132,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
 
     // Pre-compute page size options and an update callback for the size changer.
     let size_changer_options = page_size_options.unwrap_or_else(|| vec![10, 20, 50]);
-    let update_for_size = update_state.clone();
+    let update_for_size = update_state;
 
     rsx! {
         div { class: "{class_attr}", style: "{style_attr}",
@@ -147,7 +145,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                 // Prev
                 {
                     let disabled = current_value <= 1;
-                    let update = update_state.clone();
+                    let update = update_state;
                     rsx!(
                         li {
                             class: {
@@ -170,7 +168,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                         rsx! { li { class: "adui-pagination-item adui-pagination-item-ellipsis", "..." } }
                     } else {
                         let is_active = p == current_value;
-                        let update = update_state.clone();
+                        let update = update_state;
                         rsx! {
                             li {
                                 class: {
@@ -192,7 +190,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                 // Next
                 {
                     let disabled = current_value >= total_pages;
-                    let update = update_state.clone();
+                    let update = update_state;
                     rsx!(
                         li {
                             class: {

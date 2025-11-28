@@ -138,7 +138,7 @@ pub fn Popover(props: PopoverProps) -> Element {
                         disabled_flag,
                         is_controlled_flag,
                         open_for_handlers,
-                        on_open_change.clone(),
+                        on_open_change,
                         true,
                     );
                 }
@@ -149,7 +149,7 @@ pub fn Popover(props: PopoverProps) -> Element {
                         disabled_flag,
                         is_controlled_flag,
                         open_for_handlers,
-                        on_open_change.clone(),
+                        on_open_change,
                         false,
                     );
                 }
@@ -165,7 +165,7 @@ pub fn Popover(props: PopoverProps) -> Element {
                     disabled_flag,
                     is_controlled_flag,
                     open_for_handlers,
-                    on_open_change.clone(),
+                    on_open_change,
                     !current_open_flag,
                 );
             },
@@ -182,7 +182,7 @@ pub fn Popover(props: PopoverProps) -> Element {
                                 disabled_flag,
                                 is_controlled_flag,
                                 open_for_handlers,
-                                on_open_change.clone(),
+                                on_open_change,
                                 false,
                             );
                         }

@@ -142,7 +142,7 @@ pub fn Steps(props: StepsProps) -> Element {
                 }
                 let item_class_attr = item_class.join(" ");
 
-                let mut current_internal_for_click = current_internal;
+                let current_internal_for_click = current_internal;
                 let on_change_for_click = on_change_cb;
                 let disabled = item.disabled;
 

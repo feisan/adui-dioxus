@@ -16,7 +16,7 @@ fn app() -> Element {
 
 #[component]
 fn SkeletonDemoShell() -> Element {
-    let mut loading = use_signal(|| true);
+    let loading = use_signal(|| true);
 
     rsx! {
         div {

@@ -123,6 +123,7 @@ pub fn toggle_option_key(current: &[OptionKey], key: &str) -> Vec<OptionKey> {
 /// Lightweight handle describing an overlay entry reserved for a dropdown.
 #[derive(Clone, Copy)]
 pub struct DropdownLayer {
+    #[allow(dead_code)] // Kept for future overlay-key based control of dropdown layers.
     pub key: Signal<Option<OverlayKey>>,
     pub z_index: Signal<i32>,
 }
@@ -245,10 +246,7 @@ pub fn handle_option_list_key_event(
             signal.set(next);
             None
         }
-        Key::Enter => {
-            let current = *active_index_signal.read();
-            current
-        }
+        Key::Enter => *active_index_signal.read(),
         Key::Escape => {
             let mut signal = *active_index_signal;
             signal.set(None);

@@ -116,7 +116,7 @@ pub fn Tabs(props: TabsProps) -> Element {
                         let label = item.label.clone();
                         let disabled = item.disabled;
                         let is_active = key == current_key;
-                        let mut active_internal_for_tab = active_internal;
+                        let active_internal_for_tab = active_internal;
                         let on_change_for_tab = on_change_cb;
 
                         rsx! {

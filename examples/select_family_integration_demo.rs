@@ -109,13 +109,13 @@ fn SelectFamilyIntegrationDemo() -> Element {
                     layout: FormLayout::Vertical,
                     form: Some(form_handle.read().clone()),
                     on_finish: {
-                        let mut submit_message = submit_message.clone();
+                        let mut submit_message = submit_message;
                         move |evt: FormFinishEvent| {
                             submit_message.set(format!("提交成功: {:?}", evt.values));
                         }
                     },
                     on_finish_failed: {
-                        let mut submit_message = submit_message.clone();
+                        let mut submit_message = submit_message;
                         move |evt: FormFinishFailedEvent| {
                             submit_message.set(format!("提交失败: {:?}", evt.errors));
                         }
@@ -207,8 +207,7 @@ fn SelectFamilyIntegrationDemo() -> Element {
                                 Button {
                                     r#type: ButtonType::Default,
                                     onclick: {
-                                        let form_handle = form_handle.clone();
-                                        let mut submit_message = submit_message.clone();
+                                        let mut submit_message = submit_message;
                                         move |_| {
                                             form_handle.read().reset_fields();
                                             submit_message.set("尚未提交".to_string());

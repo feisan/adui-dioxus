@@ -446,11 +446,15 @@ mod tests {
 
     #[test]
     fn responsive_row_rules_emits_media_queries() {
-        let mut horizontal = ResponsiveValue::default();
-        horizontal.sm = Some(16.0);
-        horizontal.xl = Some(24.0);
-        let mut vertical = ResponsiveValue::default();
-        vertical.xs = Some(8.0);
+        let horizontal = ResponsiveValue {
+            sm: Some(16.0),
+            xl: Some(24.0),
+            ..Default::default()
+        };
+        let vertical = ResponsiveValue {
+            xs: Some(8.0),
+            ..Default::default()
+        };
         let responsive = ResponsiveGutter {
             horizontal,
             vertical: Some(vertical),
@@ -464,17 +468,19 @@ mod tests {
 
     #[test]
     fn responsive_col_rules_emits_breakpoints() {
-        let mut col = ColResponsive::default();
-        col.sm = Some(ColSize {
-            span: Some(12),
-            offset: Some(6),
+        let col = ColResponsive {
+            sm: Some(ColSize {
+                span: Some(12),
+                offset: Some(6),
+                ..Default::default()
+            }),
+            xl: Some(ColSize {
+                span: Some(8),
+                flex: Some("1 1 auto".into()),
+                ..Default::default()
+            }),
             ..Default::default()
-        });
-        col.xl = Some(ColSize {
-            span: Some(8),
-            flex: Some("1 1 auto".into()),
-            ..Default::default()
-        });
+        };
         let rules = responsive_col_rules(7, Some(&col)).unwrap();
         assert!(rules.contains("@media (min-width: 576px)"));
         let offset_pct = format!("margin-left:{}%;", column_percent(6));

@@ -41,7 +41,7 @@ fn StatisticDemoShell() -> Element {
                         children: rsx! {
                             Statistic {
                                 title: Some(rsx!("Conversion")),
-                                value: Some(3.1415),
+                                value: Some(std::f64::consts::PI),
                                 precision: Some(2),
                                 suffix: Some(rsx!("%")),
                             }

@@ -1,7 +1,7 @@
 use adui_dioxus::components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule};
 use adui_dioxus::{
     App, Button, ButtonHtmlType, ButtonType, ComponentSize, ConfigProvider, Form, FormItem, Input,
-    MessageType, Modal, TextArea, use_form, use_message,
+    Modal, TextArea, use_form, use_message,
 };
 use dioxus::prelude::*;
 
@@ -20,7 +20,7 @@ fn app() -> Element {
 
 #[component]
 fn OverlayIntegrationShell() -> Element {
-    let mut modal_open = use_signal(|| false);
+    let modal_open = use_signal(|| false);
     let form_signal = use_signal(use_form);
     let message_api = use_message();
 
@@ -32,23 +32,29 @@ fn OverlayIntegrationShell() -> Element {
 
             Button {
                 r#type: ButtonType::Primary,
-                onclick: move |_| modal_open.set(true),
+                onclick: {
+                    let mut modal_open = modal_open;
+                    move |_| modal_open.set(true)
+                },
                 "在 Modal 中填写表单",
             }
 
             Modal {
                 open: *modal_open.read(),
                 title: Some("创建条目".into()),
-                on_cancel: move |_| modal_open.set(false),
+                on_cancel: {
+                    let mut modal_open = modal_open;
+                    move |_| modal_open.set(false)
+                },
                 destroy_on_close: true,
                 footer: None,
                 children: rsx! {
                     Form {
                         form: Some(form_signal.read().clone()),
                         on_finish: {
-                            let mut modal_open = modal_open.clone();
+                            let mut modal_open = modal_open;
                             let msg = message_api.clone();
-                            move |evt: FormFinishEvent| {
+                            move |_evt: FormFinishEvent| {
                                 if let Some(api) = msg.clone() {
                                     let _ = api.success("提交成功");
                                 }
@@ -60,7 +66,7 @@ fn OverlayIntegrationShell() -> Element {
                         },
                         on_finish_failed: {
                             let msg = message_api.clone();
-                            move |evt: FormFinishFailedEvent| {
+                            move |_evt: FormFinishFailedEvent| {
                                 if let Some(api) = msg.clone() {
                                     let _ = api.error("请检查必填项");
                                 }
@@ -91,7 +97,10 @@ fn OverlayIntegrationShell() -> Element {
                             style: "margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;",
                             Button {
                                 r#type: ButtonType::Default,
-                                onclick: move |_| modal_open.set(false),
+                                onclick: {
+                                    let mut modal_open = modal_open;
+                                    move |_| modal_open.set(false)
+                                },
                                 "取消",
                             }
                             Button {

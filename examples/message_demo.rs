@@ -1,4 +1,4 @@
-use adui_dioxus::{App, ComponentSize, ConfigProvider, MessageType, use_message};
+use adui_dioxus::{App, ComponentSize, ConfigProvider, use_message};
 use dioxus::prelude::*;
 
 fn main() {

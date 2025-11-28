@@ -24,17 +24,12 @@ pub enum UploadStatus {
     Error,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum UploadListType {
+    #[default]
     Text,
     Picture,
     PictureCard,
-}
-
-impl Default for UploadListType {
-    fn default() -> Self {
-        UploadListType::Text
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -105,8 +100,9 @@ pub struct UploadFileMeta {
 
 pub type BeforeUploadFn = Rc<dyn Fn(&UploadFileMeta) -> bool>;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum UploadHttpMethod {
+    #[default]
     Post,
     Put,
 }
@@ -118,12 +114,6 @@ impl UploadHttpMethod {
             UploadHttpMethod::Post => "POST",
             UploadHttpMethod::Put => "PUT",
         }
-    }
-}
-
-impl Default for UploadHttpMethod {
-    fn default() -> Self {
-        UploadHttpMethod::Post
     }
 }
 
@@ -193,6 +183,7 @@ impl PartialEq for UploadProps {
 }
 
 #[component]
+#[allow(clippy::unit_arg, clippy::clone_on_copy)] // Non-wasm stub passes unit as request_store; cloning () is harmless and keeps the call shape aligned with the wasm implementation.
 pub fn Upload(props: UploadProps) -> Element {
     let UploadProps {
         action,
@@ -266,18 +257,11 @@ pub fn Upload(props: UploadProps) -> Element {
 
     let headers = Rc::new(headers.clone().unwrap_or_default());
     let process_files = {
-        let files_signal = files_signal.clone();
-        let before_upload = before_upload.clone();
-        let on_change = on_change.clone();
-        let action = action.clone();
-        let field_name = field_name.clone();
-        let method = method;
-        let with_credentials = with_credentials;
         let headers = headers.clone();
         #[cfg(target_arch = "wasm32")]
         let request_store = upload_requests.clone();
         #[cfg(not(target_arch = "wasm32"))]
-        let request_store = _upload_requests;
+        let request_store = ();
 
         Rc::new(move |files: Vec<dioxus_html::FileData>| {
             if disabled || files.is_empty() {
@@ -289,10 +273,10 @@ pub fn Upload(props: UploadProps) -> Element {
                     size: Some(file.size()),
                     mime: file.content_type(),
                 };
-                if let Some(filter) = before_upload.as_ref() {
-                    if !(filter)(&meta) {
-                        continue;
-                    }
+                if let Some(filter) = before_upload.as_ref()
+                    && !(filter)(&meta)
+                {
+                    continue;
                 }
 
                 let entry = if action.is_some() {
@@ -302,18 +286,15 @@ pub fn Upload(props: UploadProps) -> Element {
                 };
                 let uid = entry.uid.clone();
 
-                if let Some((changed, snapshot)) =
-                    mutate_files(files_signal.clone(), controlled, |list| {
-                        list.push(entry.clone());
-                        Some(entry.clone())
-                    })
+                if let Some((changed, snapshot)) = mutate_files(files_signal, controlled, |list| {
+                    list.push(entry.clone());
+                    Some(entry.clone())
+                }) && let Some(handler) = on_change.as_ref()
                 {
-                    if let Some(handler) = on_change.as_ref() {
-                        handler.call(UploadChangeInfo {
-                            file: changed,
-                            file_list: snapshot,
-                        });
-                    }
+                    handler.call(UploadChangeInfo {
+                        file: changed,
+                        file_list: snapshot,
+                    });
                 }
 
                 if let Some(action_url) = action.clone() {
@@ -326,9 +307,9 @@ pub fn Upload(props: UploadProps) -> Element {
                         method,
                         with_credentials,
                         (*headers).clone(),
-                        files_signal.clone(),
+                        files_signal,
                         controlled,
-                        on_change.clone(),
+                        on_change,
                         request_store.clone(),
                     );
                 }
@@ -357,9 +338,9 @@ pub fn Upload(props: UploadProps) -> Element {
         }
     }
     let selector_class = selector_classes.join(" ");
-    let mut dragging_for_over = dragging.clone();
-    let mut dragging_for_leave = dragging.clone();
-    let mut dragging_for_drop = dragging.clone();
+    let mut dragging_for_over = dragging;
+    let mut dragging_for_leave = dragging;
+    let mut dragging_for_drop = dragging;
     let process_files_drop = process_files.clone();
 
     rsx! {
@@ -403,11 +384,12 @@ pub fn Upload(props: UploadProps) -> Element {
                 onchange: onchange,
                 style: "display:none",
             }
-            {render_upload_list(files_signal.read().clone(), list_type, list_config, files_signal.clone(), controlled, disabled, on_remove.clone(), on_change.clone(), abort_upload.clone())}
+            {render_upload_list(files_signal.read().clone(), list_type, list_config, files_signal, controlled, disabled, on_remove, on_change, abort_upload.clone())}
         }
     }
 }
 
+#[allow(clippy::too_many_arguments)] // Render helper mirrors Ant Design API surface for flexibility.
 fn render_upload_list(
     files: Vec<UploadFile>,
     list_type: UploadListType,
@@ -429,9 +411,6 @@ fn render_upload_list(
                 UploadListType::PictureCard => "picture-card",
             }),
             {files.into_iter().map(|file| {
-                let files_signal = files_signal.clone();
-                let on_remove = on_remove.clone();
-                let on_change = on_change.clone();
                 let file_entry = file.clone();
                 let file_for_remove = file.clone();
                 let abort_upload = abort_upload.clone();
@@ -447,16 +426,11 @@ fn render_upload_list(
                                 }
                                 abort_upload(&file_for_remove.uid);
                                 if let Some((removed, snapshot)) =
-                                    mutate_files(files_signal.clone(), controlled, |list| {
-                                        if let Some(pos) =
-                                            list.iter().position(|f| f.uid == file_for_remove.uid)
-                                        {
-                                            Some(list.remove(pos))
-                                        } else {
-                                            None
-                                        }
-                                    })
-                                {
+                                    mutate_files(files_signal, controlled, |list| {
+                                        list.iter()
+                                            .position(|f| f.uid == file_for_remove.uid)
+                                            .map(|pos| list.remove(pos))
+                                    }) {
                                     if let Some(handler) = on_remove.as_ref() {
                                         handler.call(removed.clone());
                                     }
@@ -505,17 +479,17 @@ fn update_file_state(
             updater(entry);
             entry.clone()
         })
-    }) {
-        if let Some(handler) = on_change {
-            handler.call(UploadChangeInfo {
-                file: changed,
-                file_list: snapshot,
-            });
-        }
+    }) && let Some(handler) = on_change
+    {
+        handler.call(UploadChangeInfo {
+            file: changed,
+            file_list: snapshot,
+        });
     }
 }
 
 #[cfg(target_arch = "wasm32")]
+#[allow(clippy::too_many_arguments)] // Upload pipeline needs all parameters; grouped for wasi boundary.
 fn start_upload_task(
     file: dioxus_html::FileData,
     meta: UploadFileMeta,
@@ -534,16 +508,10 @@ fn start_upload_task(
         let bytes = match file.read_bytes().await {
             Ok(data) => data,
             Err(err) => {
-                update_file_state(
-                    files_signal.clone(),
-                    controlled,
-                    &uid,
-                    on_change.clone(),
-                    |entry| {
-                        entry.status = UploadStatus::Error;
-                        entry.error = Some(err.to_string());
-                    },
-                );
+                update_file_state(files_signal, controlled, &uid, on_change, |entry| {
+                    entry.status = UploadStatus::Error;
+                    entry.error = Some(err.to_string());
+                });
                 return;
             }
         };
@@ -551,31 +519,19 @@ fn start_upload_task(
         let xhr = match XmlHttpRequest::new() {
             Ok(req) => req,
             Err(_) => {
-                update_file_state(
-                    files_signal.clone(),
-                    controlled,
-                    &uid,
-                    on_change.clone(),
-                    |entry| {
-                        entry.status = UploadStatus::Error;
-                        entry.error = Some("无法创建请求".into());
-                    },
-                );
+                update_file_state(files_signal, controlled, &uid, on_change, |entry| {
+                    entry.status = UploadStatus::Error;
+                    entry.error = Some("无法创建请求".into());
+                });
                 return;
             }
         };
 
         if xhr.open_with_async(method.as_str(), &action, true).is_err() {
-            update_file_state(
-                files_signal.clone(),
-                controlled,
-                &uid,
-                on_change.clone(),
-                |entry| {
-                    entry.status = UploadStatus::Error;
-                    entry.error = Some("打开上传连接失败".into());
-                },
-            );
+            update_file_state(files_signal, controlled, &uid, on_change, |entry| {
+                entry.status = UploadStatus::Error;
+                entry.error = Some("打开上传连接失败".into());
+            });
             return;
         }
         xhr.set_with_credentials(with_credentials);
@@ -584,9 +540,9 @@ fn start_upload_task(
         }
         request_store.borrow_mut().insert(uid.clone(), xhr.clone());
 
-        let progress_signal = files_signal.clone();
+        let progress_signal = files_signal;
         let progress_uid = uid.clone();
-        let progress_on_change = on_change.clone();
+        let progress_on_change = on_change;
         let progress_closure =
             Closure::<dyn FnMut(ProgressEvent)>::wrap(Box::new(move |event: ProgressEvent| {
                 if event.length_computable() {
@@ -594,10 +550,10 @@ fn start_upload_task(
                     if total > 0.0 {
                         let percent = ((event.loaded() / total) * 100.0).clamp(0.0, 100.0) as f32;
                         update_file_state(
-                            progress_signal.clone(),
+                            progress_signal,
                             controlled,
                             &progress_uid,
-                            progress_on_change.clone(),
+                            progress_on_change,
                             |entry| entry.percent = Some(percent),
                         );
                     }
@@ -608,9 +564,9 @@ fn start_upload_task(
         }
         progress_closure.forget();
 
-        let success_signal = files_signal.clone();
+        let success_signal = files_signal;
         let success_uid = uid.clone();
-        let success_on_change = on_change.clone();
+        let success_on_change = on_change;
         let success_store = request_store.clone();
         let xhr_clone = xhr.clone();
         let load_closure =
@@ -620,10 +576,10 @@ fn start_upload_task(
                 let response = xhr_clone.response_text().ok().flatten();
                 if (200..300).contains(&status) {
                     update_file_state(
-                        success_signal.clone(),
+                        success_signal,
                         controlled,
                         &success_uid,
-                        success_on_change.clone(),
+                        success_on_change,
                         |entry| {
                             entry.status = UploadStatus::Done;
                             entry.percent = Some(100.0);
@@ -633,10 +589,10 @@ fn start_upload_task(
                     );
                 } else {
                     update_file_state(
-                        success_signal.clone(),
+                        success_signal,
                         controlled,
                         &success_uid,
-                        success_on_change.clone(),
+                        success_on_change,
                         |entry| {
                             entry.status = UploadStatus::Error;
                             entry.error = Some(format!("HTTP {}", xhr_clone.status().unwrap_or(0)));
@@ -647,18 +603,18 @@ fn start_upload_task(
         xhr.set_onload(Some(load_closure.as_ref().unchecked_ref()));
         load_closure.forget();
 
-        let error_signal = files_signal.clone();
+        let error_signal = files_signal;
         let error_uid = uid.clone();
-        let error_on_change = on_change.clone();
+        let error_on_change = on_change;
         let error_store = request_store.clone();
         let error_closure =
             Closure::<dyn FnMut(_)>::wrap(Box::new(move |_event: web_sys::Event| {
                 error_store.borrow_mut().remove(&error_uid);
                 update_file_state(
-                    error_signal.clone(),
+                    error_signal,
                     controlled,
                     &error_uid,
-                    error_on_change.clone(),
+                    error_on_change,
                     |entry| {
                         entry.status = UploadStatus::Error;
                         entry.error = Some("上传失败".into());
@@ -683,6 +639,7 @@ fn start_upload_task(
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(clippy::too_many_arguments)] // Stub keeps the same signature as the web implementation for API parity.
 fn start_upload_task(
     _file: dioxus_html::FileData,
     _meta: UploadFileMeta,

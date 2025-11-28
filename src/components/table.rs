@@ -123,7 +123,7 @@ pub fn Table(props: TableProps) -> Element {
     }
     let class_attr = class_list.join(" ");
 
-    let show_empty = !loading && (is_empty.unwrap_or_else(|| data.is_empty()));
+    let show_empty = !loading && is_empty.unwrap_or(data.is_empty());
 
     // Helper to extract a cell value as string.
     fn get_cell_text(row: &serde_json::Value, key: &str) -> String {

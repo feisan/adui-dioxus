@@ -1,4 +1,4 @@
-use adui_dioxus::{App, ComponentSize, ConfigProvider, Table, TableColumn, TableProps};
+use adui_dioxus::{App, ComponentSize, ConfigProvider, Table, TableColumn};
 use dioxus::prelude::*;
 use serde_json::json;
 

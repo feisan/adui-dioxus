@@ -27,21 +27,16 @@ impl CalendarDate {
     }
 
     pub fn day(&self) -> u8 {
-        self.inner.day() as u8
+        self.inner.day()
     }
 }
 
 /// Calendar mode controls the type of panel displayed.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum CalendarMode {
+    #[default]
     Month,
     Year,
-}
-
-impl Default for CalendarMode {
-    fn default() -> Self {
-        CalendarMode::Month
-    }
 }
 
 /// Props for the Calendar component (MVP subset).
@@ -134,7 +129,7 @@ pub fn Calendar(props: CalendarProps) -> Element {
     let days_in_month_now = days_in_month(year_now, month_now);
     let first_weekday = weekday_index_monday(year_now, month_now, 1) as usize;
     let total_cells = first_weekday + days_in_month_now as usize;
-    let padded_cells = ((total_cells + 6) / 7) * 7;
+    let padded_cells = total_cells.div_ceil(7) * 7;
 
     let locale_for_header = locale;
     let header_label = match locale_for_header {
@@ -161,7 +156,7 @@ pub fn Calendar(props: CalendarProps) -> Element {
     let mode_signal = current_mode;
     let on_panel_change_cb = on_panel_change;
 
-    let mut selected_for_click = selected;
+    let selected_for_click = selected;
     let on_select_cb = on_select;
 
     // Build date cells for month mode.
@@ -183,26 +178,24 @@ pub fn Calendar(props: CalendarProps) -> Element {
         } else {
             cell_classes.push("adui-calendar-date-cell".to_string());
         }
-        if let (Some(day), CalendarDate { inner }) = (cell_day, selected_now) {
-            if inner.year() == year_now
-                && inner.month() as u8 == month_now
-                && inner.day() as u8 == day
-            {
-                cell_classes.push("adui-calendar-date-selected".to_string());
-            }
+        if let (Some(day), CalendarDate { inner }) = (cell_day, selected_now)
+            && inner.year() == year_now
+            && inner.month() as u8 == month_now
+            && inner.day() == day
+        {
+            cell_classes.push("adui-calendar-date-selected".to_string());
         }
         let cell_class_attr = cell_classes.join(" ");
 
         let on_click_day = {
             let mut selected_state = selected_for_click;
-            let on_select_cb = on_select_cb;
             move |_: MouseEvent| {
-                if let Some(day) = cell_day {
-                    if let Some(date) = CalendarDate::from_ymd(year_now, month_now, day) {
-                        selected_state.set(date);
-                        if let Some(cb) = on_select_cb {
-                            cb.call(date);
-                        }
+                if let Some(day) = cell_day
+                    && let Some(date) = CalendarDate::from_ymd(year_now, month_now, day)
+                {
+                    selected_state.set(date);
+                    if let Some(cb) = on_select_cb {
+                        cb.call(date);
                     }
                 }
             }
@@ -225,7 +218,6 @@ pub fn Calendar(props: CalendarProps) -> Element {
     let on_prev_month = {
         let mut vy = view_year;
         let mut vm = view_month;
-        let mode_signal = mode_signal;
         move |_| {
             if *mode_signal.read() != CalendarMode::Month {
                 return;
@@ -240,10 +232,10 @@ pub fn Calendar(props: CalendarProps) -> Element {
             }
             vy.set(year);
             vm.set(month);
-            if let Some(cb) = on_panel_change_cb {
-                if let Some(date) = CalendarDate::from_ymd(year, month, 1) {
-                    cb.call((date, CalendarMode::Month));
-                }
+            if let Some(cb) = on_panel_change_cb
+                && let Some(date) = CalendarDate::from_ymd(year, month, 1)
+            {
+                cb.call((date, CalendarMode::Month));
             }
         }
     };
@@ -251,7 +243,6 @@ pub fn Calendar(props: CalendarProps) -> Element {
     let on_next_month = {
         let mut vy = view_year;
         let mut vm = view_month;
-        let mode_signal = mode_signal;
         move |_| {
             if *mode_signal.read() != CalendarMode::Month {
                 return;
@@ -266,10 +257,10 @@ pub fn Calendar(props: CalendarProps) -> Element {
             }
             vy.set(year);
             vm.set(month);
-            if let Some(cb) = on_panel_change_cb {
-                if let Some(date) = CalendarDate::from_ymd(year, month, 1) {
-                    cb.call((date, CalendarMode::Month));
-                }
+            if let Some(cb) = on_panel_change_cb
+                && let Some(date) = CalendarDate::from_ymd(year, month, 1)
+            {
+                cb.call((date, CalendarMode::Month));
             }
         }
     };

@@ -1,4 +1,4 @@
-use adui_dioxus::{App, Card, CardProps, ComponentSize, ConfigProvider, Tag, TagColor, TagProps};
+use adui_dioxus::{App, Card, ComponentSize, ConfigProvider, Tag, TagColor};
 use dioxus::prelude::*;
 
 fn main() {
@@ -16,7 +16,7 @@ fn app() -> Element {
 
 #[component]
 fn TagDemoShell() -> Element {
-    let mut checked = use_signal(|| true);
+    let checked = use_signal(|| true);
 
     rsx! {
         div {
@@ -48,7 +48,10 @@ fn TagDemoShell() -> Element {
                 Tag {
                     checkable: true,
                     checked: Some(*checked.read()),
-                    on_change: move |next| checked.set(next),
+                    on_change: {
+                        let mut checked = checked;
+                        move |next| checked.set(next)
+                    },
                     children: rsx!("Checkable")
                 }
                 Tag {

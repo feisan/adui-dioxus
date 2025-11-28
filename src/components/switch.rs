@@ -72,10 +72,8 @@ pub fn Switch(props: SwitchProps) -> Element {
             if *inner_signal.read() != b {
                 inner_signal.set(b);
             }
-        } else if form_value.is_none() {
-            if *inner_signal.read() != default_checked {
-                inner_signal.set(default_checked);
-            }
+        } else if form_value.is_none() && *inner_signal.read() != default_checked {
+            inner_signal.set(default_checked);
         }
     }
 
@@ -117,8 +115,6 @@ pub fn Switch(props: SwitchProps) -> Element {
             onclick: {
                 let mut inner_for_toggle = inner_for_toggle;
                 let form_for_toggle = form_for_toggle.clone();
-                let on_change_cb = on_change_cb;
-                let disabled_flag = disabled_flag;
                 move |_| {
                     let is_disabled_now = disabled_flag || form_for_toggle.as_ref().is_some_and(|ctx| ctx.is_disabled());
                     if is_disabled_now {
@@ -135,8 +131,6 @@ pub fn Switch(props: SwitchProps) -> Element {
             onkeydown: {
                 let mut inner_for_toggle = inner_for_toggle;
                 let form_for_toggle = form_for_toggle.clone();
-                let on_change_cb = on_change_cb;
-                let disabled_flag = disabled_flag;
                 move |evt: KeyboardEvent| {
                     let is_disabled_now = disabled_flag || form_for_toggle.as_ref().is_some_and(|ctx| ctx.is_disabled());
                     if !is_disabled_now && key_triggers_toggle(&evt.key()) {

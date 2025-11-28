@@ -110,7 +110,7 @@ pub fn Modal(props: ModalProps) -> Element {
         }
     };
 
-    let handle_ok = move || {
+    let _handle_ok = move || {
         if let Some(cb) = ok_handler {
             cb.call(());
         }

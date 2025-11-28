@@ -61,8 +61,8 @@ fn BasicAutoCompleteSection() -> Element {
     let options = city_options();
 
     let mut value = use_signal(|| "Hangzhou".to_string());
-    let mut last_search = use_signal(|| String::new());
-    let mut last_select = use_signal(|| String::new());
+    let last_search = use_signal(String::new);
+    let last_select = use_signal(String::new);
 
     let value_dbg = {
         let v = value.read();
@@ -100,11 +100,17 @@ fn BasicAutoCompleteSection() -> Element {
                     on_change: move |txt: String| {
                         value.set(txt);
                     },
-                    on_search: move |txt: String| {
-                        last_search.set(txt);
+                    on_search: {
+                        let mut last_search = last_search;
+                        move |txt: String| {
+                            last_search.set(txt);
+                        }
                     },
-                    on_select: move |key: String| {
-                        last_select.set(key);
+                    on_select: {
+                        let mut last_select = last_select;
+                        move |key: String| {
+                            last_select.set(key);
+                        }
                     },
                 }
             }
@@ -125,13 +131,13 @@ fn FormAutoCompleteSection() -> Element {
                 layout: FormLayout::Vertical,
                 form: Some(form_signal.read().clone()),
                 on_finish: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishEvent| {
                         submit_message.set(format!("提交成功: {:?}", evt.values));
                     }
                 },
                 on_finish_failed: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishFailedEvent| {
                         submit_message.set(format!("提交失败: {:?}", evt.errors));
                     }

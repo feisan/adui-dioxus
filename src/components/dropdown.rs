@@ -25,29 +25,19 @@ impl DropdownItem {
 }
 
 /// Trigger mode for Dropdown.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum DropdownTrigger {
+    #[default]
     Click,
     Hover,
 }
 
-impl Default for DropdownTrigger {
-    fn default() -> Self {
-        DropdownTrigger::Click
-    }
-}
-
 /// Placement of the dropdown menu relative to the trigger.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum DropdownPlacement {
+    #[default]
     BottomLeft,
     BottomRight,
-}
-
-impl Default for DropdownPlacement {
-    fn default() -> Self {
-        DropdownPlacement::BottomLeft
-    }
 }
 
 /// Props for the lightweight Dropdown component (MVP).
@@ -130,7 +120,7 @@ pub fn Dropdown(props: DropdownProps) -> Element {
     let disabled_flag = disabled;
     let is_controlled_flag = is_controlled;
     let open_for_handlers = open_state;
-    let on_open_change_cb = on_open_change.clone();
+    let on_open_change_cb = on_open_change;
     let trigger_mode = trigger;
     let current_open_flag = current_open;
     let close_handle_for_click = close_handle;
@@ -188,7 +178,7 @@ pub fn Dropdown(props: DropdownProps) -> Element {
                         disabled_flag,
                         is_controlled_flag,
                         open_for_handlers,
-                        on_open_change_cb.clone(),
+                        on_open_change_cb,
                         true,
                     );
                 }
@@ -199,7 +189,7 @@ pub fn Dropdown(props: DropdownProps) -> Element {
                         disabled_flag,
                         is_controlled_flag,
                         open_for_handlers,
-                        on_open_change_cb.clone(),
+                        on_open_change_cb,
                         false,
                     );
                 }
@@ -215,7 +205,7 @@ pub fn Dropdown(props: DropdownProps) -> Element {
                     disabled_flag,
                     is_controlled_flag,
                     open_for_handlers,
-                    on_open_change_cb.clone(),
+                    on_open_change_cb,
                     !current_open_flag,
                 );
             },
@@ -226,7 +216,7 @@ pub fn Dropdown(props: DropdownProps) -> Element {
                         disabled_flag,
                         is_controlled_flag,
                         open_for_handlers,
-                        on_open_change_cb.clone(),
+                        on_open_change_cb,
                         false,
                     );
                 }
@@ -264,7 +254,7 @@ pub fn Dropdown(props: DropdownProps) -> Element {
                                             disabled_flag,
                                             is_controlled_flag,
                                             open_for_handlers,
-                                            on_open_change_cb.clone(),
+                                            on_open_change_cb,
                                             false,
                                         );
                                         if let Some(cb) = on_click_cb {

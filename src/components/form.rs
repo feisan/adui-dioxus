@@ -318,6 +318,11 @@ impl FormListContext {
         form_list_len(&self.handle, &self.name)
     }
 
+    /// Whether the list field is currently empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Insert an item at the given index.
     pub fn insert(&self, index: usize, item: Value) {
         form_list_insert(&self.handle, &self.name, index, item);
@@ -404,11 +409,11 @@ pub fn Form(props: FormProps) -> Element {
     } = props;
 
     let handle = form.unwrap_or_else(FormHandle::new);
-    if let Some(initial) = initial_values {
-        if handle.values().is_empty() {
-            for (k, v) in initial.into_iter() {
-                handle.set_field_value(&k, v);
-            }
+    if let Some(initial) = initial_values
+        && handle.values().is_empty()
+    {
+        for (k, v) in initial.into_iter() {
+            handle.set_field_value(&k, v);
         }
     }
 
@@ -429,14 +434,14 @@ pub fn Form(props: FormProps) -> Element {
         _wrapper_col: wrapper_col,
         disabled,
         registry: registry.clone(),
-        on_values_change: on_values_change.clone(),
+        on_values_change,
     };
     use_context_provider(|| context);
 
     let submit_handle = handle.clone();
     let submit_registry = registry.clone();
-    let finish_cb = on_finish.clone();
-    let failed_cb = on_finish_failed.clone();
+    let finish_cb = on_finish;
+    let failed_cb = on_finish_failed;
 
     rsx! {
         form {
@@ -551,14 +556,15 @@ pub fn FormList(props: FormListProps) -> Element {
     } = props;
 
     // 若配置了 initial_count，且当前列表为空，则初始化指定数量的空元素。
-    if let Some(count) = initial_count {
-        if count > 0 && form_list_len(&ctx.handle, &name) == 0 {
-            let mut items = Vec::with_capacity(count);
-            for _ in 0..count {
-                items.push(Value::Null);
-            }
-            form_list_set(&ctx.handle, &name, items);
+    if let Some(count) = initial_count
+        && count > 0
+        && form_list_len(&ctx.handle, &name) == 0
+    {
+        let mut items = Vec::with_capacity(count);
+        for _ in 0..count {
+            items.push(Value::Null);
         }
+        form_list_set(&ctx.handle, &name, items);
     }
 
     let list_ctx = FormListContext {
@@ -572,6 +578,9 @@ pub fn FormList(props: FormListProps) -> Element {
 
 pub type GetValueFromEventFn = fn(Value) -> Value;
 
+// Function pointer only used for props equality in diffing; address-based
+// comparison is acceptable for this narrow use case.
+#[allow(unpredictable_function_pointer_comparisons)]
 #[derive(Props, Clone, PartialEq)]
 pub struct FormItemProps {
     #[props(optional)]
@@ -640,7 +649,7 @@ pub fn FormItem(props: FormItemProps) -> Element {
             handle: ctx.handle.clone(),
             disabled: ctx.disabled,
             registry: ctx.registry.clone(),
-            on_values_change: ctx.on_values_change.clone(),
+            on_values_change: ctx.on_values_change,
             value_prop_name: value_prop_name.clone(),
             get_value_from_event,
         };
@@ -755,14 +764,14 @@ fn evaluate_rule(rule: &FormRule, value: Option<&Value>) -> Option<String> {
         return None;
     }
 
-    if let Some(len_target) = rule.len {
-        if value_length(value) != Some(len_target) {
-            return Some(
-                rule.message
-                    .clone()
-                    .unwrap_or_else(|| format!("长度必须为 {}", len_target)),
-            );
-        }
+    if let Some(len_target) = rule.len
+        && value_length(value) != Some(len_target)
+    {
+        return Some(
+            rule.message
+                .clone()
+                .unwrap_or_else(|| format!("长度必须为 {}", len_target)),
+        );
     }
 
     if let Some(min) = rule.min {
@@ -805,25 +814,25 @@ fn evaluate_rule(rule: &FormRule, value: Option<&Value>) -> Option<String> {
         }
     }
 
-    if let Some(pattern) = &rule.pattern {
-        if let Some(text) = value_to_string(value) {
-            match Regex::new(pattern) {
-                Ok(re) => {
-                    if !re.is_match(&text) {
-                        return Some(rule.message.clone().unwrap_or_else(|| "格式不匹配".into()));
-                    }
+    if let Some(pattern) = &rule.pattern
+        && let Some(text) = value_to_string(value)
+    {
+        match Regex::new(pattern) {
+            Ok(re) => {
+                if !re.is_match(&text) {
+                    return Some(rule.message.clone().unwrap_or_else(|| "格式不匹配".into()));
                 }
-                Err(_) => {
-                    return Some(format!("无效的正则表达式: {}", pattern));
-                }
+            }
+            Err(_) => {
+                return Some(format!("无效的正则表达式: {}", pattern));
             }
         }
     }
 
-    if let Some(validator) = rule.validator {
-        if let Err(err) = validator(value) {
-            return Some(err);
-        }
+    if let Some(validator) = rule.validator
+        && let Err(err) = validator(value)
+    {
+        return Some(err);
     }
 
     None
@@ -991,26 +1000,20 @@ mod tests {
 
     #[test]
     fn form_value_to_bool_falls_back_to_default() {
-        assert_eq!(form_value_to_bool(None, false), false);
-        assert_eq!(form_value_to_bool(None, true), true);
-        assert_eq!(form_value_to_bool(Some(Value::Bool(true)), false), true);
-        assert_eq!(form_value_to_bool(Some(Value::Bool(false)), true), false);
-        assert_eq!(
-            form_value_to_bool(Some(Value::Number(1.into())), false),
-            true
-        );
-        assert_eq!(
-            form_value_to_bool(Some(Value::Number(0.into())), true),
+        assert!(!form_value_to_bool(None, false));
+        assert!(form_value_to_bool(None, true));
+        assert!(form_value_to_bool(Some(Value::Bool(true)), false));
+        assert!(!form_value_to_bool(Some(Value::Bool(false)), true));
+        assert!(form_value_to_bool(Some(Value::Number(1.into())), false));
+        assert!(!form_value_to_bool(Some(Value::Number(0.into())), true));
+        assert!(form_value_to_bool(
+            Some(Value::String("true".into())),
             false
-        );
-        assert_eq!(
-            form_value_to_bool(Some(Value::String("true".into())), false),
+        ));
+        assert!(!form_value_to_bool(
+            Some(Value::String("false".into())),
             true
-        );
-        assert_eq!(
-            form_value_to_bool(Some(Value::String("false".into())), true),
-            false
-        );
+        ));
     }
 
     #[test]

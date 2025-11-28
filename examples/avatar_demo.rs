@@ -1,5 +1,5 @@
 use adui_dioxus::{
-    App, Avatar, AvatarGroup, AvatarProps, AvatarShape, AvatarSize, ComponentSize, ConfigProvider,
+    App, Avatar, AvatarGroup, AvatarShape, AvatarSize, ComponentSize, ConfigProvider,
 };
 use dioxus::prelude::*;
 

@@ -61,10 +61,10 @@ fn breadcrumb_for(key: &str) -> Vec<BreadcrumbItem> {
 #[component]
 fn LayoutNavigationDemoShell() -> Element {
     // 当前选中的菜单 key（单选）。
-    let mut sider_selected = use_signal(|| vec!["dashboard".to_string()]);
+    let sider_selected = use_signal(|| vec!["dashboard".to_string()]);
     // 当前分页状态。
-    let mut current_page = use_signal(|| 1u32);
-    let mut page_size = use_signal(|| 10u32);
+    let current_page = use_signal(|| 1u32);
+    let page_size = use_signal(|| 10u32);
 
     const TOTAL_ITEMS: u32 = 42;
 
@@ -77,7 +77,7 @@ fn LayoutNavigationDemoShell() -> Element {
 
     let page = *current_page.read();
     let size = *page_size.read();
-    let total_pages = ((TOTAL_ITEMS + size - 1) / size).max(1);
+    let total_pages = TOTAL_ITEMS.div_ceil(size);
     let page_clamped = page.min(total_pages).max(1);
     let start_index = ((page_clamped - 1) * size) as usize;
     let end_index = (start_index as u32 + size).min(TOTAL_ITEMS) as usize;

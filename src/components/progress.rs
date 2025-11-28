@@ -58,12 +58,8 @@ pub struct ProgressProps {
 fn clamp_percent(value: f32) -> f32 {
     if value.is_nan() {
         0.0
-    } else if value < 0.0 {
-        0.0
-    } else if value > 100.0 {
-        100.0
     } else {
-        value
+        value.clamp(0.0, 100.0)
     }
 }
 

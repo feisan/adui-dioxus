@@ -1,17 +1,12 @@
 use dioxus::prelude::*;
 
 /// Size variants for the Spin component.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum SpinSize {
     Small,
+    #[default]
     Default,
     Large,
-}
-
-impl Default for SpinSize {
-    fn default() -> Self {
-        SpinSize::Default
-    }
 }
 
 /// Props for the Spin component (MVP subset).

@@ -29,7 +29,7 @@ const ITEMS: &[&str] = &[
 
 #[component]
 fn ListDemoShell() -> Element {
-    let mut current_page = use_signal(|| 1u32);
+    let current_page = use_signal(|| 1u32);
     let page_size: u32 = 4;
     let total = ITEMS.len() as u32;
 

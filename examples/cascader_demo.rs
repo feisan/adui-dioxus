@@ -91,7 +91,7 @@ fn BasicCascaderSection() -> Element {
             "xihu".to_string(),
         ]
     });
-    let last_path = use_signal(|| Vec::<String>::new());
+    let last_path = use_signal(Vec::<String>::new);
 
     let path_dbg = {
         let v = path_value.read();
@@ -146,13 +146,13 @@ fn FormCascaderSection() -> Element {
                 layout: FormLayout::Vertical,
                 form: Some(form_signal.read().clone()),
                 on_finish: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishEvent| {
                         submit_message.set(format!("提交成功: {:?}", evt.values));
                     }
                 },
                 on_finish_failed: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishFailedEvent| {
                         submit_message.set(format!("提交失败: {:?}", evt.errors));
                     }

@@ -1,16 +1,11 @@
 use dioxus::prelude::*;
 
 /// Menu display mode, aligned with Ant Design's `inline` and `horizontal` modes.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum MenuMode {
+    #[default]
     Inline,
     Horizontal,
-}
-
-impl Default for MenuMode {
-    fn default() -> Self {
-        MenuMode::Inline
-    }
 }
 
 /// Data model for a single menu item.
@@ -89,11 +84,11 @@ pub fn Menu(props: MenuProps) -> Element {
 
     // Internal state for uncontrolled selected keys.
     let selected_internal: Signal<Vec<String>> =
-        use_signal(|| default_selected_keys.unwrap_or_else(|| Vec::new()));
+        use_signal(|| default_selected_keys.unwrap_or_else(Vec::new));
 
     // Internal state for uncontrolled open keys (inline mode only).
     let open_internal: Signal<Vec<String>> =
-        use_signal(|| default_open_keys.unwrap_or_else(|| Vec::new()));
+        use_signal(|| default_open_keys.unwrap_or_else(Vec::new));
 
     let current_selected = selected_keys
         .clone()
@@ -141,8 +136,8 @@ pub fn Menu(props: MenuProps) -> Element {
                     let is_leaf = children.is_empty();
                     let selected_snapshot = current_selected.clone();
                     let open_snapshot = current_open.clone();
-                    let mut selected_signal_for_item = selected_signal;
-                    let mut open_signal_for_item = open_signal;
+                    let selected_signal_for_item = selected_signal;
+                    let open_signal_for_item = open_signal;
                     let on_select_item = on_select_cb;
                     let on_open_change_item = on_open_change_cb;
 
@@ -215,7 +210,7 @@ pub fn Menu(props: MenuProps) -> Element {
                                         let child_disabled = child.disabled;
                                         let selected_snapshot = selected_signal.read().clone();
                                         let is_selected_child = selected_snapshot.contains(&child_key);
-                                        let mut selected_signal_child = selected_signal;
+                                        let selected_signal_child = selected_signal;
                                         let on_select_child = on_select_cb;
 
                                         rsx! {

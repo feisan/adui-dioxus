@@ -105,10 +105,10 @@ pub fn Input(props: InputProps) -> Element {
                 );
             },
             onkeydown: move |evt: KeyboardEvent| {
-                if matches!(evt.key(), Key::Enter) {
-                    if let Some(cb) = on_press_enter_cb {
-                        cb.call(());
-                    }
+                if matches!(evt.key(), Key::Enter)
+                    && let Some(cb) = on_press_enter_cb
+                {
+                    cb.call(());
                 }
             }
         }
@@ -190,10 +190,10 @@ pub fn Input(props: InputProps) -> Element {
                     );
                 },
                 onkeydown: move |evt: KeyboardEvent| {
-                    if matches!(evt.key(), Key::Enter) {
-                        if let Some(cb) = on_press_enter {
-                            cb.call(());
-                        }
+                    if matches!(evt.key(), Key::Enter)
+                        && let Some(cb) = on_press_enter
+                    {
+                        cb.call(());
                     }
                 }
             }

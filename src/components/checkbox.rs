@@ -140,10 +140,10 @@ fn resolve_checked(
     value: Option<&str>,
     inner: Signal<bool>,
 ) -> bool {
-    if let Some(group) = group_ctx {
-        if let Some(val) = value {
-            return group.selected.read().contains(&val.to_string());
-        }
+    if let Some(group) = group_ctx
+        && let Some(val) = value
+    {
+        return group.selected.read().contains(&val.to_string());
     }
     if let Some(ctx) = form_control {
         return form_value_to_bool(ctx.value(), false);

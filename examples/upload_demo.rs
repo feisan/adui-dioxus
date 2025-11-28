@@ -27,7 +27,7 @@ fn UploadDemo() -> Element {
             h2 { "基础上传" }
             Upload {
                 on_change: {
-                    let mut change_log = change_log.clone();
+                    let mut change_log = change_log;
                     move |info: UploadChangeInfo| {
                         change_log.set(format!(
                             "最近上传: {}，当前列表 {} 项",

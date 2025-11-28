@@ -198,7 +198,7 @@ pub fn TimePicker(props: TimePickerProps) -> Element {
 
     // Shared helper to apply a new time value.
     let on_change_cb = on_change;
-    let mut inner_for_change = inner_state;
+    let inner_for_change = inner_state;
     let apply_time = move |next: TimeValue| {
         if controlled {
             if let Some(cb) = on_change_cb {

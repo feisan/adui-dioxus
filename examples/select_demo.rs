@@ -56,8 +56,8 @@ fn BasicSelectSection() -> Element {
     let multi_values = use_signal(|| vec!["apple".to_string(), "cherry".to_string()]);
 
     // Debug: record last keys received from on_change
-    let last_single_keys = use_signal(|| Vec::<String>::new());
-    let last_multi_keys = use_signal(|| Vec::<String>::new());
+    let last_single_keys = use_signal(Vec::<String>::new);
+    let last_multi_keys = use_signal(Vec::<String>::new);
 
     // Debug snapshot for display
     let single_dbg = {
@@ -159,13 +159,13 @@ fn FormSelectSection() -> Element {
                 layout: FormLayout::Vertical,
                 form: Some(form_signal.read().clone()),
                 on_finish: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishEvent| {
                         submit_message.set(format!("提交成功: {:?}", evt.values));
                     }
                 },
                 on_finish_failed: {
-                    let mut submit_message = submit_message.clone();
+                    let mut submit_message = submit_message;
                     move |evt: FormFinishFailedEvent| {
                         submit_message.set(format!("提交失败: {:?}", evt.errors));
                     }

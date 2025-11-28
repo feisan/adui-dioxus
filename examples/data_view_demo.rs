@@ -44,9 +44,9 @@ fn user_data() -> Vec<serde_json::Value> {
 #[component]
 fn DataViewDemoShell() -> Element {
     // 一组简单的列表页状态：loading / empty / 分页。
-    let mut loading = use_signal(|| false);
-    let mut empty = use_signal(|| false);
-    let mut current_page = use_signal(|| 1u32);
+    let loading = use_signal(|| false);
+    let empty = use_signal(|| false);
+    let current_page = use_signal(|| 1u32);
     let page_size: u32 = 5;
 
     let all_data = user_data();
@@ -57,7 +57,7 @@ fn DataViewDemoShell() -> Element {
     };
 
     let page = (*current_page.read()).max(1);
-    let total_pages = ((total + page_size - 1) / page_size).max(1);
+    let total_pages = total.div_ceil(page_size);
     let page_clamped = if total == 0 { 1 } else { page.min(total_pages) };
 
     let start_index = if total == 0 {

@@ -1,4 +1,4 @@
-use adui_dioxus::{App, ComponentSize, ConfigProvider, Pagination, PaginationProps};
+use adui_dioxus::{App, ComponentSize, ConfigProvider, Pagination};
 use dioxus::prelude::*;
 
 fn main() {
@@ -16,8 +16,8 @@ fn app() -> Element {
 
 #[component]
 fn PaginationDemoShell() -> Element {
-    let mut current = use_signal(|| 1u32);
-    let mut page_size = use_signal(|| 10u32);
+    let current = use_signal(|| 1u32);
+    let page_size = use_signal(|| 10u32);
 
     rsx! {
         div {
@@ -32,9 +32,13 @@ fn PaginationDemoShell() -> Element {
                     page_size: Some(*page_size.read()),
                     show_total: true,
                     show_size_changer: true,
-                    on_change: move |(page, size)| {
-                        current.set(page);
-                        page_size.set(size);
+                    on_change: {
+                        let mut current = current;
+                        let mut page_size = page_size;
+                        move |(page, size)| {
+                            current.set(page);
+                            page_size.set(size);
+                        }
                     },
                 }
 

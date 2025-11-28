@@ -178,7 +178,7 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
     let days_in_month_now = days_in_month(year_now, month_now);
     let first_weekday = weekday_index_monday(year_now, month_now, 1) as usize;
     let total_cells = first_weekday + days_in_month_now as usize;
-    let padded_cells = ((total_cells + 6) / 7) * 7; // round up to full weeks
+    let padded_cells = total_cells.div_ceil(7) * 7; // round up to full weeks
 
     let locale_for_header = locale;
     let month_label = match locale_for_header {
@@ -202,11 +202,11 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
     let style_attr = style.unwrap_or_default();
 
     // Shared handles for handlers.
-    let mut selected_for_day_click = selected_state;
+    let selected_for_day_click = selected_state;
     let on_change_cb = on_change;
     let controlled_flag = controlled;
-    let mut open_for_toggle = open_state;
-    let mut open_for_keydown = open_for_toggle;
+    let open_for_toggle = open_state;
+    let open_for_keydown = open_for_toggle;
 
     // Derived flags.
     let has_value = current_value.is_some();
@@ -225,7 +225,7 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
         let is_selected = if let (Some(day), Some(current)) = (cell_day, current_value) {
             current.inner.year() == year_now
                 && current.inner.month() as u8 == month_now
-                && current.inner.day() as u8 == day
+                && current.inner.day() == day
         } else {
             false
         };
@@ -251,22 +251,22 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
                 class: "{cell_class_attr}",
                 onclick: move |_| {
                     close_for_cell.mark_internal_click();
-                    if let Some(day) = cell_day {
-                        if let Some(value) = DateValue::from_ymd(year_now, month_now, day) {
-                            if controlled_flag_for_cell {
-                                if let Some(cb) = on_change_cb_for_cell {
-                                    cb.call(Some(value));
-                                }
-                            } else {
-                                let mut state = selected_state_for_cell;
-                                state.set(Some(value));
-                                if let Some(cb) = on_change_cb_for_cell {
-                                    cb.call(Some(value));
-                                }
+                    if let Some(day) = cell_day
+                        && let Some(value) = DateValue::from_ymd(year_now, month_now, day)
+                    {
+                        if controlled_flag_for_cell {
+                            if let Some(cb) = on_change_cb_for_cell {
+                                cb.call(Some(value));
                             }
-                            // 选择后关闭面板。
-                            close_for_cell.close();
+                        } else {
+                            let mut state = selected_state_for_cell;
+                            state.set(Some(value));
+                            if let Some(cb) = on_change_cb_for_cell {
+                                cb.call(Some(value));
+                            }
                         }
+                        // 选择后关闭面板。
+                        close_for_cell.close();
                     }
                 },
                 match cell_day {
@@ -504,7 +504,7 @@ pub fn RangePicker(props: RangePickerProps) -> Element {
     let days_in_month_now = days_in_month(year_now, month_now);
     let first_weekday = weekday_index_monday(year_now, month_now, 1) as usize;
     let total_cells = first_weekday + days_in_month_now as usize;
-    let padded_cells = ((total_cells + 6) / 7) * 7;
+    let padded_cells = total_cells.div_ceil(7) * 7;
 
     let locale_for_header = locale;
     let month_label = match locale_for_header {
@@ -526,10 +526,10 @@ pub fn RangePicker(props: RangePickerProps) -> Element {
     let control_class_attr = control_classes.join(" ");
     let style_attr = style.unwrap_or_default();
 
-    let mut open_for_toggle = open_state;
+    let open_for_toggle = open_state;
 
     let on_change_cb = on_change;
-    let mut range_for_click = range_state;
+    let range_for_click = range_state;
 
     // Shared floating close handle for range picker dropdown.
     let close_handle = use_floating_close_handle(open_for_toggle);
@@ -550,21 +550,19 @@ pub fn RangePicker(props: RangePickerProps) -> Element {
         let mut in_range = false;
 
         if let Some(day) = cell_day {
-            if let Some(start) = range.start {
-                if start.inner.year() == year_now
-                    && start.inner.month() as u8 == month_now
-                    && start.inner.day() as u8 == day
-                {
-                    is_selected_start = true;
-                }
+            if let Some(start) = range.start
+                && start.inner.year() == year_now
+                && start.inner.month() as u8 == month_now
+                && start.inner.day() == day
+            {
+                is_selected_start = true;
             }
-            if let Some(end) = range.end {
-                if end.inner.year() == year_now
-                    && end.inner.month() as u8 == month_now
-                    && end.inner.day() as u8 == day
-                {
-                    is_selected_end = true;
-                }
+            if let Some(end) = range.end
+                && end.inner.year() == year_now
+                && end.inner.month() as u8 == month_now
+                && end.inner.day() == day
+            {
+                is_selected_end = true;
             }
             if let (Some(start), Some(end)) = (range.start, range.end) {
                 let date = DateValue::from_ymd(year_now, month_now, day).unwrap();
@@ -603,40 +601,40 @@ pub fn RangePicker(props: RangePickerProps) -> Element {
                         return;
                     }
                     close_for_cell.mark_internal_click();
-                    if let Some(day) = cell_day {
-                        if let Some(clicked) = DateValue::from_ymd(year_now, month_now, day) {
-                            let mut next = range;
-                            match (next.start, next.end) {
-                                (None, _) => {
-                                    next.start = Some(clicked);
-                                    next.end = None;
-                                }
-                                (Some(start), None) => {
-                                    if clicked.inner < start.inner {
-                                        next.start = Some(clicked);
-                                        next.end = Some(start);
-                                    } else {
-                                        next.end = Some(clicked);
-                                    }
-
-                                    close_for_cell.close();
-                                }
-                                (Some(_), Some(_)) => {
-                                    next.start = Some(clicked);
-                                    next.end = None;
-                                }
+                    if let Some(day) = cell_day
+                        && let Some(clicked) = DateValue::from_ymd(year_now, month_now, day)
+                    {
+                        let mut next = range;
+                        match (next.start, next.end) {
+                            (None, _) => {
+                                next.start = Some(clicked);
+                                next.end = None;
                             }
+                            (Some(start), None) => {
+                                if clicked.inner < start.inner {
+                                    next.start = Some(clicked);
+                                    next.end = Some(start);
+                                } else {
+                                    next.end = Some(clicked);
+                                }
 
-                            if controlled_for_cell {
-                                if let Some(cb) = on_change_for_cell {
-                                    cb.call(next);
-                                }
-                            } else {
-                                let mut state = range_for_click;
-                                state.set(next);
-                                if let Some(cb) = on_change_for_cell {
-                                    cb.call(next);
-                                }
+                                close_for_cell.close();
+                            }
+                            (Some(_), Some(_)) => {
+                                next.start = Some(clicked);
+                                next.end = None;
+                            }
+                        }
+
+                        if controlled_for_cell {
+                            if let Some(cb) = on_change_for_cell {
+                                cb.call(next);
+                            }
+                        } else {
+                            let mut state = range_for_click;
+                            state.set(next);
+                            if let Some(cb) = on_change_for_cell {
+                                cb.call(next);
                             }
                         }
                     }

@@ -1,4 +1,4 @@
-use adui_dioxus::{App, Button, ButtonType, ComponentSize, ConfigProvider, Modal, ModalProps};
+use adui_dioxus::{App, Button, ButtonType, ComponentSize, ConfigProvider, Modal};
 use dioxus::prelude::*;
 
 fn main() {
@@ -16,7 +16,7 @@ fn app() -> Element {
 
 #[component]
 fn ModalDemoShell() -> Element {
-    let mut basic_open = use_signal(|| false);
+    let basic_open = use_signal(|| false);
 
     rsx! {
         div {
@@ -24,14 +24,20 @@ fn ModalDemoShell() -> Element {
             h2 { "Modal demo" }
             Button {
                 r#type: ButtonType::Primary,
-                onclick: move |_| basic_open.set(true),
+                onclick: {
+                    let mut basic_open = basic_open;
+                    move |_| basic_open.set(true)
+                },
                 "打开基础 Modal",
             }
 
             Modal {
                 open: *basic_open.read(),
                 title: Some("基础 Modal".into()),
-                on_cancel: move |_| basic_open.set(false),
+                on_cancel: {
+                    let mut basic_open = basic_open;
+                    move |_| basic_open.set(false)
+                },
                 destroy_on_close: true,
                 children: rsx! {
                     p { "这里可以放任意内容，例如表单、说明文本等。" }

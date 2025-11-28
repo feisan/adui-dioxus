@@ -33,7 +33,7 @@ fn default_items() -> Vec<DropdownItem> {
 #[component]
 fn DropdownDemoShell() -> Element {
     let api = use_message();
-    let mut last_click = use_signal(|| String::new());
+    let last_click = use_signal(String::new);
 
     rsx! {
         div {
@@ -47,10 +47,14 @@ fn DropdownDemoShell() -> Element {
                     items: default_items(),
                     trigger: DropdownTrigger::Click,
                     placement: Some(DropdownPlacement::BottomLeft),
-                    on_click: move |key: String| {
-                        last_click.set(key.clone());
-                        if let Some(msg) = api.clone() {
-                            msg.info(format!("选择菜单项: {key}"));
+                    on_click: {
+                        let mut last_click = last_click;
+                        let api = api.clone();
+                        move |key: String| {
+                            last_click.set(key.clone());
+                            if let Some(msg) = api.clone() {
+                                msg.info(format!("选择菜单项: {key}"));
+                            }
                         }
                     },
                     children: rsx! {

@@ -1,4 +1,4 @@
-use adui_dioxus::{App, Button, ButtonType, Card, CardProps, ComponentSize, ConfigProvider};
+use adui_dioxus::{App, Button, ButtonType, Card, ComponentSize, ConfigProvider};
 use dioxus::prelude::*;
 
 fn main() {

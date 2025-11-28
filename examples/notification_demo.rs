@@ -1,4 +1,4 @@
-use adui_dioxus::{App, ComponentSize, ConfigProvider, NotificationPlacement, use_notification};
+use adui_dioxus::{App, ComponentSize, ConfigProvider, use_notification};
 use dioxus::prelude::*;
 
 fn main() {

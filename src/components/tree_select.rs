@@ -195,7 +195,7 @@ pub fn TreeSelect(props: TreeSelectProps) -> Element {
     }
 
     // Search query (when show_search = true).
-    let search_query: Signal<String> = use_signal(|| String::new());
+    let search_query: Signal<String> = use_signal(String::new);
 
     let open_flag = *open_state.read();
     let DropdownLayer { z_index, .. } = use_dropdown_layer(open_flag);
@@ -217,8 +217,8 @@ pub fn TreeSelect(props: TreeSelectProps) -> Element {
             let lower = trimmed.to_lowercase();
             flat_nodes
                 .iter()
-                .cloned()
                 .filter(|n| n.label.to_lowercase().contains(&lower))
+                .cloned()
                 .collect()
         }
     } else {
@@ -249,33 +249,31 @@ pub fn TreeSelect(props: TreeSelectProps) -> Element {
                 }
             }
         }
+    } else if let Some(first) = selected_keys.first() {
+        let label = find_label(first);
+        rsx! { span { class: "adui-select-selection-item", "{label}" } }
     } else {
-        if let Some(first) = selected_keys.get(0) {
-            let label = find_label(first);
-            rsx! { span { class: "adui-select-selection-item", "{label}" } }
-        } else {
-            rsx! { span { class: "adui-select-selection-placeholder", "{placeholder_str}" } }
-        }
+        rsx! { span { class: "adui-select-selection-placeholder", "{placeholder_str}" } }
     };
 
     // Shared helpers for event handlers.
     let form_for_handlers = form_control.clone();
-    let internal_selected_for_handlers = internal_selected;
+    let _internal_selected_for_handlers = internal_selected;
     let on_change_cb = on_change;
     let controlled_flag = controlled_by_prop;
 
-    let mut open_for_toggle = open_state;
+    let open_for_toggle = open_state;
     let is_disabled_flag = is_disabled;
 
-    let mut search_for_input = search_query;
+    let search_for_input = search_query;
 
-    let mut active_for_keydown = active_index;
+    let active_for_keydown = active_index;
     let internal_selected_for_keydown = internal_selected;
     let form_for_keydown = form_for_handlers.clone();
-    let mut open_for_keydown = open_for_toggle;
+    let open_for_keydown = open_for_toggle;
 
     // Local copies of the internal click flag for different handlers.
-    let mut internal_click_for_toggle = internal_click_flag;
+    let internal_click_for_toggle = internal_click_flag;
     let internal_click_for_keydown = internal_click_flag;
 
     let dropdown_class_attr = {
@@ -376,34 +374,35 @@ pub fn TreeSelect(props: TreeSelectProps) -> Element {
                     let mut flag = internal_click_for_keydown;
                     flag.set(true);
 
-                    if let Some(idx) = handle_option_list_key_event(&evt, opts_len, &active_for_keydown) {
-                        if idx < opts_len {
-                            let node = &filtered_nodes[idx];
-                            if node.disabled {
-                                return;
-                            }
+                    if let Some(idx) =
+                        handle_option_list_key_event(&evt, opts_len, &active_for_keydown)
+                        && idx < opts_len
+                    {
+                        let node = &filtered_nodes[idx];
+                        if node.disabled {
+                            return;
+                        }
 
-                            let key = node.key.clone();
-                            let current_keys = selected_keys.clone();
-                            let next_keys = if multiple_flag {
-                                toggle_option_key(&current_keys, &key)
-                            } else {
-                                vec![key.clone()]
-                            };
+                        let key = node.key.clone();
+                        let current_keys = selected_keys.clone();
+                        let next_keys = if multiple_flag {
+                            toggle_option_key(&current_keys, &key)
+                        } else {
+                            vec![key.clone()]
+                        };
 
-                            apply_selected_keys(
-                                &form_for_keydown,
-                                multiple_flag,
-                                controlled_flag,
-                                &internal_selected_for_keydown,
-                                on_change_cb,
-                                next_keys,
-                            );
+                        apply_selected_keys(
+                            &form_for_keydown,
+                            multiple_flag,
+                            controlled_flag,
+                            &internal_selected_for_keydown,
+                            on_change_cb,
+                            next_keys,
+                        );
 
-                            if !multiple_flag {
-                                let mut open_signal = open_for_keydown;
-                                open_signal.set(false);
-                            }
+                        if !multiple_flag {
+                            let mut open_signal = open_for_keydown;
+                            open_signal.set(false);
                         }
                     }
                 },
@@ -441,8 +440,8 @@ pub fn TreeSelect(props: TreeSelectProps) -> Element {
                             let selected_snapshot = selected_keys.clone();
                             let form_for_click = form_control.clone();
                             let internal_selected_for_click = internal_selected;
-                            let mut open_for_click = open_state;
-                            let mut internal_click_for_item = internal_click_flag;
+                            let open_for_click = open_state;
+                            let internal_click_for_item = internal_click_flag;
                             let depth = node.depth;
 
                             rsx! {
@@ -516,7 +515,7 @@ fn apply_selected_keys(
         if multiple {
             let json = option_keys_to_value(&new_keys);
             ctx.set_value(json);
-        } else if let Some(first) = new_keys.get(0) {
+        } else if let Some(first) = new_keys.first() {
             let json = option_key_to_value(first);
             ctx.set_value(json);
         } else {

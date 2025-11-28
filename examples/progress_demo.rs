@@ -1,6 +1,5 @@
 use adui_dioxus::{
-    App, Button, ButtonType, ComponentSize, ConfigProvider, Progress, ProgressProps,
-    ProgressStatus, ProgressType,
+    App, Button, ButtonType, ComponentSize, ConfigProvider, Progress, ProgressStatus, ProgressType,
 };
 use dioxus::prelude::*;
 
@@ -18,7 +17,7 @@ fn app() -> Element {
 
 #[component]
 fn ProgressDemoShell() -> Element {
-    let mut percent = use_signal(|| 30.0f32);
+    let percent = use_signal(|| 30.0f32);
 
     rsx! {
         div { style: "padding: 16px; min-height: 100vh; background: var(--adui-color-bg-base);",

@@ -225,15 +225,15 @@ pub fn Cascader(props: CascaderProps) -> Element {
     let on_change_cb = on_change;
     let controlled_flag = controlled_by_prop;
 
-    let mut open_for_toggle = open_state;
+    let open_for_toggle = open_state;
     let is_disabled_flag = is_disabled;
     let mut active_path_for_handlers = active_path;
 
     // 键盘：只处理打开/关闭与 Esc，暂不实现列内导航。
-    let mut open_for_keydown = open_for_toggle;
+    let open_for_keydown = open_for_toggle;
     let internal_click_for_keydown = internal_click_flag;
 
-    let mut internal_click_for_toggle = internal_click_flag;
+    let internal_click_for_toggle = internal_click_flag;
 
     let dropdown_class_attr = {
         let mut list = vec!["adui-select-dropdown".to_string()];
@@ -353,9 +353,9 @@ pub fn Cascader(props: CascaderProps) -> Element {
                             let selected_path_snapshot_col = selected_path.clone();
                             let form_for_click_col = form_control.clone();
                             let internal_selected_for_click_col = internal_selected;
-                            let mut open_for_click_col = open_state;
+                            let open_for_click_col = open_state;
                             let mut active_path_for_click_col = active_path;
-                            let mut internal_click_for_col = internal_click_flag;
+                            let internal_click_for_col = internal_click_flag;
                             rsx! {
                                 ul {
                                     class: "adui-select-item-list",
