@@ -46,7 +46,7 @@
   - `size`: 控制默认尺寸（`small` / `middle` / `large`），影响 Button / Input / Modal 等；
   - `disabled`: 全局禁用标记，控制交互类组件的默认禁用态；
   - `prefix_cls`: 样式前缀（可简化为字符串，不支持复杂动态逻辑）；
-  - `locale`: 预留结构，先只覆盖少量常用文案（如空状态、表单校验提示的语言切换）；
+  - `locale`: 简化版 `Locale` 枚举（`ZhCN` / `EnUS`），当前主要用于日期时间组件的占位文案与星期/月标题语言切换，未来可扩展到更多提示文案；
   - 与现有 `ThemeProvider` 对齐的主题 token 映射（颜色、圆角、间距等）。
 - 暂不支持：
   - 完整的动态主题算法链（algorithm 数组等）；
@@ -311,7 +311,54 @@
 
 这些组件的迁移与实现将在 `plan/0011.md` 中逐步落地，对应文档为 `docs/tabs.md` / `docs/card.md` / `docs/tag.md` / `docs/badge.md` / `docs/avatar.md`。
 
-## 7. App 与 ConfigProvider 的协同能力
+## 7. 流程与结果反馈规划（Alert / Result / Progress / Statistic / Steps）
+
+在导航、列表与卡片体系完善之后，还需要一层面向「流程与结果反馈」的组件，用于串联多步操作、任务执行进度与最终结果页面：
+
+- `Alert`：页面内的重要提示与警告，用于承载表单顶部告警、权限提示、全局配置提醒等；
+- `Result`：操作结果页的主承载区域，适合放在独立路由页面或 Card 中，配合按钮组给出后续动作；
+- `Progress`：用于展示中长任务（上传、批量处理、后台任务）的完成度，可与 Steps/Result 组合；
+- `Statistic`：关键指标数值展示（如总访问量、转化率、错误率），常与 Card/Grid 组合形成统计面板；
+- `Steps`：流程步骤条，用于引导多步表单、审批流或配置向导等复杂流程。
+
+组合建议：
+
+- 多步表单：使用 Steps 控制当前步骤，Form 负责每步内容，配合 Alert 展示校验/权限提示，完成后跳转 Result 页面；
+- 长任务：使用 Progress 展示执行进度，过程中通过 Message/Notification 提示阶段结果，失败时在页内使用 Alert 或 Result 告知原因；
+- 仪表盘：在 Card 中组合 Statistic + Progress + Tag/Badge，展示整体健康度与关键指标，并配合 Layout/Tabs 组织不同视图。
+
+这些组件的迁移与实现将在 `plan/0012.md` 中逐步落地，对应文档为 `docs/alert.md` / `docs/result.md` / `docs/progress.md` / `docs/statistic.md` / `docs/steps.md`。
+
+## 8. 日期时间组件规划（DatePicker / TimePicker / Calendar）
+
+在流程与结果反馈层之上，还需要补齐「时间维度」相关的输入与视图组件，用于表达业务数据的时间轴：
+
+- `DatePicker`：
+  - 承担单个日期选择与日期区间选择（RangePicker）的职责，是表单中最常见的日期输入控件；
+  - 与 Form 深度集成，用于下单时间、有效期、统计区间等场景；
+- `TimePicker`：
+  - 负责时间点选择，支持时/分/秒步进，常与 DatePicker 组合成日期时间选择；
+  - 常见于预约时间、定时任务、通知发送时间等场景；
+- `Calendar`：
+  - 提供整月/全年视图的日期展示，承载日程、排班等信息；
+  - 一般与 Badge / Tag / Tooltip 等组合展示每日事件状态。
+
+规划要点：
+
+- 统一内部日期时间模型：优先选用稳定的 Rust 日期时间库（如 `time`），对外通过统一的值表示（例如字符串或内部枚举封装），避免业务侧直接依赖第三方库细节；
+- 与 Form：
+  - DatePicker / TimePicker / RangePicker 在 Form 中视为受控字段，支持校验规则（必填、开始时间早于结束时间、不能早于今天等）；
+  - Form 的重置/提交逻辑需要与日期时间组件的内部状态保持完全一致；
+- 与 ConfigProvider / Locale：
+  - 日期文案（星期、月份、"今天"、"此刻" 等）从 ConfigProvider 的 locale 中统一获取，支持中英文切换；
+  - 尺寸与禁用状态与现有 Input / Select 保持一致；
+- 与 Overlay / Select 家族：
+  - DatePicker / TimePicker 的面板浮层复用 Select / Cascader 已有的下拉机制（OverlayManager + click-outside + ESC 关闭）；
+  - Calendar 作为常驻视图组件，优先与 Layout / Card / Badge 家族组合，构成「日程 + 列表/详情」的典型页面模板。
+
+这组组件的实现与迁移任务将集中在 `plan/0013.md` 中推进，对应文档为 `docs/date_picker.md` / `docs/time_picker.md` / `docs/calendar.md`（落地后补充）。
+
+## 9. App 与 ConfigProvider 的协同能力
 
 - （以下内容保持原有结构，仅略微调整标题编号，未改变语义）
 

@@ -15,6 +15,173 @@ macro_rules! adui_scope_style {
     };
 }
 
+macro_rules! adui_calendar_style {
+    () => {
+        r#"
+.adui-calendar {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: var(--adui-radius, 4px);
+    border: 1px solid var(--adui-color-border, #d9d9d9);
+    background-color: var(--adui-color-bg-container, #ffffff);
+}
+
+.adui-calendar-fullscreen {
+    width: 100%;
+}
+
+.adui-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.adui-calendar-nav-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.adui-calendar-header-view {
+    font-weight: 500;
+}
+
+.adui-calendar-week-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-calendar-week-cell {
+    text-align: center;
+}
+
+.adui-calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.adui-calendar-date {
+    box-sizing: border-box;
+}
+
+.adui-calendar-date-empty {
+    cursor: default;
+}
+
+.adui-calendar-date-cell {
+    padding: 4px 0;
+    border-radius: var(--adui-radius-sm, 4px);
+    text-align: center;
+    cursor: pointer;
+}
+
+.adui-calendar-date-cell:hover {
+    background-color: var(--adui-color-bg-base, #f5f5f5);
+}
+
+.adui-calendar-date-selected .adui-calendar-date-cell {
+    background-color: var(--adui-color-primary, #1677ff);
+    color: #fff;
+}
+
+.adui-calendar-date-value {
+    display: inline-block;
+}
+"#
+    };
+}
+
+macro_rules! adui_time_picker_style {
+    () => {
+        r#"
+.adui-time-picker-root {
+    position: relative;
+    display: inline-block;
+}
+
+.adui-time-picker {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 160px;
+    width: auto;
+    min-height: var(--adui-control-height, 32px);
+    padding: 4px 8px;
+    border-radius: var(--adui-radius, 4px);
+    border: 1px solid var(--adui-color-border, #d9d9d9);
+    background-color: var(--adui-color-bg-container, #ffffff);
+    cursor: text;
+}
+
+.adui-time-picker-disabled {
+    background-color: var(--adui-color-bg-base, #f5f5f5);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.adui-time-picker-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+}
+
+.adui-time-picker-clear {
+    margin-left: 4px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-time-picker-dropdown {
+    margin-top: 4px;
+    padding: 8px 12px;
+    border-radius: var(--adui-radius, 4px);
+    background-color: var(--adui-color-bg-container, #ffffff);
+    box-shadow: var(--adui-shadow, 0 3px 6px rgba(0,0,0,0.12));
+}
+
+.adui-time-picker-panel {
+    display: flex;
+    gap: 8px;
+}
+
+.adui-time-picker-column {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.adui-time-picker-cell {
+    display: block;
+    min-width: 40px;
+    padding: 4px 0;
+    text-align: center;
+    border-radius: var(--adui-radius-sm, 4px);
+    cursor: pointer;
+}
+
+.adui-time-picker-cell:hover {
+    background-color: var(--adui-color-bg-base, #f5f5f5);
+}
+
+.adui-time-picker-cell-active {
+    background-color: var(--adui-color-primary, #1677ff);
+    color: #fff;
+}
+"#
+    };
+}
+
 macro_rules! adui_button_style {
     () => {
         r#"
@@ -220,6 +387,376 @@ macro_rules! adui_divider_style {
 .adui-divider-left { justify-content: flex-start; gap: 8px; }
 .adui-divider-center { justify-content: center; gap: 8px; }
 .adui-divider-right { justify-content: flex-end; gap: 8px; }
+"#
+    };
+}
+
+macro_rules! adui_alert_style {
+    () => {
+        r#"
+.adui-alert {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 12px;
+    border-radius: var(--adui-radius, 4px);
+    border: 1px solid var(--adui-color-border);
+    background-color: var(--adui-color-bg-container);
+    color: var(--adui-color-text);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.adui-alert + .adui-alert {
+    margin-top: 8px;
+}
+
+.adui-alert-icon {
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    padding-top: 1px;
+}
+
+.adui-alert-content {
+    flex: 1;
+}
+
+.adui-alert-message {
+    font-weight: 500;
+}
+
+.adui-alert-description {
+    margin-top: 4px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-alert-close-icon {
+    margin-left: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: inherit;
+    padding: 0;
+}
+
+.adui-alert-success {
+    border-color: var(--adui-color-success-border, #b7eb8f);
+    background-color: var(--adui-color-success-bg, #f6ffed);
+    color: var(--adui-color-success-text, #3f6600);
+}
+
+.adui-alert-info {
+    border-color: var(--adui-color-info-border, #91d5ff);
+    background-color: var(--adui-color-info-bg, #e6f7ff);
+    color: var(--adui-color-info-text, #09599b);
+}
+
+.adui-alert-warning {
+    border-color: var(--adui-color-warning-border, #ffe58f);
+    background-color: var(--adui-color-warning-bg, #fffbe6);
+    color: var(--adui-color-warning-text, #613400);
+}
+
+.adui-alert-error {
+    border-color: var(--adui-color-error-border, #ffa39e);
+    background-color: var(--adui-color-error-bg, #fff1f0);
+    color: var(--adui-color-error-text, #a8071a);
+}
+
+.adui-alert-banner {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+}
+"#
+    };
+}
+
+macro_rules! adui_date_picker_style {
+    () => {
+        r#"
+.adui-date-picker-root {
+    position: relative;
+    display: inline-block;
+}
+
+.adui-date-picker,
+.adui-date-picker-range {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 220px;
+    width: auto;
+    min-height: var(--adui-control-height, 32px);
+    padding: 4px 8px;
+    border-radius: var(--adui-radius, 4px);
+    border: 1px solid var(--adui-color-border, #d9d9d9);
+    background-color: var(--adui-color-bg-container, #ffffff);
+    cursor: text;
+}
+
+.adui-date-picker-disabled {
+    background-color: var(--adui-color-bg-base, #f5f5f5);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.adui-date-picker-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+}
+
+.adui-date-picker-input-start,
+.adui-date-picker-input-end {
+    flex: 1;
+}
+
+.adui-date-picker-range-separator {
+    padding: 0 4px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-date-picker-clear {
+    margin-left: 4px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-date-picker-dropdown {
+    margin-top: 4px;
+    padding: 8px 12px;
+    border-radius: var(--adui-radius, 4px);
+    background-color: var(--adui-color-bg-container, #ffffff);
+    box-shadow: var(--adui-shadow, 0 3px 6px rgba(0,0,0,0.12));
+}
+
+.adui-date-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.adui-date-picker-nav-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.adui-date-picker-header-view {
+    font-weight: 500;
+}
+
+.adui-date-picker-week-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-date-picker-week-cell {
+    text-align: center;
+}
+
+.adui-date-picker-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.adui-date-picker-cell {
+    box-sizing: border-box;
+    text-align: center;
+    padding: 4px 0;
+    border-radius: var(--adui-radius-sm, 4px);
+    cursor: pointer;
+}
+
+.adui-date-picker-cell-empty {
+    cursor: default;
+}
+
+.adui-date-picker-cell-date:hover {
+    background-color: var(--adui-color-bg-base, #f5f5f5);
+}
+
+.adui-date-picker-cell-selected {
+    background-color: var(--adui-color-primary, #1677ff);
+    color: #fff;
+}
+
+.adui-date-picker-cell-in-range {
+    background-color: rgba(22, 119, 255, 0.15);
+}
+
+.adui-date-picker-cell-range-start,
+.adui-date-picker-cell-range-end {
+    background-color: var(--adui-color-primary, #1677ff);
+    color: #fff;
+}
+"#
+    };
+}
+
+macro_rules! adui_result_style {
+    () => {
+        r#"
+.adui-result {
+    padding: 24px 32px;
+    text-align: center;
+}
+
+.adui-result-icon {
+    margin-bottom: 16px;
+    font-size: 0;
+}
+
+.adui-result-title {
+    margin-bottom: 8px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--adui-color-text);
+}
+
+.adui-result-subtitle {
+    margin-bottom: 16px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-result-extra {
+    margin-top: 16px;
+}
+
+.adui-result-content {
+    margin-top: 24px;
+    text-align: left;
+}
+
+.adui-result-success .adui-result-icon {
+    color: var(--adui-color-success, #52c41a);
+}
+
+.adui-result-info .adui-result-icon {
+    color: var(--adui-color-primary, #1677ff);
+}
+
+.adui-result-warning .adui-result-icon {
+    color: var(--adui-color-warning, #faad14);
+}
+
+.adui-result-error .adui-result-icon,
+.adui-result-403 .adui-result-icon,
+.adui-result-404 .adui-result-icon,
+.adui-result-500 .adui-result-icon {
+    color: var(--adui-color-error, #ff4d4f);
+}
+"#
+    };
+}
+
+macro_rules! adui_steps_style {
+    () => {
+        r#"
+.adui-steps {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.adui-steps-horizontal {
+    flex-direction: row;
+    gap: 16px;
+}
+
+.adui-steps-vertical {
+    flex-direction: column;
+    gap: 12px;
+}
+
+.adui-steps-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.adui-steps-item-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--adui-color-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    background: var(--adui-color-bg-container);
+    font-size: 13px;
+}
+
+.adui-steps-item-index {
+    line-height: 1;
+}
+
+.adui-steps-item-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.adui-steps-item-title {
+    font-size: var(--adui-font-size, 14px);
+    color: var(--adui-color-text);
+}
+
+.adui-steps-item-description {
+    margin-top: 2px;
+    font-size: var(--adui-font-size-sm, 13px);
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-steps-status-wait .adui-steps-item-icon {
+    border-color: var(--adui-color-border);
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-steps-status-process .adui-steps-item-icon {
+    border-color: var(--adui-color-primary, #1677ff);
+    background: var(--adui-color-primary, #1677ff);
+    color: #fff;
+}
+
+.adui-steps-status-finish .adui-steps-item-icon {
+    border-color: var(--adui-color-success, #52c41a);
+    background: var(--adui-color-success, #52c41a);
+    color: #fff;
+}
+
+.adui-steps-status-error .adui-steps-item-icon {
+    border-color: var(--adui-color-error, #ff4d4f);
+    background: var(--adui-color-error, #ff4d4f);
+    color: #fff;
+}
+
+.adui-steps-item-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.adui-steps-sm .adui-steps-item-title {
+    font-size: var(--adui-font-size-sm, 13px);
+}
+
+.adui-steps-lg .adui-steps-item-title {
+    font-size: var(--adui-font-size-lg, 16px);
+}
 "#
     };
 }
@@ -1431,6 +1968,108 @@ macro_rules! adui_spin_style {
     };
 }
 
+macro_rules! adui_progress_style {
+    () => {
+        r#"
+.adui-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--adui-font-size-sm, 13px);
+}
+
+.adui-progress-outer {
+    flex: 1;
+}
+
+.adui-progress-inner {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-progress-inner {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.adui-progress-bg {
+    background: var(--adui-color-primary, #1677ff);
+    border-radius: inherit;
+    transition: width var(--adui-motion-duration-mid, 0.24s) ease;
+}
+
+.adui-progress-text {
+    min-width: 40px;
+    text-align: right;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-progress-status-success .adui-progress-bg {
+    background: var(--adui-color-success, #52c41a);
+}
+
+.adui-progress-status-exception .adui-progress-bg {
+    background: var(--adui-color-error, #ff4d4f);
+}
+
+.adui-progress-status-active .adui-progress-bg {
+    background: var(--adui-color-primary, #1677ff);
+}
+
+.adui-progress-circle {
+    flex-direction: column;
+}
+
+.adui-progress-circle-inner {
+    box-sizing: border-box;
+    border-style: solid;
+    border-color: transparent;
+    border-radius: 50%;
+}
+
+.adui-progress-circle .adui-progress-text {
+    margin-top: 8px;
+    text-align: center;
+}
+"#
+    };
+}
+
+macro_rules! adui_statistic_style {
+    () => {
+        r#"
+.adui-statistic {
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.adui-statistic-title {
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+    font-size: var(--adui-font-size-sm, 13px);
+    margin-bottom: 4px;
+}
+
+.adui-statistic-content {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.adui-statistic-prefix,
+.adui-statistic-suffix {
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-statistic-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--adui-color-text);
+}
+"#
+    };
+}
+
 macro_rules! adui_skeleton_style {
     () => {
         r#"
@@ -2240,6 +2879,8 @@ pub const TOOLTIP_STYLE: &str = adui_tooltip_style!();
 pub const KEYFRAMES_STYLE: &str = adui_keyframes_style!();
 pub const EMPTY_STYLE: &str = adui_empty_style!();
 pub const SPIN_STYLE: &str = adui_spin_style!();
+pub const PROGRESS_STYLE: &str = adui_progress_style!();
+pub const STATISTIC_STYLE: &str = adui_statistic_style!();
 pub const SKELETON_STYLE: &str = adui_skeleton_style!();
 pub const LIST_STYLE: &str = adui_list_style!();
 pub const TABS_STYLE: &str = adui_tabs_style!();
@@ -2248,12 +2889,20 @@ pub const TAG_STYLE: &str = adui_tag_style!();
 pub const BADGE_STYLE: &str = adui_badge_style!();
 pub const AVATAR_STYLE: &str = adui_avatar_style!();
 pub const TABLE_STYLE: &str = adui_table_style!();
+pub const RESULT_STYLE: &str = adui_result_style!();
+pub const STEPS_STYLE: &str = adui_steps_style!();
 
 pub const THEME_BASE_STYLE: &str = concat!(
     adui_scope_style!(),
     adui_button_style!(),
     adui_icon_style!(),
     adui_divider_style!(),
+    adui_alert_style!(),
+    adui_result_style!(),
+    adui_calendar_style!(),
+    adui_date_picker_style!(),
+    adui_time_picker_style!(),
+    adui_steps_style!(),
     adui_typography_style!(),
     adui_layout_style!(),
     adui_grid_style!(),
@@ -2268,6 +2917,8 @@ pub const THEME_BASE_STYLE: &str = concat!(
     adui_keyframes_style!(),
     adui_empty_style!(),
     adui_spin_style!(),
+    adui_progress_style!(),
+    adui_statistic_style!(),
     adui_skeleton_style!(),
     adui_list_style!(),
     adui_tabs_style!(),

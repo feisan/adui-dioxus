@@ -27,6 +27,14 @@
 
 ---
 
+## 与日期时间选择组件的边界
+
+`DatePicker` / `RangePicker` / `TimePicker` / `Calendar` 虽然也依赖下拉浮层或网格视图，但不直接归入「选择器家族」：
+
+- 值模型不同：\n  - 选择器家族统一使用 `OptionKey = String` / `SelectOption` / `TreeNode` 等 key 模型；\n  - 日期时间组件内部使用 `DateValue` / `DateRangeValue` / `TimeValue` / `CalendarDate`，再通过 Form 做序列化；\n- 交互语义不同：\n  - 选择器家族更关注“选项列表”的多选/搜索/远程加载；\n  - 日期时间组件更关注日期网格、时间步进以及与业务规则（不可选范围、开始/结束关系）的绑定；\n- 共享基础设施：\n  - 下拉类组件（Select/Cascader/AutoComplete、DatePicker/TimePicker）共用 `OverlayManager` 与 `use_floating_close_handle` 的 click-outside / ESC 关闭机制；\n  - 视觉上复用 Input/Select 的尺寸与边框，保持整体一致。
+
+两类组件在 Form 场景下可以组合使用：例如「城市 Select + 日期 RangePicker」或「状态 Select + 日期 + 时间」，但在实现上分别沿着「选项」与「时间轴」两条子系统演进。
+
 ## TreeSelect：树形选择（MVP）
 
 > 实现位置：`src/components/tree_select.rs`

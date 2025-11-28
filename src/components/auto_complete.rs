@@ -170,10 +170,10 @@ pub fn AutoComplete(props: AutoCompleteProps) -> Element {
     let on_change_cb = on_change;
     let on_search_cb = on_search;
     let on_select_cb = on_select;
-    let mut inner_for_change = inner_value;
+    let inner_for_change = inner_value;
     let form_for_handlers = form_control.clone();
-    let mut open_for_toggle = open_state;
-    let mut internal_click_for_toggle = internal_click_flag;
+    let open_for_toggle = open_state;
+    let internal_click_for_toggle = internal_click_flag;
 
     let dropdown_class_attr = {
         let mut list = vec!["adui-select-dropdown".to_string()];
@@ -316,9 +316,9 @@ pub fn AutoComplete(props: AutoCompleteProps) -> Element {
                             let key = opt.key.clone();
                             let label = opt.label.clone();
                             let disabled_opt = opt.disabled || is_disabled;
-                            let mut internal_click_for_item = internal_click_flag;
+                            let internal_click_for_item = internal_click_flag;
                             let form_for_click = form_control.clone();
-                            let mut inner_for_click = inner_value;
+                            let inner_for_click = inner_value;
                             rsx! {
                                 li {
                                     class: {

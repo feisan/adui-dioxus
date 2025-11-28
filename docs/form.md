@@ -94,4 +94,42 @@ fn FormTextInput() -> Element {
 }
 ```
 
+## 与 DatePicker / TimePicker / RangePicker 集成
+
+日期时间组件在 Form 中被视为普通字段，内部会将选中的值写入 `FormStore`，并参与校验与重置：
+
+- `DatePicker` / `RangePicker`：\n  - 默认格式为 `YYYY-MM-DD`；\n  - 在 Form 中与 `FormRule` 一起使用时，可以直接配置 `required: true` 或自定义 `validator` 实现「开始日期早于结束日期」等规则；\n  - 调用 `FormHandle::reset_fields()` 时，会同步清空/恢复所有日期字段的 UI 与内部值。\n- `TimePicker`：\n  - 默认格式为 `HH:mm:ss`；\n  - 可与 `DatePicker` 组合成「日期 + 时间」的复杂表单项，通过规则控制时间范围。
+
+示例（摘自日期时间 demo 的简化版本）：
+
+```rust
+let form = use_signal(use_form);
+
+Form {
+    form: Some(form.read().clone()),
+    FormItem {
+        name: Some("start_date".into()),
+        label: Some("开始日期".into()),
+        rules: Some(vec![FormRule {
+            required: true,
+            message: Some("请选择开始日期".into()),
+            ..FormRule::default()
+        }]),
+        DatePicker {}
+    }
+    FormItem {
+        name: Some("range".into()),
+        label: Some("日期区间".into()),
+        RangePicker {}
+    }
+    FormItem {
+        name: Some("appointment_time".into()),
+        label: Some("预约时间".into()),
+        TimePicker {}
+    }
+}
+```
+
+> 建议在 Form 场景下仅通过 `FormItem.name` 管理字段值，不再单独传入 `value`/`default_value`，避免受控/非受控状态冲突；重置与提交逻辑统一通过 `FormHandle` 控制。
+
 （其余 Form 校验、布局、FormList 等小节保持原有内容，未做结构性修改，仅在顶部增加了对选择器家族文档的链接。）

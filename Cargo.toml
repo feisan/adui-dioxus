@@ -13,3 +13,4 @@ wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 web-sys = { version = "0.3", features = ["DomRect", "Element", "PointerEvent", "Navigator", "Clipboard", "FormData", "XmlHttpRequest", "XmlHttpRequestUpload", "ProgressEvent", "Blob"] }
 regex = "1"
+time = { version = "0.3", default-features = false, features = ["alloc"] }

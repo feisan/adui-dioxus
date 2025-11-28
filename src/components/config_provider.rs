@@ -15,6 +15,21 @@ impl Default for ComponentSize {
     }
 }
 
+/// Simple locale flag for components that need basic language switching.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Locale {
+    /// Simplified Chinese.
+    ZhCN,
+    /// English (US).
+    EnUS,
+}
+
+impl Default for Locale {
+    fn default() -> Self {
+        Locale::ZhCN
+    }
+}
+
 /// Global configuration shared by components.
 ///
 /// This is intentionally much smaller than Ant Design's ConfigProvider. We only
@@ -24,6 +39,7 @@ pub struct ConfigContextValue {
     pub size: ComponentSize,
     pub disabled: bool,
     pub prefix_cls: String,
+    pub locale: Locale,
 }
 
 impl Default for ConfigContextValue {
@@ -32,6 +48,7 @@ impl Default for ConfigContextValue {
             size: ComponentSize::Middle,
             disabled: false,
             prefix_cls: "adui".to_string(),
+            locale: Locale::ZhCN,
         }
     }
 }
@@ -49,6 +66,10 @@ pub struct ConfigProviderProps {
     /// Global CSS class name prefix. Defaults to `"adui"`.
     #[props(optional)]
     pub prefix_cls: Option<String>,
+    /// Global locale flag to control basic UI language for components that
+    /// integrate with date/time or other text-heavy features.
+    #[props(optional)]
+    pub locale: Option<Locale>,
     /// Optional initial theme. If omitted, the current ThemeProvider behaviour
     /// is preserved.
     #[props(optional)]
@@ -66,6 +87,7 @@ pub fn ConfigProvider(props: ConfigProviderProps) -> Element {
         size: props.size.unwrap_or(parent.size),
         disabled: props.disabled.unwrap_or(parent.disabled),
         prefix_cls: props.prefix_cls.clone().unwrap_or(parent.prefix_cls),
+        locale: props.locale.unwrap_or(parent.locale),
     };
 
     // We still rely on ThemeProvider for concrete tokens & CSS variables, so

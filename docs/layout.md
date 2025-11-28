@@ -30,4 +30,5 @@ Sider {
 - `dx serve --example layout_navigation_demo` 展示典型中后台导航布局：左侧 `Menu`、顶部 `Breadcrumb`、内容区列表 + `Pagination` 联动。
 - `dx serve --example data_view_demo` 展示结合 Layout + Breadcrumb + Table/List + Pagination + Empty/Spin/Skeleton 的用户列表页模板。
 - `dx serve --example dashboard_demo` 展示 Layout + Menu + Breadcrumb + Tabs + Card + Tag + Badge + Avatar + List/Pagination 的综合仪表盘页面。
-- 代码位于 `examples/layout_demo.rs`、`examples/layout_navigation_demo.rs`、`examples/data_view_demo.rs` 与 `examples/dashboard_demo.rs`，README 中已补充运行方式。
+- `dx serve --example flow_feedback_demo` 展示 Layout + Steps + Form + Progress + Alert + Result/Statistic 的典型流程反馈页面，用于多步向导与结果页场景。
+- 代码位于 `examples/layout_demo.rs`、`examples/layout_navigation_demo.rs`、`examples/data_view_demo.rs`、`examples/dashboard_demo.rs` 与 `examples/flow_feedback_demo.rs`，README 中已补充运行方式。

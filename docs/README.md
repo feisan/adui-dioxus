@@ -25,6 +25,11 @@
 - [Tag](./tag.md)：状态/类别标签，支持预设色、可关闭、简单 checkable 用法。
 - [Badge](./badge.md)：数量角标与小红点，适用于 Menu/Button/Avatar 的未读提示。
 - [Avatar](./avatar.md)：头像组件，支持图片/文字/分组，常用于顶部用户信息区域。
+- [Alert](./alert.md)：页面级重要提示与警告，用于表单顶部告警、权限提示等。
+- [Result](./result.md)：操作结果页，用于展示提交成功/失败、403/404/500 等结果视图。
+- [Progress](./progress.md)：任务进度展示，支持线形与简化圆形，用于长任务或流程状态提示。
+- [Statistic](./statistic.md)：数字统计组件，用于仪表盘和统计卡片中的关键指标展示。
+- [Steps](./steps.md)：流程步骤条，用于多步表单、审批流程等场景的进度展示。
 - [Divider](./divider.md)：水平/垂直/带文字/虚线的 API。
 - [Masonry](./masonry.md)：列数、gap、响应式配置。
 - [Splitter](./splitter.md)：拖拽/受控 split、ARIA 属性。

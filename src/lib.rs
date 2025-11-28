@@ -4,6 +4,7 @@ pub mod components;
 pub mod theme;
 
 pub use components::TreeNode;
+pub use components::alert::{Alert, AlertProps, AlertType};
 pub use components::app::{
     App, AppContextValue, AppProps, ModalApi, use_app, use_message, use_modal, use_notification,
 };
@@ -17,11 +18,15 @@ pub use components::button::{
     Button, ButtonColor, ButtonGroup, ButtonGroupProps, ButtonHtmlType, ButtonIconPlacement,
     ButtonProps, ButtonShape, ButtonSize, ButtonType, ButtonVariant,
 };
+pub use components::calendar::{Calendar, CalendarDate, CalendarMode, CalendarProps};
 pub use components::card::{Card, CardProps};
 pub use components::cascader::{Cascader, CascaderProps};
 pub use components::checkbox::{Checkbox, CheckboxGroup, CheckboxGroupProps, CheckboxProps};
 pub use components::config_provider::{
-    ComponentSize, ConfigContextValue, ConfigProvider, ConfigProviderProps, use_config,
+    ComponentSize, ConfigContextValue, ConfigProvider, ConfigProviderProps, Locale, use_config,
+};
+pub use components::date_picker::{
+    DatePicker, DatePickerProps, DateRangeValue, DateValue, RangePicker, RangePickerProps,
 };
 pub use components::divider::{Divider, DividerOrientation, DividerProps};
 pub use components::drawer::{Drawer, DrawerPlacement, DrawerProps};
@@ -61,7 +66,9 @@ pub use components::notification::{
 pub use components::pagination::{Pagination, PaginationProps};
 pub use components::popconfirm::{Popconfirm, PopconfirmProps};
 pub use components::popover::{Popover, PopoverProps};
+pub use components::progress::{Progress, ProgressProps, ProgressStatus, ProgressType};
 pub use components::radio::{Radio, RadioButton, RadioGroup, RadioGroupProps, RadioProps};
+pub use components::result::{Result, ResultProps, ResultStatus};
 pub use components::select::{PublicSelectOption as SelectOption, Select, SelectProps};
 pub use components::skeleton::Skeleton;
 pub use components::space::{Space, SpaceAlign, SpaceDirection, SpaceProps, SpaceSize};
@@ -69,10 +76,13 @@ pub use components::spin::{Spin, SpinProps, SpinSize};
 pub use components::splitter::{
     Splitter, SplitterOrientation, SplitterPane, SplitterPaneProps, SplitterProps,
 };
+pub use components::statistic::Statistic;
+pub use components::steps::{StepItem, StepStatus, Steps, StepsDirection, StepsProps};
 pub use components::switch::{Switch, SwitchProps, SwitchSize};
 pub use components::table::{ColumnAlign, Table, TableColumn, TableProps};
 pub use components::tabs::{TabItem, Tabs, TabsProps};
 pub use components::tag::{Tag, TagColor, TagProps};
+pub use components::time_picker::{TimePicker, TimePickerProps, TimeValue};
 pub use components::tooltip::{Tooltip, TooltipPlacement, TooltipProps, TooltipTrigger};
 pub use components::tree_select::{TreeSelect, TreeSelectProps};
 pub use components::typography::{
