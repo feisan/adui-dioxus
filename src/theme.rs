@@ -3368,6 +3368,232 @@ macro_rules! adui_qrcode_style {
     };
 }
 
+macro_rules! adui_tree_style {
+    () => {
+        r#"
+/* Tree Component Styles */
+.adui-tree {
+    padding: 4px 0;
+    list-style: none;
+    background: transparent;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.adui-tree-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.adui-tree-treenode {
+    display: flex;
+    align-items: stretch;
+    min-height: 28px;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+    white-space: nowrap;
+}
+
+.adui-tree-treenode:hover {
+    background: var(--adui-color-fill-tertiary, rgba(0, 0, 0, 0.04));
+}
+
+.adui-tree-treenode-selected {
+    background: var(--adui-color-primary-bg, #e6f4ff);
+}
+
+.adui-tree-treenode-disabled {
+    color: var(--adui-color-text-disabled, rgba(0, 0, 0, 0.25));
+    cursor: not-allowed;
+}
+
+.adui-tree-treenode-disabled:hover {
+    background: transparent;
+}
+
+.adui-tree-treenode-active {
+    outline: 2px solid var(--adui-color-primary, #1677ff);
+    outline-offset: -2px;
+}
+
+/* Indent unit for tree structure */
+.adui-tree-indent-unit {
+    flex-shrink: 0;
+}
+
+/* Switcher (expand/collapse icon) */
+.adui-tree-switcher {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    color: var(--adui-color-text-tertiary, rgba(0, 0, 0, 0.45));
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.adui-tree-switcher:hover {
+    color: var(--adui-color-text, rgba(0, 0, 0, 0.88));
+}
+
+.adui-tree-switcher-leaf {
+    cursor: default;
+}
+
+.adui-tree-switcher-icon {
+    font-size: 10px;
+    user-select: none;
+}
+
+/* Checkbox */
+.adui-tree-checkbox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.adui-tree-checkbox-inner {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--adui-color-border, #d9d9d9);
+    border-radius: 4px;
+    background: var(--adui-color-bg-container, #ffffff);
+    transition: all 0.2s;
+    position: relative;
+}
+
+.adui-tree-checkbox:hover .adui-tree-checkbox-inner {
+    border-color: var(--adui-color-primary, #1677ff);
+}
+
+.adui-tree-checkbox-checked .adui-tree-checkbox-inner {
+    background: var(--adui-color-primary, #1677ff);
+    border-color: var(--adui-color-primary, #1677ff);
+}
+
+.adui-tree-checkbox-checked .adui-tree-checkbox-inner::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 22%;
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: 0;
+    border-left: 0;
+    transform: rotate(45deg) translate(-50%, -50%);
+    transform-origin: left top;
+}
+
+.adui-tree-checkbox-indeterminate .adui-tree-checkbox-inner::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 2px;
+    background: var(--adui-color-primary, #1677ff);
+    transform: translate(-50%, -50%);
+}
+
+.adui-tree-checkbox-disabled {
+    cursor: not-allowed;
+}
+
+.adui-tree-checkbox-disabled .adui-tree-checkbox-inner {
+    background: var(--adui-color-fill-tertiary, rgba(0, 0, 0, 0.04));
+    border-color: var(--adui-color-border, #d9d9d9);
+}
+
+/* Content wrapper */
+.adui-tree-node-content-wrapper {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 0;
+}
+
+.adui-tree-node-content-wrapper:hover {
+    background: var(--adui-color-fill-tertiary, rgba(0, 0, 0, 0.04));
+}
+
+.adui-tree-node-selected {
+    background: var(--adui-color-primary-bg, #e6f4ff);
+}
+
+.adui-tree-iconEle {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+.adui-tree-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Show Line mode - no extra CSS pseudo-elements, lines are rendered inline */
+.adui-tree-show-line .adui-tree-treenode {
+    /* Lines are rendered via inline spans */
+}
+
+/* Directory Tree specific styles */
+.adui-directory-tree {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.adui-directory-tree .adui-tree-treenode-selected {
+    background: var(--adui-color-primary-bg, #e6f4ff);
+}
+
+.adui-directory-tree .adui-tree-node-content-wrapper {
+    padding: 2px 8px;
+}
+
+/* Dark theme adjustments */
+.adui-theme-scope[theme-mode="dark"] .adui-tree-treenode:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-tree-treenode-selected {
+    background: rgba(24, 144, 255, 0.2);
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-tree-checkbox-inner {
+    background: var(--adui-color-bg-elevated, #1f1f1f);
+    border-color: var(--adui-color-border, #424242);
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-tree-checkbox-checked .adui-tree-checkbox-inner {
+    background: var(--adui-color-primary, #1677ff);
+    border-color: var(--adui-color-primary, #1677ff);
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-tree-node-content-wrapper:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-tree-node-selected {
+    background: rgba(24, 144, 255, 0.2);
+}
+"#
+    };
+}
+
 pub const SCOPE_STYLE: &str = adui_scope_style!();
 pub const BUTTON_STYLE: &str = adui_button_style!();
 pub const ICON_STYLE: &str = adui_icon_style!();
@@ -3400,6 +3626,7 @@ pub const RESULT_STYLE: &str = adui_result_style!();
 pub const STEPS_STYLE: &str = adui_steps_style!();
 pub const WATERMARK_STYLE: &str = adui_watermark_style!();
 pub const QRCODE_STYLE: &str = adui_qrcode_style!();
+pub const TREE_STYLE: &str = adui_tree_style!();
 
 pub const THEME_BASE_STYLE: &str = concat!(
     adui_scope_style!(),
@@ -3438,6 +3665,7 @@ pub const THEME_BASE_STYLE: &str = concat!(
     adui_table_style!(),
     adui_watermark_style!(),
     adui_qrcode_style!(),
+    adui_tree_style!(),
 );
 
 /// Theme mode tracks the seed variant.

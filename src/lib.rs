@@ -99,6 +99,8 @@ pub use components::timeline::{
     Timeline, TimelineColor, TimelineItem, TimelineMode, TimelineOrientation, TimelineProps,
 };
 pub use components::tooltip::{Tooltip, TooltipPlacement, TooltipProps, TooltipTrigger};
+pub use components::tour::{Tour, TourProps, TourStep, TourType};
+pub use components::tree::{DirectoryTree, DirectoryTreeProps, FlatTreeNode, Tree, TreeProps};
 pub use components::tree_select::{TreeSelect, TreeSelectProps};
 pub use components::typography::{
     Paragraph, ParagraphProps, Text, TextProps, TextType, Title, TitleLevel, TitleProps,
