@@ -4,6 +4,10 @@ pub mod components;
 pub mod theme;
 
 pub use components::TreeNode;
+pub use components::affix::{Affix, AffixProps};
+pub use components::anchor::{
+    Anchor, AnchorClickInfo, AnchorDirection, AnchorLinkItem, AnchorProps,
+};
 pub use components::alert::{Alert, AlertProps, AlertType};
 pub use components::app::{
     App, AppContextValue, AppProps, ModalApi, use_app, use_message, use_modal, use_notification,
