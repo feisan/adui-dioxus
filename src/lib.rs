@@ -22,11 +22,18 @@ pub use components::calendar::{Calendar, CalendarDate, CalendarMode, CalendarPro
 pub use components::card::{Card, CardProps};
 pub use components::cascader::{Cascader, CascaderProps};
 pub use components::checkbox::{Checkbox, CheckboxGroup, CheckboxGroupProps, CheckboxProps};
+pub use components::collapse::{
+    Collapse, CollapsePanel, CollapseProps, CollapseSize, CollapsibleType, ExpandIconPlacement,
+};
 pub use components::config_provider::{
     ComponentSize, ConfigContextValue, ConfigProvider, ConfigProviderProps, Locale, use_config,
 };
 pub use components::date_picker::{
     DatePicker, DatePickerProps, DateRangeValue, DateValue, RangePicker, RangePickerProps,
+};
+pub use components::descriptions::{
+    ColumnConfig, Descriptions, DescriptionsItem, DescriptionsLayout, DescriptionsProps,
+    DescriptionsSize, ResponsiveColumn,
 };
 pub use components::divider::{Divider, DividerOrientation, DividerProps};
 pub use components::drawer::{Drawer, DrawerPlacement, DrawerProps};
@@ -83,6 +90,9 @@ pub use components::table::{ColumnAlign, Table, TableColumn, TableProps};
 pub use components::tabs::{TabItem, Tabs, TabsProps};
 pub use components::tag::{Tag, TagColor, TagProps};
 pub use components::time_picker::{TimePicker, TimePickerProps, TimeValue};
+pub use components::timeline::{
+    Timeline, TimelineColor, TimelineItem, TimelineMode, TimelineOrientation, TimelineProps,
+};
 pub use components::tooltip::{Tooltip, TooltipPlacement, TooltipProps, TooltipTrigger};
 pub use components::tree_select::{TreeSelect, TreeSelectProps};
 pub use components::typography::{
