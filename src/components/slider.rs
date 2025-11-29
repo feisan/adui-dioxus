@@ -1,24 +1,24 @@
 use crate::components::config_provider::use_config;
 use crate::components::form::use_form_item_control;
+#[cfg(target_arch = "wasm32")]
+use crate::components::interaction::start_pointer;
 use crate::components::interaction::{
     PointerState, as_pointer_event, end_pointer, is_active_pointer,
 };
-#[cfg(target_arch = "wasm32")]
-use crate::components::interaction::start_pointer;
 #[cfg(target_arch = "wasm32")]
 use crate::components::slider_base::ratio_from_pointer_event;
 #[cfg(target_arch = "wasm32")]
 use crate::components::slider_base::ratio_to_value;
 use crate::components::slider_base::{
-    SliderMath, SliderOrientation, apply_keyboard_action, keyboard_action_for_key,
-    snap_value, value_to_ratio,
+    SliderMath, SliderOrientation, apply_keyboard_action, keyboard_action_for_key, snap_value,
+    value_to_ratio,
 };
 use dioxus::events::{KeyboardEvent, PointerData};
 use dioxus::prelude::*;
+use serde_json::{Number, Value};
 use std::rc::Rc;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
-use serde_json::{Number, Value};
 
 /// A labeled mark rendered along the slider track.
 #[derive(Clone, PartialEq)]
@@ -255,7 +255,9 @@ pub fn Slider(props: SliderProps) -> Element {
                 .current_target()
                 .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
                 .map(|el| el.get_bounding_client_rect());
-            let Some(rect) = rect else { return; };
+            let Some(rect) = rect else {
+                return;
+            };
             let Some(ratio) = pointer_ratio(&pevt, &rect, &math) else {
                 return;
             };
@@ -312,7 +314,9 @@ pub fn Slider(props: SliderProps) -> Element {
                 .current_target()
                 .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
                 .map(|el| el.get_bounding_client_rect());
-            let Some(rect) = rect else { return; };
+            let Some(rect) = rect else {
+                return;
+            };
             let Some(ratio) = pointer_ratio(&pevt, &rect, &math) else {
                 return;
             };
@@ -423,7 +427,11 @@ fn handles_view(
     disabled: bool,
     on_key: Rc<dyn Fn(usize, KeyboardEvent)>,
 ) -> Element {
-    let count = if range { ratios.len() } else { 1.min(ratios.len()) };
+    let count = if range {
+        ratios.len()
+    } else {
+        1.min(ratios.len())
+    };
     let iter = ratios.iter().zip(values.iter()).take(count).enumerate();
     rsx! {
         Fragment {
@@ -498,7 +506,6 @@ fn default_slider_value(range: bool, math: &SliderMath) -> SliderValue {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
 fn choose_handle(current: &SliderValue, target: f64) -> usize {
     match current {
         SliderValue::Single(_) => 0,

@@ -5,10 +5,10 @@ pub mod theme;
 
 pub use components::TreeNode;
 pub use components::affix::{Affix, AffixProps};
+pub use components::alert::{Alert, AlertProps, AlertType};
 pub use components::anchor::{
     Anchor, AnchorClickInfo, AnchorDirection, AnchorLinkItem, AnchorProps,
 };
-pub use components::alert::{Alert, AlertProps, AlertType};
 pub use components::app::{
     App, AppContextValue, AppProps, ModalApi, use_app, use_message, use_modal, use_notification,
 };
@@ -78,6 +78,7 @@ pub use components::pagination::{Pagination, PaginationProps};
 pub use components::popconfirm::{Popconfirm, PopconfirmProps};
 pub use components::popover::{Popover, PopoverProps};
 pub use components::progress::{Progress, ProgressProps, ProgressStatus, ProgressType};
+pub use components::qrcode::{QRCode, QRCodeErrorLevel, QRCodeProps, QRCodeStatus, QRCodeType};
 pub use components::radio::{Radio, RadioButton, RadioGroup, RadioGroupProps, RadioProps};
 pub use components::result::{Result, ResultProps, ResultStatus};
 pub use components::select::{PublicSelectOption as SelectOption, Select, SelectProps};
@@ -107,6 +108,7 @@ pub use components::upload::{
     Upload, UploadChangeInfo, UploadFile, UploadListConfig, UploadListType, UploadProps,
     UploadStatus,
 };
+pub use components::watermark::{Watermark, WatermarkFont, WatermarkProps};
 pub use theme::{
     THEME_BASE_STYLE, Theme, ThemeHandle, ThemeMode, ThemeProvider, ThemeTokens, use_theme,
 };

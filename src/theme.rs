@@ -3254,6 +3254,120 @@ macro_rules! adui_keyframes_style {
     };
 }
 
+macro_rules! adui_watermark_style {
+    () => {
+        r#"
+.adui-watermark-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.adui-watermark {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: repeat;
+    z-index: 9;
+}
+"#
+    };
+}
+
+macro_rules! adui_qrcode_style {
+    () => {
+        r#"
+.adui-qrcode-wrapper {
+    display: inline-block;
+}
+
+.adui-qrcode {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: var(--adui-radius, 8px);
+    border: 1px solid var(--adui-color-border, #d9d9d9);
+    background: var(--adui-color-bg-container, #ffffff);
+}
+
+.adui-qrcode-borderless {
+    border: none;
+    padding: 0;
+}
+
+.adui-qrcode svg {
+    display: block;
+}
+
+.adui-qrcode-cover {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: inherit;
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-qrcode-cover {
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.adui-qrcode-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.adui-qrcode-status-text {
+    font-size: 14px;
+    color: var(--adui-color-text-secondary, var(--adui-color-text-muted));
+}
+
+.adui-qrcode-status-icon {
+    font-size: 24px;
+    color: var(--adui-color-success, #52c41a);
+}
+
+.adui-qrcode-refresh-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--adui-color-primary, #1677ff);
+    border-radius: var(--adui-radius-sm, 4px);
+    background: transparent;
+    color: var(--adui-color-primary, #1677ff);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all var(--adui-motion-duration-fast, 0.16s) ease;
+}
+
+.adui-qrcode-refresh-btn:hover {
+    background: var(--adui-color-primary, #1677ff);
+    color: #fff;
+}
+
+.adui-qrcode-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--adui-color-primary, #1677ff);
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: adui-spin 0.9s linear infinite;
+}
+
+.adui-qrcode-expired .adui-qrcode-cover {
+    background: rgba(255, 255, 255, 0.96);
+}
+
+.adui-theme-scope[theme-mode="dark"] .adui-qrcode-expired .adui-qrcode-cover {
+    background: rgba(0, 0, 0, 0.85);
+}
+"#
+    };
+}
+
 pub const SCOPE_STYLE: &str = adui_scope_style!();
 pub const BUTTON_STYLE: &str = adui_button_style!();
 pub const ICON_STYLE: &str = adui_icon_style!();
@@ -3284,6 +3398,8 @@ pub const AVATAR_STYLE: &str = adui_avatar_style!();
 pub const TABLE_STYLE: &str = adui_table_style!();
 pub const RESULT_STYLE: &str = adui_result_style!();
 pub const STEPS_STYLE: &str = adui_steps_style!();
+pub const WATERMARK_STYLE: &str = adui_watermark_style!();
+pub const QRCODE_STYLE: &str = adui_qrcode_style!();
 
 pub const THEME_BASE_STYLE: &str = concat!(
     adui_scope_style!(),
@@ -3320,6 +3436,8 @@ pub const THEME_BASE_STYLE: &str = concat!(
     adui_badge_style!(),
     adui_avatar_style!(),
     adui_table_style!(),
+    adui_watermark_style!(),
+    adui_qrcode_style!(),
 );
 
 /// Theme mode tracks the seed variant.
