@@ -35,12 +35,57 @@ pub enum ControlSize {
     Large,
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+/// Required mark configuration for form labels.
+/// 
+/// In Ant Design TypeScript, this can be:
+/// - `boolean` (true/false)
+/// - `'optional'` (string literal)
+/// - `(labelNode, info) => ReactNode` (function)
+/// 
+/// In Rust, we use an enum with a custom render function option.
+#[derive(Clone)]
 pub enum RequiredMark {
+    /// Hide required mark (equivalent to `false` in TypeScript)
     None,
+    /// Show "optional" text (equivalent to `'optional'` in TypeScript)
     Optional,
-    #[default]
+    /// Show default required mark (equivalent to `true` in TypeScript)
     Default,
+    /// Custom render function: `(label_node, required) -> Element`
+    Custom(Rc<dyn Fn(Element, bool) -> Element>),
+}
+
+impl Default for RequiredMark {
+    fn default() -> Self {
+        RequiredMark::Default
+    }
+}
+
+impl PartialEq for RequiredMark {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (RequiredMark::None, RequiredMark::None) => true,
+            (RequiredMark::Optional, RequiredMark::Optional) => true,
+            (RequiredMark::Default, RequiredMark::Default) => true,
+            (RequiredMark::Custom(_), RequiredMark::Custom(_)) => {
+                // Function pointers cannot be compared for equality
+                // In practice, this means Custom variants are never equal
+                false
+            }
+            _ => false,
+        }
+    }
+}
+
+impl std::fmt::Debug for RequiredMark {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RequiredMark::None => write!(f, "RequiredMark::None"),
+            RequiredMark::Optional => write!(f, "RequiredMark::Optional"),
+            RequiredMark::Default => write!(f, "RequiredMark::Default"),
+            RequiredMark::Custom(_) => write!(f, "RequiredMark::Custom(..)"),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -268,6 +313,7 @@ struct FormContext {
     colon: bool,
     required_mark: RequiredMark,
     _label_align: LabelAlign,
+    label_wrap: bool,
     _label_col: Option<ColProps>,
     _wrapper_col: Option<ColProps>,
     disabled: bool,
@@ -412,6 +458,9 @@ pub struct FormProps {
     pub required_mark: RequiredMark,
     #[props(default)]
     pub label_align: LabelAlign,
+    /// Whether to wrap label text when it's too long.
+    #[props(default)]
+    pub label_wrap: bool,
     #[props(optional)]
     pub label_col: Option<ColProps>,
     #[props(optional)]
@@ -431,6 +480,9 @@ pub struct FormProps {
     /// Feedback icons configuration for form items.
     #[props(optional)]
     pub feedback_icons: Option<FeedbackIcons>,
+    /// Form name, used for form identification and grouping.
+    #[props(optional)]
+    pub name: Option<String>,
     #[props(optional)]
     pub initial_values: Option<FormValues>,
     #[props(optional)]
@@ -463,6 +515,7 @@ pub fn Form(props: FormProps) -> Element {
         colon,
         required_mark,
         label_align,
+        label_wrap,
         label_col,
         wrapper_col,
         disabled,
@@ -470,6 +523,7 @@ pub fn Form(props: FormProps) -> Element {
         scroll_to_first_error,
         scroll_to_first_error_config,
         feedback_icons,
+        name,
         initial_values,
         form,
         class,
@@ -504,6 +558,7 @@ pub fn Form(props: FormProps) -> Element {
         colon,
         required_mark,
         _label_align: label_align,
+        label_wrap,
         _label_col: label_col,
         _wrapper_col: wrapper_col,
         disabled,
@@ -533,10 +588,12 @@ pub fn Form(props: FormProps) -> Element {
     // Store scroll config for use in submit handler
     let _scroll_config = scroll_to_first_error_config;
 
+    let name_attr = name.clone();
     rsx! {
         form {
             class: "{form_class_attr}",
             style: "{form_style_attr}",
+            name: name_attr,
             onsubmit: move |evt| {
                 evt.prevent_default();
                 if validate_all(&submit_handle, &submit_registry) {
@@ -822,20 +879,51 @@ pub fn FormItem(props: FormItemProps) -> Element {
 
     let tooltip_text = tooltip.clone().unwrap_or_default();
 
+    // Build label content based on required_mark configuration
+    let label_content = if let Some(text) = label {
+        let label_text = if ctx.colon {
+            format!("{}:", text)
+        } else {
+            text.clone()
+        };
+        let label_node = rsx! { "{label_text}" };
+        
+        let final_label = match &ctx.required_mark {
+            RequiredMark::None => label_node,
+            RequiredMark::Optional => {
+                rsx! {
+                    {label_node}
+                    span { class: "adui-form-item-optional", "(optional)" }
+                }
+            },
+            RequiredMark::Default => {
+                if is_required {
+                    rsx! {
+                        span { class: "adui-form-item-required", "*" }
+                        {label_node}
+                    }
+                } else {
+                    label_node
+                }
+            },
+            RequiredMark::Custom(render_fn) => {
+                let custom_node = render_fn(label_node, is_required);
+                custom_node
+            },
+        };
+        
+        Some(final_label)
+    } else {
+        None
+    };
+
     rsx! {
         div { class: wrapper_class.join(" "), style: style.unwrap_or_default(),
-            if let Some(text) = label {
-                label { class: "adui-form-item-label", title: "{tooltip_text}",
-                    span {
-                        if matches!(ctx.required_mark, RequiredMark::Default) && is_required {
-                            span { class: "adui-form-item-required", "*" }
-                        }
-                        if ctx.colon {
-                            "{text}:"
-                        } else {
-                            "{text}"
-                        }
-                    }
+            if let Some(label_el) = label_content {
+                label { 
+                    class: if ctx.label_wrap { "adui-form-item-label adui-form-item-label-wrap" } else { "adui-form-item-label" },
+                    title: "{tooltip_text}",
+                    {label_el}
                 }
             }
             div { class: "adui-form-item-control", {children} }

@@ -18,6 +18,8 @@ use crate::foundation::{
 };
 use dioxus::prelude::*;
 use serde_json::Value;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 /// Horizontal alignment for table cells.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -211,6 +213,41 @@ pub enum SelectionType {
     Radio,
 }
 
+/// Expandable row configuration.
+#[derive(Clone)]
+pub struct ExpandableConfig {
+    /// Whether rows are expandable by default.
+    pub expanded_row_keys: Vec<String>,
+    /// Callback when expanded rows change.
+    pub on_expand: Option<EventHandler<(bool, String)>>,
+    /// Custom expand icon.
+    pub expand_icon: Option<Element>,
+    /// Custom expanded row render function: (record, index, indent, expanded) -> Element
+    pub expanded_row_render: Option<Rc<dyn Fn(&Value, usize, usize, bool) -> Element>>,
+    /// Whether to show expand icon for all rows (even if expanded_row_render returns None).
+    pub show_expand_icon: bool,
+}
+
+impl Default for ExpandableConfig {
+    fn default() -> Self {
+        Self {
+            expanded_row_keys: Vec::new(),
+            on_expand: None,
+            expand_icon: None,
+            expanded_row_render: None,
+            show_expand_icon: true,
+        }
+    }
+}
+
+impl PartialEq for ExpandableConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.expanded_row_keys == other.expanded_row_keys
+            && self.show_expand_icon == other.show_expand_icon
+            // Functions cannot be compared
+    }
+}
+
 /// Scroll configuration for fixed header/columns.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct TableScroll {
@@ -222,6 +259,66 @@ pub struct TableScroll {
     pub scroll_to_first_row_on_change: bool,
 }
 
+/// Sticky configuration for table header.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct StickyConfig {
+    /// Offset from top when sticky.
+    pub offset_top: Option<f32>,
+    /// Offset from bottom when sticky.
+    pub offset_bottom: Option<f32>,
+    /// Container element selector for sticky calculation.
+    pub get_container: Option<String>,
+}
+
+/// Summary row configuration.
+#[derive(Clone)]
+pub struct SummaryConfig {
+    /// Custom summary row render function: (columns, data) -> Element
+    pub render: Option<Rc<dyn Fn(&[TableColumn], &[Value]) -> Element>>,
+    /// Fixed position for summary row.
+    pub fixed: Option<ColumnFixed>,
+}
+
+impl PartialEq for SummaryConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.fixed == other.fixed
+        // Functions cannot be compared
+    }
+}
+
+/// Type alias for row class name function: (record, index) -> Option<String>
+pub type RowClassNameFn = Rc<dyn Fn(&Value, usize) -> Option<String>>;
+
+/// Type alias for row props function: (record, index) -> HashMap<String, String>
+pub type RowPropsFn = Rc<dyn Fn(&Value, usize) -> HashMap<String, String>>;
+
+/// Locale configuration for table text.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct TableLocale {
+    /// Text for filter title.
+    pub filter_title: Option<String>,
+    /// Text for filter confirm button.
+    pub filter_confirm: Option<String>,
+    /// Text for filter reset button.
+    pub filter_reset: Option<String>,
+    /// Text when filter is empty.
+    pub filter_empty_text: Option<String>,
+    /// Text for "select all".
+    pub select_all: Option<String>,
+    /// Text for "select none".
+    pub select_none: Option<String>,
+    /// Text for "select invert".
+    pub select_invert: Option<String>,
+    /// Text for sort title.
+    pub sort_title: Option<String>,
+    /// Text for expand.
+    pub expand: Option<String>,
+    /// Text for collapse.
+    pub collapse: Option<String>,
+    /// Text for empty table.
+    pub empty_text: Option<String>,
+}
+
 /// Event payload for table changes (pagination, filters, sorter).
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct TableChangeEvent {
@@ -229,8 +326,6 @@ pub struct TableChangeEvent {
     pub sorter: Option<TableSorterState>,
     pub filters: HashMap<String, Vec<String>>,
 }
-
-use std::collections::HashMap;
 
 /// Pagination state in change event.
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -248,7 +343,7 @@ pub struct TableSorterState {
 }
 
 /// Props for the Table component.
-#[derive(Props, Clone, PartialEq)]
+#[derive(Props, Clone)]
 pub struct TableProps {
     /// Column definitions.
     pub columns: Vec<TableColumn>,
@@ -257,9 +352,15 @@ pub struct TableProps {
     /// Field used as row key.
     #[props(optional)]
     pub row_key_field: Option<String>,
-    /// Extra class applied to each row.
+    /// Extra class applied to each row (static).
     #[props(optional)]
     pub row_class_name: Option<String>,
+    /// Dynamic row class name function: (record, index) -> Option<String>
+    #[props(optional)]
+    pub row_class_name_fn: Option<RowClassNameFn>,
+    /// Dynamic row props function: (record, index) -> HashMap<String, String>
+    #[props(optional)]
+    pub row_props_fn: Option<RowPropsFn>,
     /// Whether to show outer borders.
     #[props(default)]
     pub bordered: bool,
@@ -281,9 +382,29 @@ pub struct TableProps {
     /// Scroll configuration.
     #[props(optional)]
     pub scroll: Option<TableScroll>,
+    /// Sticky header configuration.
+    #[props(optional)]
+    pub sticky: Option<StickyConfig>,
+    /// Expandable row configuration.
+    #[props(optional)]
+    pub expandable: Option<ExpandableConfig>,
+    /// Summary row configuration.
+    #[props(optional)]
+    pub summary: Option<SummaryConfig>,
     /// Called when pagination, filters or sorter changes.
     #[props(optional)]
     pub on_change: Option<EventHandler<TableChangeEvent>>,
+    /// Custom container for popups (dropdowns, filters, etc.).
+    /// Function that takes trigger node and returns container element.
+    /// In Rust, this is simplified to a container selector string.
+    #[props(optional)]
+    pub get_popup_container: Option<String>,
+    /// Enable virtual scrolling for large datasets.
+    #[props(default)]
+    pub r#virtual: bool,
+    /// Locale configuration for table text.
+    #[props(optional)]
+    pub locale: Option<TableLocale>,
     /// Show table header.
     #[props(default = true)]
     pub show_header: bool,
@@ -308,6 +429,39 @@ pub struct TableProps {
     pub pagination_on_change: Option<EventHandler<(u32, u32)>>,
 }
 
+impl PartialEq for TableProps {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare all fields except function pointers
+        self.columns == other.columns
+            && self.data == other.data
+            && self.row_key_field == other.row_key_field
+            && self.row_class_name == other.row_class_name
+            && self.bordered == other.bordered
+            && self.size == other.size
+            && self.loading == other.loading
+            && self.is_empty == other.is_empty
+            && self.empty == other.empty
+            && self.row_selection == other.row_selection
+            && self.scroll == other.scroll
+            && self.sticky == other.sticky
+            && self.expandable == other.expandable
+            && self.summary == other.summary
+            && self.on_change == other.on_change
+            && self.show_header == other.show_header
+            && self.class == other.class
+            && self.style == other.style
+            && self.class_names == other.class_names
+            && self.styles == other.styles
+            && self.get_popup_container == other.get_popup_container
+            && self.r#virtual == other.r#virtual
+            && self.locale == other.locale
+            && self.pagination_total == other.pagination_total
+            && self.pagination_current == other.pagination_current
+            && self.pagination_page_size == other.pagination_page_size
+            // Function pointers cannot be compared for equality
+    }
+}
+
 /// Ant Design flavored Table.
 #[component]
 pub fn Table(props: TableProps) -> Element {
@@ -316,6 +470,8 @@ pub fn Table(props: TableProps) -> Element {
         data,
         row_key_field,
         row_class_name,
+        row_class_name_fn,
+        row_props_fn,
         bordered,
         size,
         loading,
@@ -323,12 +479,18 @@ pub fn Table(props: TableProps) -> Element {
         empty,
         row_selection,
         scroll,
+        sticky,
+        expandable,
+        summary,
         on_change,
         show_header,
         class,
         style,
         class_names,
         styles,
+        get_popup_container,
+        r#virtual: virtual_scrolling,
+        locale,
         pagination_total,
         pagination_current,
         pagination_page_size,

@@ -13,6 +13,8 @@ use crate::foundation::{
 };
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 /// Modal type for static method variants.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -37,7 +39,7 @@ impl ModalType {
 }
 
 /// Basic modal props, targeting the most common controlled use cases.
-#[derive(Props, Clone, PartialEq)]
+#[derive(Props, Clone)]
 pub struct ModalProps {
     /// Whether the modal is visible.
     pub open: bool,
@@ -45,8 +47,13 @@ pub struct ModalProps {
     #[props(optional)]
     pub title: Option<String>,
     /// Custom footer content. When `None`, default OK/Cancel buttons are shown.
+    /// Can be an Element or a function: (originNode, extra) -> Element
     #[props(optional)]
     pub footer: Option<Element>,
+    /// Custom footer render function: (originNode, extra) -> Element
+    /// When provided, this takes precedence over `footer`.
+    #[props(optional)]
+    pub footer_render: Option<Rc<dyn Fn(Element, FooterExtra) -> Element>>,
     /// Whether to show the footer (set to false to hide default footer).
     #[props(default = true)]
     pub show_footer: bool,
@@ -57,17 +64,31 @@ pub struct ModalProps {
     #[props(optional)]
     pub on_cancel: Option<EventHandler<()>>,
     /// When true, show a close button in the top-right corner.
+    /// Can also be a ClosableConfig object for advanced configuration.
     #[props(default = true)]
     pub closable: bool,
+    /// Advanced closable configuration (takes precedence over `closable` boolean).
+    #[props(optional)]
+    pub closable_config: Option<ClosableConfig>,
     /// Whether clicking the mask should trigger `on_cancel`.
     #[props(default = true)]
     pub mask_closable: bool,
     /// Remove modal content from the tree when closed.
     #[props(default)]
     pub destroy_on_close: bool,
+    /// Remove modal content from the tree when hidden (since 5.25.0).
+    #[props(default)]
+    pub destroy_on_hidden: bool,
+    /// Force render Modal even when not visible.
+    #[props(default)]
+    pub force_render: bool,
     /// Optional fixed width for the modal content in pixels.
+    /// Can also be a responsive width map: { xs: 300, sm: 400, ... }
     #[props(optional)]
     pub width: Option<f32>,
+    /// Responsive width configuration: { breakpoint: width }
+    #[props(optional)]
+    pub width_responsive: Option<HashMap<String, f32>>,
     /// Whether to vertically center the modal.
     #[props(default)]
     pub centered: bool,
@@ -107,7 +128,118 @@ pub struct ModalProps {
     /// Semantic styles.
     #[props(optional)]
     pub styles: Option<ModalStyles>,
+    /// Custom container for modal rendering (selector string or "false" to disable portal).
+    #[props(optional)]
+    pub get_container: Option<String>,
+    /// Custom z-index for the modal.
+    #[props(optional)]
+    pub z_index: Option<i32>,
+    /// Mask configuration (style, closable, etc.).
+    #[props(optional)]
+    pub mask: Option<MaskConfig>,
+    /// Custom modal render function: (node) -> Element
+    #[props(optional)]
+    pub modal_render: Option<Rc<dyn Fn(Element) -> Element>>,
+    /// Mouse position for modal placement (x, y).
+    #[props(optional)]
+    pub mouse_position: Option<(f32, f32)>,
+    /// Loading state for the entire modal (since 5.18.0).
+    #[props(default)]
+    pub loading: bool,
+    /// OK button props.
+    #[props(optional)]
+    pub ok_button_props: Option<HashMap<String, String>>,
+    /// Cancel button props.
+    #[props(optional)]
+    pub cancel_button_props: Option<HashMap<String, String>>,
     pub children: Element,
+}
+
+impl PartialEq for ModalProps {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare all fields except function pointers
+        self.open == other.open
+            && self.title == other.title
+            && self.footer == other.footer
+            && self.show_footer == other.show_footer
+            && self.closable == other.closable
+            && self.mask_closable == other.mask_closable
+            && self.destroy_on_close == other.destroy_on_close
+            && self.destroy_on_hidden == other.destroy_on_hidden
+            && self.force_render == other.force_render
+            && self.width == other.width
+            && self.width_responsive == other.width_responsive
+            && self.centered == other.centered
+            && self.confirm_loading == other.confirm_loading
+            && self.ok_text == other.ok_text
+            && self.cancel_text == other.cancel_text
+            && self.ok_type == other.ok_type
+            && self.keyboard == other.keyboard
+            && self.close_icon == other.close_icon
+            && self.after_close == other.after_close
+            && self.after_open_change == other.after_open_change
+            && self.class == other.class
+            && self.style == other.style
+            && self.class_names == other.class_names
+            && self.styles == other.styles
+            && self.get_container == other.get_container
+            && self.z_index == other.z_index
+            && self.mask == other.mask
+            && self.mouse_position == other.mouse_position
+            && self.loading == other.loading
+            && self.ok_button_props == other.ok_button_props
+            && self.cancel_button_props == other.cancel_button_props
+            && self.closable_config == other.closable_config
+            // Function pointers cannot be compared for equality
+    }
+}
+
+/// Extra props for footer render function.
+#[derive(Clone, Debug)]
+pub struct FooterExtra {
+    /// OK button component (as Element).
+    pub ok_btn: Element,
+    /// Cancel button component (as Element).
+    pub cancel_btn: Element,
+}
+
+/// Closable configuration for advanced close button control.
+#[derive(Clone)]
+pub struct ClosableConfig {
+    /// Whether to show the close button.
+    pub show: bool,
+    /// Custom close handler.
+    pub on_close: Option<Rc<dyn Fn()>>,
+    /// Callback after close animation completes.
+    pub after_close: Option<Rc<dyn Fn()>>,
+}
+
+impl PartialEq for ClosableConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.show == other.show
+        // Function pointers cannot be compared for equality
+    }
+}
+
+impl std::fmt::Debug for ClosableConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ClosableConfig")
+            .field("show", &self.show)
+            .field("on_close", &"<function>")
+            .field("after_close", &"<function>")
+            .finish()
+    }
+}
+
+/// Mask configuration for modal backdrop.
+#[derive(Clone, Debug, PartialEq)]
+pub struct MaskConfig {
+    /// Whether mask is visible.
+    pub visible: bool,
+    /// Whether clicking mask closes the modal.
+    pub closable: bool,
+    /// Custom mask style.
+    pub style: Option<String>,
 }
 
 /// Simple Ant Design flavored modal.
@@ -138,6 +270,7 @@ pub fn Modal(props: ModalProps) -> Element {
         class_names,
         styles,
         children,
+        ..
     } = props;
 
     // Track previous open state for after_open_change callback

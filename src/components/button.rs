@@ -140,6 +140,11 @@ pub fn ButtonGroup(props: ButtonGroupProps) -> Element {
 }
 
 /// Props for the Ant Design flavored button.
+///
+/// Note: The `loading` property in Ant Design TypeScript supports an object form
+/// `{ delay?: number, icon?: ReactNode }`. In this Rust implementation, it is split
+/// into `loading` (boolean), `loading_delay` (Option<u64>), and `loading_icon` (Option<Element>)
+/// for better type safety and clarity.
 #[derive(Props, Clone, PartialEq)]
 pub struct ButtonProps {
     #[props(default)]
@@ -154,6 +159,9 @@ pub struct ButtonProps {
     pub ghost: bool,
     #[props(default)]
     pub block: bool,
+    /// Whether the button is in loading state.
+    /// Note: In Ant Design TypeScript, this can be a boolean or an object `{ delay?: number, icon?: ReactNode }`.
+    /// Here it is split into `loading`, `loading_delay`, and `loading_icon` for better type safety.
     #[props(default)]
     pub loading: bool,
     /// Optional loading delay in milliseconds before showing spinner.
@@ -177,8 +185,13 @@ pub struct ButtonProps {
     pub color: Option<ButtonColor>,
     #[props(optional)]
     pub variant: Option<ButtonVariant>,
+    /// Icon placement relative to content.
     #[props(default)]
     pub icon_placement: ButtonIconPlacement,
+    /// @deprecated Please use `icon_placement` instead.
+    /// This property is kept for backward compatibility and will be mapped to `icon_placement`.
+    #[props(optional)]
+    pub icon_position: Option<ButtonIconPlacement>,
     #[props(optional)]
     pub icon: Option<Element>,
     #[props(optional)]
@@ -200,6 +213,10 @@ pub struct ButtonProps {
     /// Native button type, used when rendering as `<button>`.
     #[props(default)]
     pub html_type: ButtonHtmlType,
+    /// Data attributes as a map of key-value pairs. Keys should be without the "data-" prefix.
+    /// For example, `data_attributes: Some([("test", "value")])` will render as `data-test="value"`.
+    #[props(optional)]
+    pub data_attributes: Option<Vec<(String, String)>>,
     #[props(optional)]
     pub onclick: Option<EventHandler<MouseEvent>>,
     pub children: Element,
@@ -225,6 +242,7 @@ pub fn Button(props: ButtonProps) -> Element {
         color,
         variant,
         icon_placement,
+        icon_position,
         icon,
         href,
         class,
@@ -233,9 +251,13 @@ pub fn Button(props: ButtonProps) -> Element {
         class_names_content,
         styles_root,
         html_type,
+        data_attributes,
         onclick,
         children,
     } = props;
+
+    // Handle deprecated icon_position: map to icon_placement if provided
+    let icon_placement = icon_position.unwrap_or(icon_placement);
 
     // Merge size/shape/variant/color from ButtonGroup and global ConfigProvider.
     let mut size = size;
@@ -451,10 +473,44 @@ pub fn Button(props: ButtonProps) -> Element {
         },
     };
 
+    // Generate a unique ID for this button to support data-* attributes via JavaScript interop
+    let button_id = use_signal(|| format!("adui-btn-{}", rand_id()));
+    
+    // Set data-* attributes via JavaScript interop if provided
+    #[cfg(target_arch = "wasm32")]
+    {
+        if let Some(data_attrs) = data_attributes.as_ref() {
+            let id = button_id.read().clone();
+            let attrs = data_attrs.clone();
+            {
+                use_effect(move || {
+                    use wasm_bindgen::JsCast;
+                    if let Some(window) = web_sys::window() {
+                        if let Some(document) = window.document() {
+                            if let Some(element) = document.get_element_by_id(&id) {
+                                for (key, value) in attrs.iter() {
+                                    let attr_name = format!("data-{}", key);
+                                    let _ = element.set_attribute(&attr_name, value);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        // Suppress unused variable warning on non-wasm32 targets
+        let _ = data_attributes;
+    }
+
     if let Some(href) = href {
         let handler = onclick;
+        let id_val = button_id.read().clone();
         return rsx! {
             a {
+                id: "{id_val}",
                 class: "{class_attr}",
                 style: format!("{style}{}", styles_root.clone().unwrap_or_default()),
                 href: "{href}",
@@ -478,8 +534,10 @@ pub fn Button(props: ButtonProps) -> Element {
     }
 
     let handler = onclick;
+    let id_val = button_id.read().clone();
     rsx! {
         button {
+            id: "{id_val}",
             class: "{class_attr}",
             style: format!("{style}{}", styles_root.unwrap_or_default()),
             r#type: "{html_type_attr}",
@@ -800,6 +858,25 @@ fn focus_ring(color: ButtonColor, fallback: &str) -> String {
         ButtonColor::Warning => "0 0 0 2px rgba(250, 173, 20, 0.26)".into(),
         ButtonColor::Danger => "0 0 0 2px rgba(255, 77, 79, 0.26)".into(),
         ButtonColor::Default => fallback.into(),
+    }
+}
+
+/// Generate a simple random ID for element identification.
+fn rand_id() -> u32 {
+    // Simple pseudo-random based on current time
+    #[cfg(target_arch = "wasm32")]
+    {
+        use js_sys::Math;
+        (Math::random() * 1_000_000.0) as u32
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.subsec_nanos())
+            .unwrap_or(0)
     }
 }
 

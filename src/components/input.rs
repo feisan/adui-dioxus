@@ -112,6 +112,10 @@ pub struct InputProps {
     /// Triggered when pressing Enter.
     #[props(optional)]
     pub on_press_enter: Option<EventHandler<()>>,
+    /// Data attributes as a map of key-value pairs. Keys should be without the "data-" prefix.
+    /// For example, `data_attributes: Some([("test", "value")])` will render as `data-test="value"`.
+    #[props(optional)]
+    pub data_attributes: Option<Vec<(String, String)>>,
 }
 
 /// Ant Design flavored text input.
@@ -140,7 +144,40 @@ pub fn Input(props: InputProps) -> Element {
         styles,
         on_change,
         on_press_enter,
+        data_attributes,
     } = props;
+
+    // Generate a unique ID for this input to support data-* attributes via JavaScript interop
+    let input_id = use_signal(|| format!("adui-input-{}", rand_id()));
+    
+    // Set data-* attributes via JavaScript interop if provided
+    #[cfg(target_arch = "wasm32")]
+    {
+        if let Some(data_attrs) = data_attributes.as_ref() {
+            let id = input_id.read().clone();
+            let attrs = data_attrs.clone();
+            {
+                use_effect(move || {
+                    use wasm_bindgen::JsCast;
+                    if let Some(window) = web_sys::window() {
+                        if let Some(document) = window.document() {
+                            if let Some(element) = document.get_element_by_id(&id) {
+                                for (key, value) in attrs.iter() {
+                                    let attr_name = format!("data-{}", key);
+                                    let _ = element.set_attribute(&attr_name, value);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        // Suppress unused variable warning on non-wasm32 targets
+        let _ = data_attributes;
+    }
 
     let placeholder_str = placeholder.unwrap_or_default();
     let config = use_config();
@@ -194,10 +231,12 @@ pub fn Input(props: InputProps) -> Element {
         char_count.to_string()
     };
 
+    let input_id_val = input_id.read().clone();
     let input_node = {
         let max_len_attr = max_length.map(|m| m.to_string());
         rsx! {
             input {
+                id: "{input_id_val}",
                 class: "{input_class_attr}",
                 style: "{input_style}",
                 disabled: is_disabled,
@@ -371,9 +410,11 @@ pub fn Input(props: InputProps) -> Element {
         let style_attr = build_wrapper_style();
 
         let max_len_attr = max_length.map(|m| m.to_string());
+        let input_id_val = input_id.read().clone();
 
         rsx! {
             input {
+                id: "{input_id_val}",
                 class: "{class_attr}",
                 style: "{style_attr}",
                 disabled: is_disabled,
@@ -631,7 +672,8 @@ pub fn Search(props: SearchProps) -> Element {
         wrapper_classes.push(extra);
     }
     let wrapper_class = wrapper_classes.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
-    let wrapper_style = style.unwrap_or_default();
+    let mut wrapper_style = style.unwrap_or_default();
+    wrapper_style.append_semantic(&styles, InputSemantic::Root);
 
     let search_icon = if loading {
         rsx! { Icon { kind: IconKind::Loading, spin: true } }
@@ -806,7 +848,7 @@ pub fn OTP(props: OTPProps) -> Element {
             {(0..length).map(|idx| {
                 let current_values = get_current_values();
                 let cell_value = current_values.get(idx).cloned().unwrap_or_default();
-                let mut values_for_input = values_signal;
+                let values_for_input = values_signal;
                 let on_change_cb = on_change;
                 let on_complete_cb = on_complete;
 
@@ -1190,6 +1232,25 @@ fn apply_input_value(
     }
     if let Some(cb) = on_change {
         cb.call(next);
+    }
+}
+
+/// Generate a simple random ID for element identification.
+fn rand_id() -> u32 {
+    // Simple pseudo-random based on current time
+    #[cfg(target_arch = "wasm32")]
+    {
+        use js_sys::Math;
+        (Math::random() * 1_000_000.0) as u32
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.subsec_nanos())
+            .unwrap_or(0)
     }
 }
 

@@ -4,6 +4,8 @@ use crate::components::select_base::use_dropdown_layer;
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
 use time::Date;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 // Internal value used by RangePicker to represent a possibly-partial range.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -83,7 +85,7 @@ fn weekday_index_monday(year: i32, month: u8, day: u8) -> u8 {
 }
 
 /// Props for the DatePicker component (MVP subset for single date picker).
-#[derive(Props, Clone, PartialEq)]
+#[derive(Props, Clone)]
 pub struct DatePickerProps {
     /// Controlled value. When set, the component behaves as a controlled picker.
     #[props(optional)]
@@ -112,6 +114,77 @@ pub struct DatePickerProps {
     /// Change callback fired when the selected date changes.
     #[props(optional)]
     pub on_change: Option<EventHandler<Option<DateValue>>>,
+    /// Show time picker in addition to date picker.
+    #[props(optional)]
+    pub show_time: Option<ShowTimeConfig>,
+    /// Preset date ranges for quick selection.
+    #[props(optional)]
+    pub ranges: Option<HashMap<String, (DateValue, DateValue)>>,
+    /// Disable specific dates: (date) -> bool
+    #[props(optional)]
+    pub disabled_date: Option<Rc<dyn Fn(DateValue) -> bool>>,
+    /// Disable specific times: (date) -> bool (for showTime mode)
+    #[props(optional)]
+    pub disabled_time: Option<Rc<dyn Fn(DateValue) -> bool>>,
+    /// Custom footer render: () -> Element
+    #[props(optional)]
+    pub render_extra_footer: Option<Rc<dyn Fn() -> Element>>,
+    /// Custom date library configuration (for generateConfig).
+    #[props(optional)]
+    pub generate_config: Option<DateGenerateConfig>,
+}
+
+impl PartialEq for DatePickerProps {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare all fields except function pointers
+        self.value == other.value
+            && self.default_value == other.default_value
+            && self.placeholder == other.placeholder
+            && self.format == other.format
+            && self.disabled == other.disabled
+            && self.allow_clear == other.allow_clear
+            && self.class == other.class
+            && self.style == other.style
+            && self.show_time == other.show_time
+            && self.ranges == other.ranges
+            && self.generate_config == other.generate_config
+            // Function pointers cannot be compared for equality
+    }
+}
+
+/// Show time configuration.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ShowTimeConfig {
+    /// Format for time display.
+    pub format: Option<String>,
+    /// Default time value.
+    pub default_value: Option<String>,
+    /// Hour step.
+    pub hour_step: Option<u8>,
+    /// Minute step.
+    pub minute_step: Option<u8>,
+    /// Second step.
+    pub second_step: Option<u8>,
+}
+
+/// Date generation configuration for custom date libraries.
+#[derive(Clone)]
+pub struct DateGenerateConfig {
+    /// Generate date from year, month, day.
+    pub from_ymd: Rc<dyn Fn(i32, u8, u8) -> Option<DateValue>>,
+    /// Get current date.
+    pub now: Rc<dyn Fn() -> DateValue>,
+    /// Format date to string.
+    pub format: Rc<dyn Fn(DateValue, &str) -> String>,
+    /// Parse string to date.
+    pub parse: Rc<dyn Fn(&str, &str) -> Option<DateValue>>,
+}
+
+impl PartialEq for DateGenerateConfig {
+    fn eq(&self, _other: &Self) -> bool {
+        // Function pointers cannot be compared for equality
+        false
+    }
 }
 
 /// Ant Design flavored DatePicker (MVP: single-date picker with dropdown
@@ -129,6 +202,7 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
         class,
         style,
         on_change,
+        ..
     } = props;
 
     let config = use_config();

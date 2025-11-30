@@ -37,6 +37,7 @@ use crate::components::config_provider::use_config;
 use crate::components::select_base::{OptionKey, TreeNode};
 use crate::theme::use_theme;
 use dioxus::prelude::*;
+use std::rc::Rc;
 
 /// Internal flattened representation of a tree node for rendering.
 #[derive(Clone, Debug)]
@@ -159,7 +160,7 @@ fn collect_parent_keys(flat_nodes: &[FlatTreeNode], target_key: &str) -> Vec<Opt
 }
 
 /// Props for the Tree component.
-#[derive(Props, Clone, PartialEq)]
+#[derive(Props, Clone)]
 pub struct TreeProps {
     /// Tree data source.
     #[props(optional)]
@@ -230,11 +231,104 @@ pub struct TreeProps {
     #[props(default)]
     pub disabled: bool,
 
+    // --- Advanced features ---
+    /// Enable drag and drop for tree nodes.
+    #[props(optional)]
+    pub draggable: Option<DraggableConfig>,
+    /// Async load data function: (node) -> Vec<TreeNode>
+    #[props(optional)]
+    pub load_data: Option<Rc<dyn Fn(&TreeNode) -> Vec<TreeNode>>>,
+    /// Custom field names for tree data structure.
+    #[props(optional)]
+    pub field_names: Option<FieldNames>,
+    /// Filter tree nodes: (node) -> bool
+    #[props(optional)]
+    pub filter_tree_node: Option<Rc<dyn Fn(&TreeNode) -> bool>>,
+    /// Custom icon render: (node) -> Element
+    #[props(optional)]
+    pub icon: Option<Rc<dyn Fn(&TreeNode) -> Element>>,
+    /// Custom switcher icon render: (expanded, is_leaf) -> Element
+    #[props(optional)]
+    pub switcher_icon: Option<Rc<dyn Fn(bool, bool) -> Element>>,
+    /// Custom title render: (node) -> Element
+    #[props(optional)]
+    pub title_render: Option<Rc<dyn Fn(&TreeNode) -> Element>>,
+    /// Loaded keys for async loading state.
+    #[props(optional)]
+    pub loaded_keys: Option<Vec<String>>,
+
     // --- Styling ---
     #[props(optional)]
     pub class: Option<String>,
     #[props(optional)]
     pub style: Option<String>,
+}
+
+/// Draggable configuration for tree nodes.
+#[derive(Clone)]
+pub struct DraggableConfig {
+    /// Whether dragging is enabled.
+    pub enabled: bool,
+    /// Custom drag icon.
+    pub icon: Option<Element>,
+    /// Node draggable check function: (node) -> bool
+    pub node_draggable: Option<Rc<dyn Fn(&TreeNode) -> bool>>,
+}
+
+impl PartialEq for DraggableConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.enabled == other.enabled && self.icon == other.icon
+        // Function pointers cannot be compared for equality
+    }
+}
+
+impl std::fmt::Debug for DraggableConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DraggableConfig")
+            .field("enabled", &self.enabled)
+            .field("icon", &self.icon)
+            .field("node_draggable", &"<function>")
+            .finish()
+    }
+}
+
+/// Custom field names for tree data structure.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct FieldNames {
+    pub title: Option<String>,
+    pub key: Option<String>,
+    pub children: Option<String>,
+}
+
+impl PartialEq for TreeProps {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare all fields except function pointers
+        self.tree_data == other.tree_data
+            && self.expanded_keys == other.expanded_keys
+            && self.default_expanded_keys == other.default_expanded_keys
+            && self.default_expand_all == other.default_expand_all
+            && self.on_expand == other.on_expand
+            && self.selected_keys == other.selected_keys
+            && self.default_selected_keys == other.default_selected_keys
+            && self.selectable == other.selectable
+            && self.multiple == other.multiple
+            && self.on_select == other.on_select
+            && self.checkable == other.checkable
+            && self.checked_keys == other.checked_keys
+            && self.default_checked_keys == other.default_checked_keys
+            && self.check_strictly == other.check_strictly
+            && self.on_check == other.on_check
+            && self.show_line == other.show_line
+            && self.show_icon == other.show_icon
+            && self.block_node == other.block_node
+            && self.disabled == other.disabled
+            && self.class == other.class
+            && self.style == other.style
+            && self.draggable == other.draggable
+            && self.field_names == other.field_names
+            && self.loaded_keys == other.loaded_keys
+            // Function pointers cannot be compared for equality
+    }
 }
 
 /// Ant Design flavored Tree component.
@@ -245,7 +339,7 @@ pub fn Tree(props: TreeProps) -> Element {
         expanded_keys,
         default_expanded_keys,
         default_expand_all,
-        auto_expand_parent,
+        auto_expand_parent: _,
         on_expand,
         selected_keys,
         default_selected_keys,
@@ -263,6 +357,7 @@ pub fn Tree(props: TreeProps) -> Element {
         disabled,
         class,
         style,
+        ..
     } = props;
 
     let config = use_config();

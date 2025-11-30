@@ -17,7 +17,9 @@ pub use components::auto_complete::{AutoComplete, AutoCompleteProps};
 pub use components::avatar::{
     Avatar, AvatarGroup, AvatarGroupProps, AvatarProps, AvatarShape, AvatarSize,
 };
-pub use components::badge::{Badge, BadgeProps, BadgeStatus};
+pub use components::badge::{
+    Badge, BadgeColor, BadgeProps, BadgeSize, BadgeStatus, Ribbon, RibbonPlacement, RibbonProps,
+};
 pub use components::breadcrumb::{Breadcrumb, BreadcrumbItem, BreadcrumbProps};
 pub use components::button::{
     Button, ButtonColor, ButtonGroup, ButtonGroupProps, ButtonHtmlType, ButtonIconPlacement,
@@ -35,7 +37,8 @@ pub use components::config_provider::{
     ComponentSize, ConfigContextValue, ConfigProvider, ConfigProviderProps, Locale, use_config,
 };
 pub use components::date_picker::{
-    DatePicker, DatePickerProps, DateRangeValue, DateValue, RangePicker, RangePickerProps,
+    DateGenerateConfig, DatePicker, DatePickerProps, DateRangeValue, DateValue, RangePicker,
+    RangePickerProps, ShowTimeConfig,
 };
 pub use components::descriptions::{
     ColumnConfig, Descriptions, DescriptionsItem, DescriptionsLayout, DescriptionsProps,
@@ -76,7 +79,9 @@ pub use components::list::List;
 pub use components::masonry::{Masonry, MasonryProps, MasonryResponsive};
 pub use components::menu::{Menu, MenuItemNode, MenuMode, MenuProps};
 pub use components::message::{MessageApi, MessageConfig, MessageType};
-pub use components::modal::{Modal, ModalProps, ModalType};
+pub use components::modal::{
+    ClosableConfig, FooterExtra, MaskConfig, Modal, ModalProps, ModalType,
+};
 pub use components::notification::{
     NotificationApi, NotificationConfig, NotificationPlacement, NotificationType,
 };
@@ -100,9 +105,10 @@ pub use components::statistic::Statistic;
 pub use components::steps::{StepItem, StepStatus, Steps, StepsDirection, StepsProps};
 pub use components::switch::{Switch, SwitchProps, SwitchSize};
 pub use components::table::{
-    ColumnAlign, ColumnFilter, ColumnFixed, ColumnRenderFn, RowSelection, SelectionType,
-    SortOrder, Table, TableChangeEvent, TableColumn, TablePaginationState, TableProps,
-    TableScroll, TableSorterState,
+    ColumnAlign, ColumnFilter, ColumnFixed, ColumnRenderFn, ExpandableConfig, RowClassNameFn,
+    RowPropsFn, RowSelection, SelectionType, SortOrder, StickyConfig, SummaryConfig, Table,
+    TableChangeEvent, TableColumn, TableLocale, TablePaginationState, TableProps, TableScroll,
+    TableSorterState,
 };
 pub use components::tabs::{
     TabEditAction, TabItem, TabPlacement, Tabs, TabsProps, TabsType,
@@ -114,15 +120,18 @@ pub use components::timeline::{
 };
 pub use components::tooltip::{Tooltip, TooltipPlacement, TooltipProps, TooltipTrigger};
 pub use components::tour::{Tour, TourProps, TourStep, TourType};
-pub use components::tree::{DirectoryTree, DirectoryTreeProps, FlatTreeNode, Tree, TreeProps};
+pub use components::tree::{
+    DirectoryTree, DirectoryTreeProps, DraggableConfig, FieldNames, FlatTreeNode, Tree, TreeProps,
+};
 pub use components::tree_select::{TreeSelect, TreeSelectProps};
 pub use components::typography::{
     Paragraph, ParagraphProps, Text, TextProps, TextType, Title, TitleLevel, TitleProps,
     TypographyCopyable, TypographyEditable, TypographyEllipsis,
 };
 pub use components::upload::{
-    Upload, UploadChangeInfo, UploadFile, UploadListConfig, UploadListType, UploadProps,
-    UploadStatus,
+    AcceptConfig, ItemActions, Upload, UploadChangeInfo, UploadFile, UploadHttpMethod,
+    UploadListConfig, UploadListType, UploadLocale, UploadProgressConfig, UploadProps,
+    UploadRequestOptions, UploadStatus,
 };
 pub use components::watermark::{Watermark, WatermarkFont, WatermarkProps};
 pub use theme::{

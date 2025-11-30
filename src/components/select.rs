@@ -18,6 +18,7 @@ use crate::foundation::{
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
 use serde_json::Value;
+use std::rc::Rc;
 
 /// Re-export of the shared option type so that callers can build option lists
 /// without depending on the internal `select_base` module path.
@@ -33,12 +34,19 @@ pub enum SelectMode {
     Multiple,
     /// Tags mode - allows creating new options from input.
     Tags,
+    /// Combobox mode - allows free text input with autocomplete.
+    Combobox,
 }
 
 impl SelectMode {
     /// Whether this mode allows multiple selections.
     pub fn is_multiple(&self) -> bool {
         matches!(self, SelectMode::Multiple | SelectMode::Tags)
+    }
+    
+    /// Whether this mode allows free text input.
+    pub fn allows_input(&self) -> bool {
+        matches!(self, SelectMode::Tags | SelectMode::Combobox)
     }
 }
 
@@ -64,7 +72,7 @@ impl SelectPlacement {
 }
 
 /// Props for the Select component.
-#[derive(Props, Clone, PartialEq)]
+#[derive(Props, Clone)]
 pub struct SelectProps {
     /// Controlled value for single-select mode.
     #[props(optional)]
@@ -92,6 +100,14 @@ pub struct SelectProps {
     /// Enable simple client-side search by option label.
     #[props(default)]
     pub show_search: bool,
+    /// Custom filter function: (input, option) -> bool
+    /// When provided, overrides the default label-based filtering.
+    #[props(optional)]
+    pub filter_option: Option<Rc<dyn Fn(&str, &SelectOption) -> bool>>,
+    /// Token separators for tags mode (e.g., [",", " "]).
+    /// When user types these characters, a new tag is created.
+    #[props(optional)]
+    pub token_separators: Option<Vec<String>>,
     /// Optional visual status applied to the wrapper.
     #[props(optional)]
     pub status: Option<ControlStatus>,
@@ -134,12 +150,65 @@ pub struct SelectProps {
     pub dropdown_class: Option<String>,
     #[props(optional)]
     pub dropdown_style: Option<String>,
+    /// @deprecated Please use `dropdown_class` instead.
+    #[props(optional)]
+    pub dropdown_class_name: Option<String>,
+    /// @deprecated Please use `dropdown_style` instead.
+    #[props(optional)]
+    pub dropdown_style_deprecated: Option<String>,
+    /// @deprecated Please use `popup_match_select_width` instead.
+    #[props(optional)]
+    pub dropdown_match_select_width: Option<bool>,
+    /// Custom render function for the dropdown popup: (menu) -> Element
+    #[props(optional)]
+    pub popup_render: Option<Rc<dyn Fn(Element) -> Element>>,
     /// Change event emitted with the full set of selected keys.
     #[props(optional)]
     pub on_change: Option<EventHandler<Vec<String>>>,
     /// Called when dropdown visibility changes.
     #[props(optional)]
     pub on_dropdown_visible_change: Option<EventHandler<bool>>,
+    /// @deprecated Please use `on_dropdown_visible_change` instead.
+    #[props(optional)]
+    pub on_open_change: Option<EventHandler<bool>>,
+}
+
+impl PartialEq for SelectProps {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare all fields except function pointers
+        self.value == other.value
+            && self.values == other.values
+            && self.options == other.options
+            && self.mode == other.mode
+            && self.multiple == other.multiple
+            && self.allow_clear == other.allow_clear
+            && self.placeholder == other.placeholder
+            && self.disabled == other.disabled
+            && self.show_search == other.show_search
+            && self.status == other.status
+            && self.size == other.size
+            && self.variant == other.variant
+            && self.bordered == other.bordered
+            && self.prefix == other.prefix
+            && self.suffix_icon == other.suffix_icon
+            && self.placement == other.placement
+            && self.popup_match_select_width == other.popup_match_select_width
+            && self.class == other.class
+            && self.root_class_name == other.root_class_name
+            && self.style == other.style
+            && self.class_names == other.class_names
+            && self.styles == other.styles
+            && self.dropdown_class == other.dropdown_class
+            && self.dropdown_style == other.dropdown_style
+            && self.dropdown_class_name == other.dropdown_class_name
+            && self.dropdown_style_deprecated == other.dropdown_style_deprecated
+            && self.dropdown_match_select_width == other.dropdown_match_select_width
+            && self.on_change == other.on_change
+            && self.on_dropdown_visible_change == other.on_dropdown_visible_change
+            && self.on_open_change == other.on_open_change
+            && self.token_separators == other.token_separators
+            // Function pointers cannot be compared for equality
+    }
 }
 
 /// Ant Design flavored Select.
@@ -173,6 +242,13 @@ pub fn Select(props: SelectProps) -> Element {
         dropdown_style,
         on_change,
         on_dropdown_visible_change,
+        filter_option: _,
+        token_separators: _,
+        dropdown_class_name: _,
+        dropdown_style_deprecated: _,
+        dropdown_match_select_width: _,
+        popup_render: _,
+        on_open_change: _,
     } = props;
 
     let config = use_config();

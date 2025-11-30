@@ -3,10 +3,10 @@ use dioxus::{
     prelude::*,
 };
 use dioxus_html::HasFileData;
-use std::{rc::Rc, time::SystemTime};
+use std::{collections::HashMap, rc::Rc, time::SystemTime};
 
 #[cfg(target_arch = "wasm32")]
-use std::{cell::RefCell, collections::HashMap};
+use std::cell::RefCell;
 
 #[cfg(target_arch = "wasm32")]
 use {
@@ -105,6 +105,7 @@ pub enum UploadHttpMethod {
     #[default]
     Post,
     Put,
+    Patch,
 }
 
 impl UploadHttpMethod {
@@ -113,14 +114,70 @@ impl UploadHttpMethod {
         match self {
             UploadHttpMethod::Post => "POST",
             UploadHttpMethod::Put => "PUT",
+            UploadHttpMethod::Patch => "PATCH",
         }
     }
 }
 
+/// Accept configuration for file type filtering.
+#[derive(Clone, Debug, PartialEq)]
+pub struct AcceptConfig {
+    /// MIME types (e.g., "image/*", "application/pdf").
+    pub mime_types: Option<Vec<String>>,
+    /// File extensions (e.g., [".jpg", ".png"]).
+    pub extensions: Option<Vec<String>>,
+}
+
+/// Upload request options for custom request handler.
+#[derive(Clone)]
+pub struct UploadRequestOptions {
+    pub file: UploadFileMeta,
+    pub action: String,
+    pub data: HashMap<String, String>,
+    pub headers: Vec<(String, String)>,
+    pub on_progress: Option<Rc<dyn Fn(f32)>>,
+    pub on_success: Option<Rc<dyn Fn(String)>>,
+    pub on_error: Option<Rc<dyn Fn(String)>>,
+}
+
+/// Progress configuration for upload progress display.
+#[derive(Clone, Debug, PartialEq)]
+pub struct UploadProgressConfig {
+    /// Stroke width for progress bar.
+    pub stroke_width: Option<f32>,
+    /// Show progress info.
+    pub show_info: Option<bool>,
+}
+
+/// Actions available in item render function.
+#[derive(Clone)]
+pub struct ItemActions {
+    pub download: Rc<dyn Fn()>,
+    pub preview: Rc<dyn Fn()>,
+    pub remove: Rc<dyn Fn()>,
+}
+
+/// Locale configuration for upload text.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct UploadLocale {
+    pub uploading: Option<String>,
+    pub remove_file: Option<String>,
+    pub download_file: Option<String>,
+    pub upload_error: Option<String>,
+    pub preview_file: Option<String>,
+}
+
 #[derive(Props, Clone)]
 pub struct UploadProps {
+    /// Upload action URL. Can be a string or a function: (file) -> String
     #[props(optional)]
     pub action: Option<String>,
+    /// Upload action function: (file) -> String
+    #[props(optional)]
+    pub action_fn: Option<Rc<dyn Fn(&UploadFileMeta) -> String>>,
+    /// Whether to upload directory instead of files.
+    #[props(default)]
+    pub directory: bool,
     #[props(default)]
     pub multiple: bool,
     #[props(default)]
@@ -135,8 +192,17 @@ pub struct UploadProps {
     pub with_credentials: bool,
     #[props(optional)]
     pub headers: Option<Vec<(String, String)>>,
+    /// Additional data to send with upload. Can be a map or a function: (file) -> HashMap
+    #[props(optional)]
+    pub data: Option<HashMap<String, String>>,
+    /// Data function: (file) -> HashMap
+    #[props(optional)]
+    pub data_fn: Option<Rc<dyn Fn(&UploadFile) -> HashMap<String, String>>>,
     #[props(optional)]
     pub accept: Option<String>,
+    /// Accept configuration object (mime types, extensions, etc.).
+    #[props(optional)]
+    pub accept_config: Option<AcceptConfig>,
     #[props(optional)]
     pub file_list: Option<Vec<UploadFile>>,
     #[props(optional)]
@@ -147,8 +213,44 @@ pub struct UploadProps {
     pub on_change: Option<EventHandler<UploadChangeInfo>>,
     #[props(optional)]
     pub on_remove: Option<EventHandler<UploadFile>>,
+    /// Callback when file is dropped (for drag-and-drop).
+    #[props(optional)]
+    pub on_drop: Option<EventHandler<()>>,
+    /// Callback when file is previewed.
+    #[props(optional)]
+    pub on_preview: Option<EventHandler<UploadFile>>,
+    /// Callback when file is downloaded.
+    #[props(optional)]
+    pub on_download: Option<EventHandler<UploadFile>>,
     #[props(optional)]
     pub show_upload_list: Option<UploadListConfig>,
+    /// Custom upload request handler: (options, info) -> void
+    #[props(optional)]
+    pub custom_request: Option<Rc<dyn Fn(UploadRequestOptions)>>,
+    /// Preview file handler: (file) -> Promise<String>
+    #[props(optional)]
+    pub preview_file: Option<Rc<dyn Fn(&UploadFile) -> String>>,
+    /// Icon render function: (file, listType) -> Element
+    #[props(optional)]
+    pub icon_render: Option<Rc<dyn Fn(&UploadFile, UploadListType) -> Element>>,
+    /// Image URL check function: (file) -> bool
+    #[props(optional)]
+    pub is_image_url: Option<Rc<dyn Fn(&UploadFile) -> bool>>,
+    /// Progress configuration for upload progress display.
+    #[props(optional)]
+    pub progress: Option<UploadProgressConfig>,
+    /// Custom item render function: (originNode, file, fileList, actions) -> Element
+    #[props(optional)]
+    pub item_render: Option<Rc<dyn Fn(Element, &UploadFile, &[UploadFile], ItemActions) -> Element>>,
+    /// Maximum number of files allowed.
+    #[props(optional)]
+    pub max_count: Option<usize>,
+    /// Whether to open file dialog on click.
+    #[props(default = true)]
+    pub open_file_dialog_on_click: bool,
+    /// Locale configuration for upload text.
+    #[props(optional)]
+    pub locale: Option<UploadLocale>,
     #[props(optional)]
     pub description: Option<Element>,
     #[props(optional)]
@@ -206,6 +308,7 @@ pub fn Upload(props: UploadProps) -> Element {
         style,
         children,
         dragger,
+        ..
     } = props;
     let field_name = field_name.unwrap_or_else(|| "file".to_string());
 
