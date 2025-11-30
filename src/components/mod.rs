@@ -75,3 +75,7 @@ pub mod tree_select;
 pub mod typography;
 pub mod upload;
 pub mod watermark;
+pub mod carousel;
+pub mod image;
+pub mod mentions;
+pub mod transfer;
