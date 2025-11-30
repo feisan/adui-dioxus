@@ -110,9 +110,7 @@ pub use components::table::{
     TableChangeEvent, TableColumn, TableLocale, TablePaginationState, TableProps, TableScroll,
     TableSorterState,
 };
-pub use components::tabs::{
-    TabEditAction, TabItem, TabPlacement, Tabs, TabsProps, TabsType,
-};
+pub use components::tabs::{TabEditAction, TabItem, TabPlacement, Tabs, TabsProps, TabsType};
 pub use components::tag::{Tag, TagColor, TagProps};
 pub use components::time_picker::{TimePicker, TimePickerProps, TimeValue};
 pub use components::timeline::{
@@ -140,16 +138,45 @@ pub use theme::{
 
 // Foundation exports
 pub use foundation::{
-    // Semantic system
-    ClassListExt, SemanticClassNames, SemanticStyles, StyleStringExt,
     // Semantic slot enums
-    AnchorSemantic, ButtonSemantic, CollapseSemantic, DescriptionsSemantic, FormSemantic,
-    InputSemantic, MessageSemantic, ModalSemantic, NotificationSemantic, SelectPopupSemantic,
-    SelectSemantic, TablePartSemantic, TableSemantic, TabsSemantic, TimelineSemantic,
+    AnchorSemantic,
     // Type aliases
-    ButtonClassNames, ButtonStyles, CollapseClassNames, CollapseStyles, FormClassNames,
-    FormStyles, InputClassNames, InputStyles, ModalClassNames, ModalStyles, SelectClassNames,
-    SelectStyles, TableClassNames, TableStyles, TabsClassNames, TabsStyles,
+    ButtonClassNames,
+    ButtonSemantic,
+    ButtonStyles,
+    // Semantic system
+    ClassListExt,
+    CollapseClassNames,
+    CollapseSemantic,
+    CollapseStyles,
+    DescriptionsSemantic,
+    FormClassNames,
+    FormSemantic,
+    FormStyles,
+    InputClassNames,
+    InputSemantic,
+    InputStyles,
+    MessageSemantic,
+    ModalClassNames,
+    ModalSemantic,
+    ModalStyles,
+    NotificationSemantic,
+    SelectClassNames,
+    SelectPopupSemantic,
+    SelectSemantic,
+    SelectStyles,
+    SemanticClassNames,
+    SemanticStyles,
+    StyleStringExt,
+    TableClassNames,
+    TablePartSemantic,
+    TableSemantic,
+    TableStyles,
+    TabsClassNames,
+    TabsSemantic,
+    TabsStyles,
+    TimelineSemantic,
     // Variant system
-    Variant, variant_from_bordered,
+    Variant,
+    variant_from_bordered,
 };

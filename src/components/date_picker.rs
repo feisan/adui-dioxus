@@ -3,9 +3,9 @@ use crate::components::floating::use_floating_close_handle;
 use crate::components::select_base::use_dropdown_layer;
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
-use time::Date;
 use std::collections::HashMap;
 use std::rc::Rc;
+use time::Date;
 
 // Internal value used by RangePicker to represent a possibly-partial range.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -148,7 +148,7 @@ impl PartialEq for DatePickerProps {
             && self.show_time == other.show_time
             && self.ranges == other.ranges
             && self.generate_config == other.generate_config
-            // Function pointers cannot be compared for equality
+        // Function pointers cannot be compared for equality
     }
 }
 

@@ -149,7 +149,7 @@ pub fn Input(props: InputProps) -> Element {
 
     // Generate a unique ID for this input to support data-* attributes via JavaScript interop
     let input_id = use_signal(|| format!("adui-input-{}", rand_id()));
-    
+
     // Set data-* attributes via JavaScript interop if provided
     #[cfg(target_arch = "wasm32")]
     {
@@ -283,7 +283,11 @@ pub fn Input(props: InputProps) -> Element {
         if let Some(extra) = root_class_name.clone() {
             classes.push(extra);
         }
-        classes.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ")
+        classes
+            .into_iter()
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(" ")
     };
 
     let build_wrapper_style = || {
@@ -406,7 +410,11 @@ pub fn Input(props: InputProps) -> Element {
         if let Some(extra) = root_class_name {
             class_list.push(extra);
         }
-        let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+        let class_attr = class_list
+            .into_iter()
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(" ");
         let style_attr = build_wrapper_style();
 
         let max_len_attr = max_length.map(|m| m.to_string());
@@ -671,7 +679,11 @@ pub fn Search(props: SearchProps) -> Element {
     if let Some(extra) = class {
         wrapper_classes.push(extra);
     }
-    let wrapper_class = wrapper_classes.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let wrapper_class = wrapper_classes
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
     let mut wrapper_style = style.unwrap_or_default();
     wrapper_style.append_semantic(&styles, InputSemantic::Root);
 
@@ -968,9 +980,8 @@ pub fn TextArea(props: TextAreaProps) -> Element {
     let inner_value = use_signal(|| initial_inner);
 
     let current_value = resolve_current_value(&form_control, value.clone(), inner_value);
-    let is_disabled = disabled
-        || config.disabled
-        || form_control.as_ref().is_some_and(|ctx| ctx.is_disabled());
+    let is_disabled =
+        disabled || config.disabled || form_control.as_ref().is_some_and(|ctx| ctx.is_disabled());
     let line_rows = rows.unwrap_or(3);
 
     let resolved_size = size.unwrap_or_else(|| InputSize::from_global(config.size));
@@ -987,7 +998,11 @@ pub fn TextArea(props: TextAreaProps) -> Element {
     if let Some(extra) = class {
         class_list.push(extra);
     }
-    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let class_attr = class_list
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
 
     let mut style_attr = style.unwrap_or_default();
     style_attr.append_semantic(&styles, InputSemantic::Root);
@@ -1153,7 +1168,11 @@ fn InputInternal(props: InputInternalProps) -> Element {
     if let Some(extra) = class {
         wrapper_classes.push(extra);
     }
-    let wrapper_class = wrapper_classes.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let wrapper_class = wrapper_classes
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
 
     let mut wrapper_style = style.unwrap_or_default();
     wrapper_style.append_semantic(&styles, InputSemantic::Root);

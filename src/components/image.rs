@@ -349,10 +349,7 @@ fn ImagePreview(props: ImagePreviewProps) -> Element {
 
     let scale_val = *scale.read();
     let rot_val = *rotation.read();
-    let transform_style = format!(
-        "transform: scale({}) rotate({}deg);",
-        scale_val, rot_val
-    );
+    let transform_style = format!("transform: scale({}) rotate({}deg);", scale_val, rot_val);
 
     rsx! {
         div {
@@ -489,7 +486,7 @@ pub fn ImagePreviewGroup(props: ImagePreviewGroupProps) -> Element {
     // Use props directly for controlled mode
     // Internal state only for zoom/rotation
     let mut current_index: Signal<usize> = use_signal(|| current);
-    
+
     // Sync current index with props when it changes
     if *current_index.read() != current {
         current_index.set(current);
@@ -542,31 +539,29 @@ pub fn ImagePreviewGroup(props: ImagePreviewGroupProps) -> Element {
         let on_visible_change = on_visible_change.clone();
         let on_change = on_change.clone();
         let items_len = items.len();
-        move |evt: Event<KeyboardData>| {
-            match evt.key() {
-                Key::ArrowLeft => {
-                    let curr = *current_index.read();
-                    let prev = if curr == 0 { items_len - 1 } else { curr - 1 };
-                    current_index.set(prev);
-                    if let Some(handler) = &on_change {
-                        handler.call(prev);
-                    }
+        move |evt: Event<KeyboardData>| match evt.key() {
+            Key::ArrowLeft => {
+                let curr = *current_index.read();
+                let prev = if curr == 0 { items_len - 1 } else { curr - 1 };
+                current_index.set(prev);
+                if let Some(handler) = &on_change {
+                    handler.call(prev);
                 }
-                Key::ArrowRight => {
-                    let curr = *current_index.read();
-                    let next = if curr + 1 >= items_len { 0 } else { curr + 1 };
-                    current_index.set(next);
-                    if let Some(handler) = &on_change {
-                        handler.call(next);
-                    }
-                }
-                Key::Escape => {
-                    if let Some(handler) = &on_visible_change {
-                        handler.call(false);
-                    }
-                }
-                _ => {}
             }
+            Key::ArrowRight => {
+                let curr = *current_index.read();
+                let next = if curr + 1 >= items_len { 0 } else { curr + 1 };
+                current_index.set(next);
+                if let Some(handler) = &on_change {
+                    handler.call(next);
+                }
+            }
+            Key::Escape => {
+                if let Some(handler) = &on_visible_change {
+                    handler.call(false);
+                }
+            }
+            _ => {}
         }
     };
 
@@ -606,10 +601,7 @@ pub fn ImagePreviewGroup(props: ImagePreviewGroupProps) -> Element {
     let item = &items[idx.min(items.len() - 1)];
     let scale_val = *scale.read();
     let rot_val = *rotation.read();
-    let transform_style = format!(
-        "transform: scale({}) rotate({}deg);",
-        scale_val, rot_val
-    );
+    let transform_style = format!("transform: scale({}) rotate({}deg);", scale_val, rot_val);
 
     rsx! {
         div {

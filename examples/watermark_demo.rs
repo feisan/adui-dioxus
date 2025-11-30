@@ -1,7 +1,15 @@
-//! Watermark component demo.
+//! Watermark 组件演示
+//!
+//! 展示 Watermark 组件的基础用法和高级用法，包括：
+//! - 基础文字水印
+//! - 多行文字水印
+//! - 自定义字体样式
+//! - 调整间距
+//! - 图片水印
 
 use adui_dioxus::{
-    App, Button, ButtonType, Card, ComponentSize, ConfigProvider, Watermark, WatermarkFont,
+    App, Button, ButtonType, Card, ComponentSize, ConfigProvider, ThemeMode, ThemeProvider, Title,
+    TitleLevel, Watermark, WatermarkFont, use_theme,
 };
 use dioxus::prelude::*;
 
@@ -11,154 +19,250 @@ fn main() {
 
 fn app() -> Element {
     rsx! {
-        ConfigProvider {
-            size: Some(ComponentSize::Middle),
-            App { WatermarkDemoShell {} }
-        }
-    }
-}
-
-/// Helper component to conditionally wrap content with Watermark
-#[component]
-fn ConditionalWatermark(
-    show: bool,
-    content: Option<Vec<String>>,
-    image: Option<String>,
-    width: Option<f32>,
-    height: Option<f32>,
-    font: Option<WatermarkFont>,
-    rotate: Option<f32>,
-    gap: Option<[f32; 2]>,
-    children: Element,
-) -> Element {
-    if show {
-        rsx! {
-            Watermark {
-                content: content,
-                image: image,
-                width: width,
-                height: height,
-                font: font,
-                rotate: rotate.unwrap_or(-22.0),
-                gap: gap,
-                {children}
+        ThemeProvider {
+            ConfigProvider {
+                size: Some(ComponentSize::Middle),
+                App {
+                    WatermarkDemo {}
+                }
             }
         }
-    } else {
-        rsx! { {children} }
     }
 }
 
 #[component]
-fn WatermarkDemoShell() -> Element {
+fn WatermarkDemo() -> Element {
+    let theme = use_theme();
+    let mut mode = use_signal(|| ThemeMode::Light);
     let show_watermark = use_signal(|| true);
+
+    use_effect(move || {
+        theme.set_mode(*mode.read());
+    });
 
     rsx! {
         div {
-            style: "padding: 16px; min-height: 100vh; background: var(--adui-color-bg-base);",
-            h2 { "Watermark demo" }
-            p { "展示 Watermark 组件的各种用法，包括文字水印、图片水印和自定义样式。" }
+            style: "padding: 24px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
 
-            // 控制按钮
-            div { style: "margin-bottom: 16px;",
+            // 控制工具栏
+            div {
+                style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 24px; padding: 12px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); border: 1px solid var(--adui-color-border);",
+                span { style: "font-weight: 600;", "主题控制：" }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Light,
+                    "Light"
+                }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Dark,
+                    "Dark"
+                }
+                span {
+                    style: "margin-left: 16px; font-weight: 600;",
+                    "水印控制："
+                }
                 Button {
                     r#type: ButtonType::Primary,
                     onclick: {
-                        let mut show_watermark = show_watermark;
+                        let mut sig = show_watermark;
                         move |_| {
-                            let current = *show_watermark.read();
-                            show_watermark.set(!current);
+                            let current = *sig.read();
+                            sig.set(!current);
                         }
                     },
                     if *show_watermark.read() { "隐藏所有水印" } else { "显示所有水印" }
                 }
             }
 
+            Title { level: TitleLevel::H2, style: "margin-bottom: 16px;", "基础用法" }
+
             // 基础文字水印
-            h3 { style: "margin-top: 24px;", "基础文字水印" }
-            ConditionalWatermark {
-                show: *show_watermark.read(),
-                content: Some(vec!["Ant Design".to_string()]),
-                Card {
-                    title: Some(rsx!("卡片标题")),
-                    style: Some("height: 200px;".to_string()),
-                    children: rsx! {
-                        p { "这是一段受水印保护的内容。" }
-                        p { "水印会覆盖整个容器区域。" }
+            DemoSection {
+                title: "基础文字水印",
+                {
+                    if *show_watermark.read() {
+                        rsx! {
+                            Watermark {
+                                content: Some(vec!["Ant Design".to_string()]),
+                                Card {
+                                    title: Some(rsx!("卡片标题")),
+                                    style: Some("height: 200px;".to_string()),
+                                    children: rsx! {
+                                        p { "这是一段受水印保护的内容。" }
+                                        p { "水印会覆盖整个容器区域。" }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        rsx! {
+                            Card {
+                                title: Some(rsx!("卡片标题")),
+                                style: Some("height: 200px;".to_string()),
+                                children: rsx! {
+                                    p { "这是一段受水印保护的内容。" }
+                                    p { "水印会覆盖整个容器区域。" }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             // 多行文字水印
-            h3 { style: "margin-top: 24px;", "多行文字水印" }
-            ConditionalWatermark {
-                show: *show_watermark.read(),
-                content: Some(vec![
-                    "Confidential".to_string(),
-                    "2024-01-01".to_string(),
-                ]),
-                Card {
-                    style: Some("height: 200px;".to_string()),
-                    children: rsx! {
-                        p { "多行水印可以显示更多信息，例如日期、用户名等。" }
+            DemoSection {
+                title: "多行文字水印",
+                {
+                    if *show_watermark.read() {
+                        rsx! {
+                            Watermark {
+                                content: Some(vec![
+                                    "Confidential".to_string(),
+                                    "2024-01-01".to_string(),
+                                ]),
+                                Card {
+                                    style: Some("height: 200px;".to_string()),
+                                    children: rsx! {
+                                        p { "多行水印可以显示更多信息，例如日期、用户名等。" }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        rsx! {
+                            Card {
+                                style: Some("height: 200px;".to_string()),
+                                children: rsx! {
+                                    p { "多行水印可以显示更多信息，例如日期、用户名等。" }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
+            Title { level: TitleLevel::H2, style: "margin: 32px 0 16px 0;", "高级用法" }
+
             // 自定义字体样式
-            h3 { style: "margin-top: 24px;", "自定义字体样式" }
-            ConditionalWatermark {
-                show: *show_watermark.read(),
-                content: Some(vec!["Custom Style".to_string()]),
-                font: Some(WatermarkFont {
-                    color: "rgba(255, 0, 0, 0.15)".to_string(),
-                    font_size: 20.0,
-                    font_weight: "bold".to_string(),
-                    ..Default::default()
-                }),
-                rotate: Some(-30.0),
-                Card {
-                    style: Some("height: 200px;".to_string()),
-                    children: rsx! {
-                        p { "自定义红色水印，更大的字体和不同的旋转角度。" }
+            DemoSection {
+                title: "自定义字体样式",
+                {
+                    if *show_watermark.read() {
+                        rsx! {
+                            Watermark {
+                                content: Some(vec!["Custom Style".to_string()]),
+                                font: Some(WatermarkFont {
+                                    color: "rgba(255, 0, 0, 0.15)".to_string(),
+                                    font_size: 20.0,
+                                    font_weight: "bold".to_string(),
+                                    font_style: "normal".to_string(),
+                                    font_family: "sans-serif".to_string(),
+                                    text_align: "center".to_string(),
+                                }),
+                                rotate: -30.0,
+                                Card {
+                                    style: Some("height: 200px;".to_string()),
+                                    children: rsx! {
+                                        p { "自定义红色水印，更大的字体和不同的旋转角度。" }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        rsx! {
+                            Card {
+                                style: Some("height: 200px;".to_string()),
+                                children: rsx! {
+                                    p { "自定义红色水印，更大的字体和不同的旋转角度。" }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             // 调整间距
-            h3 { style: "margin-top: 24px;", "调整水印间距" }
-            ConditionalWatermark {
-                show: *show_watermark.read(),
-                content: Some(vec!["Dense".to_string()]),
-                gap: Some([50.0, 50.0]),
-                Card {
-                    style: Some("height: 200px;".to_string()),
-                    children: rsx! {
-                        p { "更密集的水印分布，间距设置为 50x50 像素。" }
+            DemoSection {
+                title: "调整水印间距",
+                {
+                    if *show_watermark.read() {
+                        rsx! {
+                            Watermark {
+                                content: Some(vec!["Dense".to_string()]),
+                                gap: Some([50.0, 50.0]),
+                                Card {
+                                    style: Some("height: 200px;".to_string()),
+                                    children: rsx! {
+                                        p { "更密集的水印分布，间距设置为 50x50 像素。" }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        rsx! {
+                            Card {
+                                style: Some("height: 200px;".to_string()),
+                                children: rsx! {
+                                    p { "更密集的水印分布，间距设置为 50x50 像素。" }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             // 图片水印
-            h3 { style: "margin-top: 24px;", "图片水印" }
-            ConditionalWatermark {
-                show: *show_watermark.read(),
-                image: Some("https://gw.alipayobjects.com/zos/bmw-prod/59a18171-ae17-4571-bbbd-07a66b520b46/k7cjl1fa_w192_h106.png".to_string()),
-                width: Some(100.0),
-                height: Some(55.0),
-                Card {
-                    style: Some("height: 200px;".to_string()),
-                    children: rsx! {
-                        p { "使用图片作为水印，适合添加公司 Logo 等。" }
+            DemoSection {
+                title: "图片水印",
+                {
+                    if *show_watermark.read() {
+                        rsx! {
+                            Watermark {
+                                image: Some("https://gw.alipayobjects.com/zos/bmw-prod/59a18171-ae17-4571-bbbd-07a66b520b46/k7cjl1fa_w192_h106.png".to_string()),
+                                width: Some(100.0),
+                                height: Some(55.0),
+                                Card {
+                                    style: Some("height: 200px;".to_string()),
+                                    children: rsx! {
+                                        p { "使用图片作为水印，适合添加公司 Logo 等。" }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        rsx! {
+                            Card {
+                                style: Some("height: 200px;".to_string()),
+                                children: rsx! {
+                                    p { "使用图片作为水印，适合添加公司 Logo 等。" }
+                                }
+                            }
+                        }
                     }
                 }
             }
+        }
+    }
+}
 
-            // 全页水印示例说明
-            h3 { style: "margin-top: 24px;", "全页水印" }
-            p { style: "color: var(--adui-color-text-secondary);",
-                "将 Watermark 包裹整个页面内容即可实现全页水印效果。"
+// 统一的demo section组件
+#[derive(Props, Clone, PartialEq)]
+struct DemoSectionProps {
+    title: &'static str,
+    children: Element,
+}
+
+#[component]
+fn DemoSection(props: DemoSectionProps) -> Element {
+    rsx! {
+        div {
+            style: "margin-bottom: 24px; padding: 16px; background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius);",
+            div {
+                style: "font-weight: 600; margin-bottom: 12px; color: var(--adui-color-text); font-size: 14px;",
+                {props.title}
             }
+            {props.children}
         }
     }
 }

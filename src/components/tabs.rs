@@ -225,7 +225,11 @@ pub fn Tabs(props: TabsProps) -> Element {
     if let Some(extra) = class {
         class_list.push(extra);
     }
-    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let class_attr = class_list
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
 
     let mut style_attr = style.unwrap_or_default();
     style_attr.append_semantic(&styles, TabsSemantic::Root);

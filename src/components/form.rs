@@ -36,12 +36,12 @@ pub enum ControlSize {
 }
 
 /// Required mark configuration for form labels.
-/// 
+///
 /// In Ant Design TypeScript, this can be:
 /// - `boolean` (true/false)
 /// - `'optional'` (string literal)
 /// - `(labelNode, info) => ReactNode` (function)
-/// 
+///
 /// In Rust, we use an enum with a custom render function option.
 #[derive(Clone)]
 pub enum RequiredMark {
@@ -580,7 +580,11 @@ pub fn Form(props: FormProps) -> Element {
     if let Some(extra) = class {
         form_classes.push(extra);
     }
-    let form_class_attr = form_classes.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let form_class_attr = form_classes
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
 
     let mut form_style_attr = style.unwrap_or_default();
     form_style_attr.append_semantic(&styles, FormSemantic::Root);
@@ -887,7 +891,7 @@ pub fn FormItem(props: FormItemProps) -> Element {
             text.clone()
         };
         let label_node = rsx! { "{label_text}" };
-        
+
         let final_label = match &ctx.required_mark {
             RequiredMark::None => label_node,
             RequiredMark::Optional => {
@@ -895,7 +899,7 @@ pub fn FormItem(props: FormItemProps) -> Element {
                     {label_node}
                     span { class: "adui-form-item-optional", "(optional)" }
                 }
-            },
+            }
             RequiredMark::Default => {
                 if is_required {
                     rsx! {
@@ -905,13 +909,13 @@ pub fn FormItem(props: FormItemProps) -> Element {
                 } else {
                     label_node
                 }
-            },
+            }
             RequiredMark::Custom(render_fn) => {
                 let custom_node = render_fn(label_node, is_required);
                 custom_node
-            },
+            }
         };
-        
+
         Some(final_label)
     } else {
         None
@@ -920,7 +924,7 @@ pub fn FormItem(props: FormItemProps) -> Element {
     rsx! {
         div { class: wrapper_class.join(" "), style: style.unwrap_or_default(),
             if let Some(label_el) = label_content {
-                label { 
+                label {
                     class: if ctx.label_wrap { "adui-form-item-label adui-form-item-label-wrap" } else { "adui-form-item-label" },
                     title: "{tooltip_text}",
                     {label_el}

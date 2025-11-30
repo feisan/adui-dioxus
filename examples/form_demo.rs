@@ -1,7 +1,16 @@
+//! Form 组件演示
+//!
+//! 展示 Form 组件的基础用法和高级用法，包括：
+//! - 基础表单
+//! - 表单验证规则
+//! - 表单布局
+//! - 表单重置和提交
+
 use adui_dioxus::{
-    Button, ButtonHtmlType, ButtonType, Form, FormItem, Input, TextArea, ThemeProvider,
+    Button, ButtonHtmlType, ButtonType, Form, FormItem, FormLayout, Input, TextArea, ThemeMode,
+    ThemeProvider, Title, TitleLevel,
     components::form::{FormFinishEvent, FormFinishFailedEvent, FormRule},
-    use_form,
+    use_form, use_theme,
 };
 use dioxus::prelude::*;
 
@@ -17,119 +26,291 @@ fn app() -> Element {
     }
 }
 
-/// 最小可复现的基础表单示例。
-/// - 外部通过 `use_form` 持有 FormHandle（与 AntD 的 Form.useForm 对齐）
-/// - Form 内部完全依赖 FormStore 作为唯一数据源
-/// - 额外渲染当前 values/errors 便于观察 reset + submit 的行为
 #[component]
 fn FormDemo() -> Element {
-    // 与 AntD 类似：外部持有一个可复用的 Form 实例。
-    let form_signal = use_signal(use_form);
+    let theme = use_theme();
+    let mut mode = use_signal(|| ThemeMode::Light);
+    let form_handle = use_signal(use_form);
     let submit_message = use_signal(|| "尚未提交".to_string());
 
-    // 方便调试：每次渲染时展示当前表单值和错误。
-    let form_snapshot = form_signal.read().clone();
-    let current_values = format!("{:?}", form_snapshot.values());
-    let current_errors = format!("{:?}", form_snapshot.errors());
+    use_effect(move || {
+        theme.set_mode(*mode.read());
+    });
 
     rsx! {
         div {
-            style: "padding: 16px; display: flex; flex-direction: column; gap: 16px; max-width: 360px;",
+            style: "padding: 24px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
+
+            // 控制工具栏
+            div {
+                style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 24px; padding: 12px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); border: 1px solid var(--adui-color-border);",
+                span { style: "font-weight: 600;", "主题控制：" }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Light,
+                    "Light"
+                }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Dark,
+                    "Dark"
+                }
+            }
+
+            Title { level: TitleLevel::H2, style: "margin-bottom: 16px;", "基础用法" }
+
+            // 基础表单
+            DemoSection {
+                title: "基础表单",
+                Form {
+                    form: Some(form_handle.read().clone()),
+                    on_finish: {
+                        let mut sig = submit_message;
+                        move |evt: FormFinishEvent| {
+                            sig.set(format!("提交成功: {:?}", evt.values));
+                        }
+                    },
+                    on_finish_failed: {
+                        let mut sig = submit_message;
+                        move |evt: FormFinishFailedEvent| {
+                            sig.set(format!("提交失败: {:?}", evt.errors));
+                        }
+                    },
+                    FormItem {
+                        name: Some("username".into()),
+                        label: Some("用户名".into()),
+                        rules: Some(vec![FormRule {
+                            required: true,
+                            message: Some("请输入用户名".into()),
+                            ..FormRule::default()
+                        }]),
+                        Input {
+                            placeholder: Some("请输入用户名".into()),
+                        }
+                    }
+                    FormItem {
+                        name: Some("email".into()),
+                        label: Some("邮箱".into()),
+                        tooltip: Some("用于接收通知".into()),
+                        Input {
+                            placeholder: Some("请输入邮箱".into()),
+                        }
+                    }
+                    FormItem {
+                        name: Some("bio".into()),
+                        label: Some("个人简介".into()),
+                        TextArea {
+                            rows: Some(4),
+                            placeholder: Some("简单介绍一下自己".into()),
+                        }
+                    }
+                    Button {
+                        r#type: ButtonType::Primary,
+                        html_type: ButtonHtmlType::Submit,
+                        "提交"
+                    }
+                    Button {
+                        r#type: ButtonType::Text,
+                        onclick: {
+                            let mut sig = submit_message;
+                            move |_| {
+                                let handle = form_handle.read().clone();
+                                handle.reset_fields();
+                                sig.set("尚未提交".to_string());
+                            }
+                        },
+                        "重置"
+                    }
+                }
+                {
+                    let msg = submit_message.read().clone();
+                    rsx! {
+                        div {
+                            style: "margin-top: 16px; padding: 12px; background: var(--adui-color-bg-base); border-radius: var(--adui-radius); font-size: 14px;",
+                            strong { "提交结果：" }
+                            span { {msg} }
+                        }
+                    }
+                }
+            }
+
+            Title { level: TitleLevel::H2, style: "margin: 32px 0 16px 0;", "高级用法" }
+
+            // 表单验证
+            ValidationFormSection {}
+
+            // 表单布局
+            LayoutFormSection {}
+        }
+    }
+}
+
+#[component]
+fn ValidationFormSection() -> Element {
+    let form_handle = use_signal(use_form);
+    let submit_message = use_signal(|| "尚未提交".to_string());
+
+    rsx! {
+        DemoSection {
+            title: "表单验证规则",
             Form {
-                form: Some(form_signal.read().clone()),
+                form: Some(form_handle.read().clone()),
                 on_finish: {
-                    let mut submit_message = submit_message;
+                    let mut sig = submit_message;
                     move |evt: FormFinishEvent| {
-                        submit_message.set(format!("提交成功: {:?}", evt.values));
+                        sig.set(format!("提交成功: {:?}", evt.values));
                     }
                 },
                 on_finish_failed: {
-                    let mut submit_message = submit_message;
+                    let mut sig = submit_message;
                     move |evt: FormFinishFailedEvent| {
-                        submit_message.set(format!("提交失败: {:?}", evt.errors));
+                        sig.set(format!("提交失败: {:?}", evt.errors));
                     }
                 },
-
-                // 用户名：必填
                 FormItem {
                     name: Some("username".into()),
                     label: Some("用户名".into()),
-                    rules: Some(vec![FormRule {
-                        required: true,
-                        message: Some("请输入用户名".into()),
-                        ..FormRule::default()
-                    }]),
+                    rules: Some(vec![
+                        FormRule {
+                            required: true,
+                            min: Some(3),
+                            message: Some("用户名至少 3 个字符".into()),
+                            ..FormRule::default()
+                        },
+                    ]),
                     Input {
-                        placeholder: Some("请输入用户名".into()),
+                        placeholder: Some("至少3个字符".into()),
                     }
                 }
-
-                // 邮箱：非必填，仅做展示
                 FormItem {
                     name: Some("email".into()),
                     label: Some("邮箱".into()),
-                    tooltip: Some("用于接收通知".into()),
+                    rules: Some(vec![
+                        FormRule {
+                            required: true,
+                            message: Some("请输入邮箱".into()),
+                            ..FormRule::default()
+                        },
+                        FormRule {
+                            pattern: Some(r"^[^@\s]+@[^@\s]+\.[^@\s]+$".into()),
+                            message: Some("邮箱格式不正确".into()),
+                            ..FormRule::default()
+                        },
+                    ]),
                     Input {
-                        placeholder: Some("请输入邮箱".into()),
+                        placeholder: Some("example@email.com".into()),
                     }
                 }
-
-                // 个人简介：非必填
                 FormItem {
-                    name: Some("bio".into()),
-                    label: Some("个人简介".into()),
-                    TextArea {
-                        rows: Some(4),
-                        placeholder: Some("简单介绍一下自己".into()),
+                    name: Some("password".into()),
+                    label: Some("密码".into()),
+                    rules: Some(vec![
+                        FormRule {
+                            required: true,
+                            min: Some(6),
+                            message: Some("密码至少 6 个字符".into()),
+                            ..FormRule::default()
+                        },
+                    ]),
+                    Input {
+                        placeholder: Some("至少6个字符".into()),
                     }
                 }
-
-                // 提交按钮
                 Button {
                     r#type: ButtonType::Primary,
                     html_type: ButtonHtmlType::Submit,
                     "提交"
                 }
+            }
+            {
+                let msg = submit_message.read().clone();
+                rsx! {
+                    div {
+                        style: "margin-top: 16px; padding: 12px; background: var(--adui-color-bg-base); border-radius: var(--adui-radius); font-size: 14px;",
+                        strong { "提交结果：" }
+                        span { {msg} }
+                    }
+                }
+            }
+        }
+    }
+}
 
-                // 重置按钮：调用 FormHandle.reset_fields，并重置提交结果提示
-                Button {
-                    r#type: ButtonType::Text,
-                    onclick: {
-                        let mut submit_message = submit_message;
-                        move |_| {
-                            let handle = form_signal.read().clone();
-                            handle.reset_fields();
-                            submit_message.set("尚未提交".to_string());
+#[component]
+fn LayoutFormSection() -> Element {
+    let form_handle = use_signal(use_form);
+
+    rsx! {
+        DemoSection {
+            title: "表单布局",
+            div {
+                style: "display: flex; flex-direction: column; gap: 24px;",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 8px;",
+                    span { style: "font-weight: 600;", "垂直布局（默认）" }
+                    Form {
+                        form: Some(form_handle.read().clone()),
+                        layout: FormLayout::Vertical,
+                        FormItem {
+                            name: Some("field1".into()),
+                            label: Some("字段1".into()),
+                            Input {
+                                placeholder: Some("输入内容".into()),
+                            }
                         }
-                    },
-                    "重置"
+                        FormItem {
+                            name: Some("field2".into()),
+                            label: Some("字段2".into()),
+                            Input {
+                                placeholder: Some("输入内容".into()),
+                            }
+                        }
+                    }
+                }
+                div {
+                    style: "display: flex; flex-direction: column; gap: 8px;",
+                    span { style: "font-weight: 600;", "水平布局" }
+                    Form {
+                        form: Some(form_handle.read().clone()),
+                        layout: FormLayout::Horizontal,
+                        FormItem {
+                            name: Some("field3".into()),
+                            label: Some("字段3".into()),
+                            Input {
+                                placeholder: Some("输入内容".into()),
+                            }
+                        }
+                        FormItem {
+                            name: Some("field4".into()),
+                            label: Some("字段4".into()),
+                            Input {
+                                placeholder: Some("输入内容".into()),
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+}
 
-            // 提交结果
-            div {
-                strong { "提交结果：" }
-                pre {
-                    style: "background:#f5f5f5;border:1px solid #ddd;padding:8px;",
-                    "{submit_message.read()}"
-                }
-            }
+// 统一的demo section组件
+#[derive(Props, Clone, PartialEq)]
+struct DemoSectionProps {
+    title: &'static str,
+    children: Element,
+}
 
-            // 当前表单内部状态（仅用于调试）
+#[component]
+fn DemoSection(props: DemoSectionProps) -> Element {
+    rsx! {
+        div {
+            style: "margin-bottom: 24px; padding: 16px; background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius);",
             div {
-                strong { "当前 values：" }
-                pre {
-                    style: "background:#fafafa;border:1px dashed #ccc;padding:8px;font-size:12px;",
-                    "{current_values}"
-                }
+                style: "font-weight: 600; margin-bottom: 12px; color: var(--adui-color-text); font-size: 14px;",
+                {props.title}
             }
-            div {
-                strong { "当前 errors：" }
-                pre {
-                    style: "background:#fafafa;border:1px dashed #ccc;padding:8px;font-size:12px;",
-                    "{current_errors}"
-                }
-            }
+            {props.children}
         }
     }
 }

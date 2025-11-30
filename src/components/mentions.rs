@@ -160,7 +160,9 @@ pub fn Mentions(props: MentionsProps) -> Element {
     // Internal value state
     let mut internal_value: Signal<String> =
         use_signal(|| default_value.clone().unwrap_or_default());
-    let current_value = value.clone().unwrap_or_else(|| internal_value.read().clone());
+    let current_value = value
+        .clone()
+        .unwrap_or_else(|| internal_value.read().clone());
 
     // Dropdown state
     let mut dropdown_open: Signal<bool> = use_signal(|| false);

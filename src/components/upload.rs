@@ -241,7 +241,8 @@ pub struct UploadProps {
     pub progress: Option<UploadProgressConfig>,
     /// Custom item render function: (originNode, file, fileList, actions) -> Element
     #[props(optional)]
-    pub item_render: Option<Rc<dyn Fn(Element, &UploadFile, &[UploadFile], ItemActions) -> Element>>,
+    pub item_render:
+        Option<Rc<dyn Fn(Element, &UploadFile, &[UploadFile], ItemActions) -> Element>>,
     /// Maximum number of files allowed.
     #[props(optional)]
     pub max_count: Option<usize>,

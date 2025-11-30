@@ -244,7 +244,7 @@ impl PartialEq for ExpandableConfig {
     fn eq(&self, other: &Self) -> bool {
         self.expanded_row_keys == other.expanded_row_keys
             && self.show_expand_icon == other.show_expand_icon
-            // Functions cannot be compared
+        // Functions cannot be compared
     }
 }
 
@@ -458,7 +458,7 @@ impl PartialEq for TableProps {
             && self.pagination_total == other.pagination_total
             && self.pagination_current == other.pagination_current
             && self.pagination_page_size == other.pagination_page_size
-            // Function pointers cannot be compared for equality
+        // Function pointers cannot be compared for equality
     }
 }
 
@@ -522,7 +522,11 @@ pub fn Table(props: TableProps) -> Element {
     if let Some(extra) = class {
         class_list.push(extra);
     }
-    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let class_attr = class_list
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
 
     let mut style_attr = style.unwrap_or_default();
     style_attr.append_semantic(&styles, TableSemantic::Root);
@@ -554,12 +558,18 @@ pub fn Table(props: TableProps) -> Element {
 
     // Selection helpers
     let has_selection = row_selection.is_some();
-    let selection_type = row_selection.as_ref().map(|r| r.selection_type).unwrap_or_default();
-    let selected_keys = row_selection.as_ref()
+    let selection_type = row_selection
+        .as_ref()
+        .map(|r| r.selection_type)
+        .unwrap_or_default();
+    let selected_keys = row_selection
+        .as_ref()
         .map(|r| r.selected_row_keys.clone())
         .unwrap_or_default();
 
-    let all_keys: Vec<String> = data.iter().enumerate()
+    let all_keys: Vec<String> = data
+        .iter()
+        .enumerate()
         .map(|(idx, row)| get_row_key(row, idx))
         .collect();
 
@@ -845,7 +855,13 @@ mod tests {
 
     #[test]
     fn sort_order_classes() {
-        assert_eq!(SortOrder::Ascend.as_class(), "adui-table-column-sort-ascend");
-        assert_eq!(SortOrder::Descend.as_class(), "adui-table-column-sort-descend");
+        assert_eq!(
+            SortOrder::Ascend.as_class(),
+            "adui-table-column-sort-ascend"
+        );
+        assert_eq!(
+            SortOrder::Descend.as_class(),
+            "adui-table-column-sort-descend"
+        );
     }
 }

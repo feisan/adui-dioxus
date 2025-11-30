@@ -327,7 +327,7 @@ impl PartialEq for TreeProps {
             && self.draggable == other.draggable
             && self.field_names == other.field_names
             && self.loaded_keys == other.loaded_keys
-            // Function pointers cannot be compared for equality
+        // Function pointers cannot be compared for equality
     }
 }
 

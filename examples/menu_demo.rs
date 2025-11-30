@@ -1,6 +1,15 @@
+//! Menu 组件演示
+//!
+//! 展示 Menu 组件的基础用法和高级用法，包括：
+//! - 水平菜单
+//! - 垂直菜单
+//! - 子菜单
+//! - 选中状态
+//! - 折叠状态
+
 use adui_dioxus::{
-    App, Button, ButtonType, ComponentSize, ConfigProvider, Layout, Menu, MenuItemNode, MenuMode,
-    Sider,
+    Button, ButtonType, Icon, IconKind, Menu, MenuItemNode, MenuMode, ThemeMode, ThemeProvider,
+    Title, TitleLevel, use_theme,
 };
 use dioxus::prelude::*;
 
@@ -10,131 +19,238 @@ fn main() {
 
 fn app() -> Element {
     rsx! {
-        ConfigProvider {
-            size: Some(ComponentSize::Middle),
-            App { MenuDemoShell {} }
+        ThemeProvider {
+            MenuDemo {}
         }
     }
 }
 
-fn sider_items() -> Vec<MenuItemNode> {
-    vec![
+#[component]
+fn MenuDemo() -> Element {
+    let theme = use_theme();
+    let mut mode = use_signal(|| ThemeMode::Light);
+    let selected_keys = use_signal(|| vec!["1".to_string()]);
+    let open_keys = use_signal(|| vec!["sub1".to_string()]);
+
+    use_effect(move || {
+        theme.set_mode(*mode.read());
+    });
+
+    let menu_items = vec![
         MenuItemNode {
-            id: "dashboard".into(),
-            label: "仪表盘".into(),
-            icon: None,
+            id: "1".into(),
+            label: "导航一".into(),
+            icon: Some(rsx!(Icon {
+                kind: IconKind::Info
+            })),
             disabled: false,
             children: None,
         },
         MenuItemNode {
-            id: "list".into(),
-            label: "列表".into(),
-            icon: None,
+            id: "2".into(),
+            label: "导航二".into(),
+            icon: Some(rsx!(Icon {
+                kind: IconKind::Search
+            })),
+            disabled: false,
+            children: None,
+        },
+        MenuItemNode {
+            id: "sub1".into(),
+            label: "导航三".into(),
+            icon: Some(rsx!(Icon {
+                kind: IconKind::Edit
+            })),
             disabled: false,
             children: Some(vec![
-                MenuItemNode::leaf("list-basic", "基础列表"),
-                MenuItemNode::leaf("list-advanced", "高级列表"),
+                MenuItemNode {
+                    id: "3".into(),
+                    label: "选项 1".into(),
+                    icon: None,
+                    disabled: false,
+                    children: None,
+                },
+                MenuItemNode {
+                    id: "4".into(),
+                    label: "选项 2".into(),
+                    icon: None,
+                    disabled: false,
+                    children: None,
+                },
             ]),
         },
         MenuItemNode {
-            id: "settings".into(),
-            label: "设置".into(),
-            icon: None,
-            disabled: false,
+            id: "5".into(),
+            label: "导航四".into(),
+            icon: Some(rsx!(Icon {
+                kind: IconKind::Copy
+            })),
+            disabled: true,
             children: None,
         },
-    ]
-}
-
-fn header_items() -> Vec<MenuItemNode> {
-    vec![
-        MenuItemNode::leaf("home", "首页"),
-        MenuItemNode::leaf("docs", "文档"),
-        MenuItemNode::leaf("about", "关于"),
-    ]
-}
-
-#[component]
-fn MenuDemoShell() -> Element {
-    let mut sider_selected = use_signal(|| vec!["dashboard".to_string()]);
-    let mut header_selected = use_signal(|| vec!["home".to_string()]);
+    ];
 
     rsx! {
-        Layout {
-            has_sider: Some(true),
-            class: None,
-            style: None,
-            Sider {
-                width: Some(220.0),
-                collapsed_width: Some(80.0),
-                default_collapsed: false,
-                collapsible: true,
-                reverse_arrow: false,
-                trigger: None,
-                zero_width_trigger_style: None,
-                theme: adui_dioxus::SiderTheme::Dark,
-                has_border: true,
-                on_collapse: None,
-                class: None,
-                style: None,
-                div {
-                    style: "margin-bottom: 12px; font-weight: 600; color: #fff;",
-                    "示例导航"
+        div {
+            style: "padding: 24px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
+
+            // 控制工具栏
+            div {
+                style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 24px; padding: 12px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); border: 1px solid var(--adui-color-border);",
+                span { style: "font-weight: 600;", "主题控制：" }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Light,
+                    "Light"
                 }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Dark,
+                    "Dark"
+                }
+            }
+
+            Title { level: TitleLevel::H2, style: "margin-bottom: 16px;", "基础用法" }
+
+            // 水平菜单
+            DemoSection {
+                title: "水平菜单",
                 Menu {
-                    mode: MenuMode::Inline,
-                    items: sider_items(),
-                    selected_keys: Some(sider_selected.read().clone()),
-                    on_select: move |key: String| {
-                        sider_selected.set(vec![key]);
+                    items: menu_items.clone(),
+                    mode: MenuMode::Horizontal,
+                    selected_keys: Some(selected_keys.read().clone()),
+                    on_select: {
+                        let mut sig = selected_keys;
+                        move |key: String| {
+                            sig.set(vec![key]);
+                        }
                     },
                 }
             }
-            adui_dioxus::Content {
-                class: None,
-                style: None,
-                has_sider: None,
-                children: rsx! {
-                    adui_dioxus::Header {
-                        class: None,
-                        style: None,
-                        has_sider: None,
-                        children: rsx! {
-                            div {
-                                style: "display: flex; align-items: center; justify-content: space-between;",
-                                span { style: "font-weight: 600;", "顶部菜单示例" }
-                                Menu {
-                                    mode: MenuMode::Horizontal,
-                                    items: header_items(),
-                                    selected_keys: Some(header_selected.read().clone()),
-                                    on_select: move |key: String| {
-                                        header_selected.set(vec![key]);
-                                    },
-                                }
+
+            // 垂直菜单
+            DemoSection {
+                title: "垂直菜单",
+                div {
+                    style: "width: 200px;",
+                    Menu {
+                        items: menu_items.clone(),
+                        mode: MenuMode::Inline,
+                        selected_keys: Some(selected_keys.read().clone()),
+                        open_keys: Some(open_keys.read().clone()),
+                        on_select: {
+                            let mut sig = selected_keys;
+                            move |key: String| {
+                                sig.set(vec![key]);
                             }
+                        },
+                        on_open_change: {
+                            let mut sig = open_keys;
+                            move |keys| {
+                                sig.set(keys);
+                            }
+                        },
+                    }
+                }
+            }
+
+            Title { level: TitleLevel::H2, style: "margin: 32px 0 16px 0;", "高级用法" }
+
+            // 默认选中
+            DemoSection {
+                title: "默认选中",
+                div {
+                    style: "width: 200px;",
+                    Menu {
+                        items: menu_items.clone(),
+                        mode: MenuMode::Inline,
+                        default_selected_keys: Some(vec!["2".to_string()]),
+                        default_open_keys: Some(vec!["sub1".to_string()]),
+                    }
+                }
+            }
+
+            // 折叠菜单
+            DemoSection {
+                title: "折叠菜单",
+                div {
+                    style: "width: 200px;",
+                    Menu {
+                        items: menu_items.clone(),
+                        mode: MenuMode::Inline,
+                        inline_collapsed: true,
+                    }
+                }
+            }
+
+            // 组合示例
+            DemoSection {
+                title: "组合示例",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 24px;",
+                    div {
+                        style: "display: flex; flex-direction: column; gap: 8px;",
+                        span { style: "font-weight: 600;", "顶部导航菜单" }
+                        Menu {
+                            items: menu_items.clone(),
+                            mode: MenuMode::Horizontal,
+                            selected_keys: Some(selected_keys.read().clone()),
+                        on_select: {
+                            let mut sig = selected_keys;
+                            move |key: String| {
+                                sig.set(vec![key]);
+                            }
+                        },
                         }
                     }
                     div {
-                        style: "padding: 16px;",
-                        h2 { "Menu demo" }
-                        p { "左侧 Sider 显示 inline 菜单，顶部 Header 显示 horizontal 菜单。" }
-                        p { "当前侧边选中 key: {sider_selected.read().first().cloned().unwrap_or_default()}" }
-                        p { "当前顶部选中 key: {header_selected.read().first().cloned().unwrap_or_default()}" }
-                        div { style: "margin-top: 12px; display: flex; gap: 8px;",
-                            Button {
-                                r#type: ButtonType::Default,
-                                onclick: move |_| sider_selected.set(vec!["settings".into()]),
-                                "选中“设置”"
+                        style: "display: flex; flex-direction: column; gap: 8px;",
+                        span { style: "font-weight: 600;", "侧边栏菜单" }
+                        div {
+                            style: "width: 200px; border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 8px;",
+                            Menu {
+                                items: menu_items.clone(),
+                                mode: MenuMode::Inline,
+                                selected_keys: Some(selected_keys.read().clone()),
+                                open_keys: Some(open_keys.read().clone()),
+                        on_select: {
+                            let mut sig = selected_keys;
+                            move |key: String| {
+                                sig.set(vec![key]);
                             }
-                            Button {
-                                r#type: ButtonType::Default,
-                                onclick: move |_| header_selected.set(vec!["docs".into()]),
-                                "选中“文档”"
+                        },
+                                on_open_change: {
+                                    let mut sig = open_keys;
+                                    move |keys| {
+                                        sig.set(keys);
+                                    }
+                                },
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+// 统一的demo section组件
+#[derive(Props, Clone, PartialEq)]
+struct DemoSectionProps {
+    title: &'static str,
+    children: Element,
+}
+
+#[component]
+fn DemoSection(props: DemoSectionProps) -> Element {
+    rsx! {
+        div {
+            style: "margin-bottom: 24px; padding: 16px; background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius);",
+            div {
+                style: "font-weight: 600; margin-bottom: 12px; color: var(--adui-color-text); font-size: 14px;",
+                {props.title}
+            }
+            {props.children}
         }
     }
 }

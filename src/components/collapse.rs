@@ -223,7 +223,11 @@ pub fn Collapse(props: CollapseProps) -> Element {
     if let Some(extra) = class {
         class_list.push(extra);
     }
-    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let class_attr = class_list
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
 
     let mut style_attr = format!("border-color:{};", tokens.color_border);
     style_attr.push_str(&style.unwrap_or_default());

@@ -475,7 +475,7 @@ pub fn Button(props: ButtonProps) -> Element {
 
     // Generate a unique ID for this button to support data-* attributes via JavaScript interop
     let button_id = use_signal(|| format!("adui-btn-{}", rand_id()));
-    
+
     // Set data-* attributes via JavaScript interop if provided
     #[cfg(target_arch = "wasm32")]
     {

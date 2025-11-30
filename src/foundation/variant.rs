@@ -62,8 +62,14 @@ mod tests {
 
     #[test]
     fn variant_class_for_prefix() {
-        assert_eq!(Variant::Outlined.class_for("adui-input"), "adui-input-outlined");
-        assert_eq!(Variant::Filled.class_for("adui-select"), "adui-select-filled");
+        assert_eq!(
+            Variant::Outlined.class_for("adui-input"),
+            "adui-input-outlined"
+        );
+        assert_eq!(
+            Variant::Filled.class_for("adui-select"),
+            "adui-select-filled"
+        );
     }
 
     #[test]
@@ -85,4 +91,3 @@ mod tests {
         assert_eq!(variant_from_bordered(None, None), Variant::Outlined);
     }
 }
-

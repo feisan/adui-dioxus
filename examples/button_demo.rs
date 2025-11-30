@@ -1,6 +1,15 @@
+//! Button 组件演示
+//!
+//! 展示 Button 组件的基础用法和高级用法，包括：
+//! - 基础类型（Primary、Default、Dashed、Text、Link）
+//! - 尺寸和形状
+//! - 状态（Loading、Danger、Ghost、Block）
+//! - 图标按钮
+//! - 按钮组
+
 use adui_dioxus::{
     Button, ButtonColor, ButtonGroup, ButtonIconPlacement, ButtonShape, ButtonSize, ButtonType,
-    ButtonVariant, Theme, ThemeMode, ThemeProvider, use_theme,
+    ButtonVariant, Icon, IconKind, Theme, ThemeMode, ThemeProvider, Title, TitleLevel, use_theme,
 };
 use dioxus::prelude::*;
 
@@ -17,20 +26,16 @@ fn main() {
 fn app() -> Element {
     rsx! {
         ThemeProvider {
-            DemoShell {}
+            ButtonDemo {}
         }
     }
 }
 
 #[component]
-fn DemoShell() -> Element {
+fn ButtonDemo() -> Element {
     let theme = use_theme();
     let mut mode = use_signal(|| ThemeMode::Light);
     let preset = use_signal(|| 0usize);
-    let ghost = use_signal(|| false);
-    let danger = use_signal(|| false);
-    let loading = use_signal(|| false);
-    let block = use_signal(|| false);
 
     use_effect(move || {
         let idx = *preset.read();
@@ -52,12 +57,12 @@ fn DemoShell() -> Element {
 
     rsx! {
         div {
-            class: "demo-shell",
-            style: "padding: 16px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
+            style: "padding: 24px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
+
+            // 主题控制工具栏
             div {
-                class: "demo-toolbar",
-                style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px;",
-                span { "主题：" }
+                style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 24px; padding: 12px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); border: 1px solid var(--adui-color-border);",
+                span { style: "font-weight: 600;", "主题控制：" }
                 ButtonGroup {
                     size: Some(ButtonSize::Small),
                     Button {
@@ -81,6 +86,7 @@ fn DemoShell() -> Element {
                             rsx!(
                                 Button {
                                     r#type: ButtonType::Text,
+                                    size: ButtonSize::Small,
                                     onclick: move |_| *preset.write() = idx,
                                     class: if idx == *preset.read() { Some("adui-btn-active".into()) } else { None },
                                     "{label}"
@@ -88,148 +94,216 @@ fn DemoShell() -> Element {
                             )
                         })
                 }
-                span { style: "margin-left: 12px;", "开关：" }
-                {
-                    let ghost_val = *ghost.read();
-                    let mut ghost_signal = ghost;
-                    let ghost_label = format!("Ghost {}", if ghost_val { "ON" } else { "OFF" });
-                    rsx!(Button {
-                        r#type: ButtonType::Text,
-                        onclick: move |_| {
-                            let current = *ghost_signal.read();
-                            ghost_signal.set(!current);
-                        },
-                        {ghost_label}
-                    })
-                }
-                {
-                    let danger_val = *danger.read();
-                    let mut danger_signal = danger;
-                    let danger_label = format!("Danger {}", if danger_val { "ON" } else { "OFF" });
-                    rsx!(Button {
-                        r#type: ButtonType::Text,
-                        onclick: move |_| {
-                            let current = *danger_signal.read();
-                            danger_signal.set(!current);
-                        },
-                        {danger_label}
-                    })
-                }
-                {
-                    let loading_val = *loading.read();
-                    let mut loading_signal = loading;
-                    let loading_label = format!("Loading {}", if loading_val { "ON" } else { "OFF" });
-                    rsx!(Button {
-                        r#type: ButtonType::Text,
-                        onclick: move |_| {
-                            let current = *loading_signal.read();
-                            loading_signal.set(!current);
-                        },
-                        {loading_label}
-                    })
-                }
-                {
-                    let block_val = *block.read();
-                    let mut block_signal = block;
-                    let block_label = format!("Block {}", if block_val { "ON" } else { "OFF" });
-                    rsx!(Button {
-                        r#type: ButtonType::Text,
-                        onclick: move |_| {
-                            let current = *block_signal.read();
-                            block_signal.set(!current);
-                        },
-                        {block_label}
-                    })
+            }
+
+            Title { level: TitleLevel::H2, style: "margin-bottom: 16px;", "基础用法" }
+
+            // 基础类型
+            DemoSection {
+                title: "按钮类型",
+                div {
+                    style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                    Button { r#type: ButtonType::Primary, "Primary" }
+                    Button { r#type: ButtonType::Default, "Default" }
+                    Button { r#type: ButtonType::Dashed, "Dashed" }
+                    Button { r#type: ButtonType::Text, "Text" }
+                    Button { r#type: ButtonType::Link, "Link" }
                 }
             }
 
-            div {
-                class: "demo-section",
-                style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;",
+            // 尺寸
+            DemoSection {
+                title: "按钮尺寸",
                 div {
-                    style: "border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 12px; background: var(--adui-color-bg-container); display: flex; flex-wrap: wrap; gap: 8px;",
-                    div { style: "font-weight: 600; margin-bottom: 8px; width: 100%; color: var(--adui-color-text);", "Primary & Default" }
-                    Button {
-                        r#type: ButtonType::Primary,
-                        ghost: *ghost.read(),
-                        danger: *danger.read(),
-                        loading: *loading.read(),
-                        block: *block.read(),
-                        "Primary"
-                    }
-                    Button {
-                        r#type: ButtonType::Default,
-                        ghost: *ghost.read(),
-                        danger: *danger.read(),
-                        loading: *loading.read(),
-                        block: *block.read(),
-                        "Default"
-                    }
-                    Button {
-                        r#type: ButtonType::Dashed,
-                        ghost: *ghost.read(),
-                        danger: *danger.read(),
-                        loading: *loading.read(),
-                        block: *block.read(),
-                        "Dashed"
-                    }
+                    style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center;",
+                    Button { r#type: ButtonType::Primary, size: ButtonSize::Small, "Small" }
+                    Button { r#type: ButtonType::Primary, size: ButtonSize::Middle, "Middle" }
+                    Button { r#type: ButtonType::Primary, size: ButtonSize::Large, "Large" }
                 }
+            }
 
+            // 形状
+            DemoSection {
+                title: "按钮形状",
                 div {
-                    style: "border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 12px; background: var(--adui-color-bg-container); display: flex; flex-wrap: wrap; gap: 8px;",
-                    div { style: "font-weight: 600; margin-bottom: 8px; width: 100%; color: var(--adui-color-text);", "Text & Link" }
-                    Button {
-                        r#type: ButtonType::Text,
-                        danger: *danger.read(),
-                        loading: *loading.read(),
-                        "Text button"
-                    }
-                    Button {
-                        r#type: ButtonType::Link,
-                        danger: *danger.read(),
-                        loading: *loading.read(),
-                        href: Some("https://ant.design".to_string()),
-                        "Link to ant.design"
-                    }
-                }
-
-                div {
-                    style: "border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 12px; background: var(--adui-color-bg-container); display: flex; flex-wrap: wrap; gap: 8px;",
-                    div { style: "font-weight: 600; margin-bottom: 8px; width: 100%; color: var(--adui-color-text);", "Shape & Size" }
-                    Button {
-                        r#type: ButtonType::Primary,
-                        shape: ButtonShape::Round,
-                        size: ButtonSize::Small,
-                        "Round small"
-                    }
-                    Button {
-                        r#type: ButtonType::Primary,
-                        shape: ButtonShape::Default,
-                        size: ButtonSize::Middle,
-                        "Default middle"
-                    }
+                    style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center;",
+                    Button { r#type: ButtonType::Primary, shape: ButtonShape::Default, "Default" }
+                    Button { r#type: ButtonType::Primary, shape: ButtonShape::Round, "Round" }
                     Button {
                         r#type: ButtonType::Primary,
                         shape: ButtonShape::Circle,
-                        size: ButtonSize::Large,
-                        icon: rsx!(span { "★" }),
-                    }
-                }
-
-                div {
-                    style: "border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 12px; background: var(--adui-color-bg-container); display: flex; flex-direction: column; gap: 12px;",
-                    div { style: "font-weight: 600; margin-bottom: 4px; color: var(--adui-color-text);", "Button Group" }
-                    span { style: "color: var(--adui-color-text-secondary); font-size: 13px;", "size/variant/color 来自 ButtonGroup，上方按钮未显式传入。" }
-                    ButtonGroup {
-                        size: Some(ButtonSize::Small),
-                        variant: Some(ButtonVariant::Solid),
-                        color: Some(ButtonColor::Primary),
-                        Button { label: Some("上一页".into()), icon: rsx!(span { "←" }) }
-                        Button { label: Some("刷新".into()), icon: rsx!(span { "↻" }) }
-                        Button { label: Some("下一页".into()), icon_placement: ButtonIconPlacement::End, icon: rsx!(span { "→" }) }
+                        icon: rsx!(Icon { kind: IconKind::Search }),
                     }
                 }
             }
+
+            Title { level: TitleLevel::H2, style: "margin: 32px 0 16px 0;", "高级用法" }
+
+            // 状态：Loading
+            DemoSection {
+                title: "加载状态",
+                div {
+                    style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                    Button { r#type: ButtonType::Primary, loading: true, "Loading" }
+                    Button { r#type: ButtonType::Default, loading: true, "Loading" }
+                    Button { r#type: ButtonType::Primary, loading: true, "Click me" }
+                }
+            }
+
+            // 状态：Danger
+            DemoSection {
+                title: "危险按钮",
+                div {
+                    style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                    Button { r#type: ButtonType::Primary, danger: true, "Danger Primary" }
+                    Button { r#type: ButtonType::Default, danger: true, "Danger Default" }
+                    Button { r#type: ButtonType::Dashed, danger: true, "Danger Dashed" }
+                    Button { r#type: ButtonType::Text, danger: true, "Danger Text" }
+                }
+            }
+
+            // 状态：Ghost
+            DemoSection {
+                title: "幽灵按钮",
+                div {
+                    style: "display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; background: var(--adui-color-primary-bg); border-radius: var(--adui-radius);",
+                    Button { r#type: ButtonType::Primary, ghost: true, "Ghost Primary" }
+                    Button { r#type: ButtonType::Default, ghost: true, "Ghost Default" }
+                    Button { r#type: ButtonType::Dashed, ghost: true, "Ghost Dashed" }
+                }
+            }
+
+            // 状态：Block
+            DemoSection {
+                title: "块级按钮",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 8px; max-width: 300px;",
+                    Button { r#type: ButtonType::Primary, block: true, "Block Button" }
+                    Button { r#type: ButtonType::Default, block: true, "Block Default" }
+                }
+            }
+
+            // 图标按钮
+            DemoSection {
+                title: "图标按钮",
+                div {
+                    style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                    Button {
+                        r#type: ButtonType::Primary,
+                        icon: rsx!(Icon { kind: IconKind::Search }),
+                        "Search"
+                    }
+                    Button {
+                        r#type: ButtonType::Default,
+                        icon: rsx!(Icon { kind: IconKind::Plus }),
+                        "Add"
+                    }
+                    Button {
+                        r#type: ButtonType::Primary,
+                        icon_placement: ButtonIconPlacement::End,
+                        icon: rsx!(Icon { kind: IconKind::ArrowRight }),
+                        "Next"
+                    }
+                    Button {
+                        r#type: ButtonType::Default,
+                        shape: ButtonShape::Circle,
+                        icon: rsx!(Icon { kind: IconKind::Info }),
+                    }
+                }
+            }
+
+            // 按钮组
+            DemoSection {
+                title: "按钮组",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 12px;",
+                    div {
+                        style: "display: flex; flex-wrap: wrap; gap: 12px;",
+                        ButtonGroup {
+                            size: Some(ButtonSize::Small),
+                            variant: Some(ButtonVariant::Solid),
+                            color: Some(ButtonColor::Primary),
+                            Button {
+                                icon: rsx!(Icon { kind: IconKind::ArrowLeft }),
+                                label: Some("上一页".into()),
+                            }
+                            Button {
+                                icon: rsx!(Icon { kind: IconKind::Check }),
+                                label: Some("刷新".into()),
+                            }
+                            Button {
+                                icon_placement: ButtonIconPlacement::End,
+                                icon: rsx!(Icon { kind: IconKind::ArrowRight }),
+                                label: Some("下一页".into()),
+                            }
+                        }
+                    }
+                    div {
+                        style: "display: flex; flex-wrap: wrap; gap: 12px;",
+                        ButtonGroup {
+                            size: Some(ButtonSize::Middle),
+                            Button { r#type: ButtonType::Primary, "Left" }
+                            Button { r#type: ButtonType::Default, "Middle" }
+                            Button { r#type: ButtonType::Default, "Right" }
+                        }
+                    }
+                }
+            }
+
+            // 组合示例
+            DemoSection {
+                title: "组合示例",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 12px;",
+                    div {
+                        style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                        Button {
+                            r#type: ButtonType::Primary,
+                            danger: true,
+                            loading: true,
+                            icon: rsx!(Icon { kind: IconKind::Close }),
+                            "Danger Loading"
+                        }
+                        Button {
+                            r#type: ButtonType::Primary,
+                            ghost: true,
+                            block: true,
+                            icon: rsx!(Icon { kind: IconKind::Check }),
+                            "Ghost Block"
+                        }
+                    }
+                    div {
+                        style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                        Button {
+                            r#type: ButtonType::Link,
+                            href: Some("https://ant.design".to_string()),
+                            icon: rsx!(Icon { kind: IconKind::ArrowRight }),
+                            "Visit Ant Design"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// 统一的demo section组件
+#[derive(Props, Clone, PartialEq)]
+struct DemoSectionProps {
+    title: &'static str,
+    children: Element,
+}
+
+#[component]
+fn DemoSection(props: DemoSectionProps) -> Element {
+    rsx! {
+        div {
+            style: "margin-bottom: 24px; padding: 16px; background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius);",
+            div {
+                style: "font-weight: 600; margin-bottom: 12px; color: var(--adui-color-text); font-size: 14px;",
+                {props.title}
+            }
+            {props.children}
         }
     }
 }

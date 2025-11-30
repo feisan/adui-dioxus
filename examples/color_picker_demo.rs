@@ -1,144 +1,208 @@
-use adui_dioxus::components::color_picker::ColorPicker;
+//! ColorPicker 组件演示
+//!
+//! 展示 ColorPicker 组件的基础用法和高级用法，包括：
+//! - 基础颜色选择
+//! - 受控模式
+//! - 清除功能
+//! - 禁用状态
+
+use adui_dioxus::{
+    Button, ButtonType, ThemeMode, ThemeProvider, Title, TitleLevel,
+    components::color_picker::ColorPicker, use_theme,
+};
 use dioxus::prelude::*;
 
-const DEMO_STYLE: &str = r#"
-    .demo-column {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        padding: 24px;
-    }
-    .demo-row {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-    }
-    .demo-label {
-        min-width: 80px;
-        font-weight: bold;
-    }
-    .demo-value {
-        padding: 4px 8px;
-        background: #f0f0f0;
-        border-radius: 4px;
-        font-family: monospace;
-    }
-    .adui-color-picker {
-        display: inline-flex;
-        flex-direction: column;
-        gap: 8px;
-        border: 1px solid #d9d9d9;
-        border-radius: 4px;
-        padding: 12px;
-        background: white;
-    }
-    .adui-color-picker-preview {
-        width: 200px;
-        height: 40px;
-        border: 1px solid #d9d9d9;
-        border-radius: 4px;
-    }
-    .adui-color-picker-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .adui-color-picker-sat {
-        position: relative;
-        width: 200px;
-        height: 150px;
-        cursor: pointer;
-    }
-    .adui-color-picker-sat-white {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to right, white, rgba(255,255,255,0));
-    }
-    .adui-color-picker-sat-black {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, rgba(0,0,0,0), black);
-    }
-    .adui-color-picker-sat-handle {
-        position: absolute;
-        width: 12px;
-        height: 12px;
-        border: 2px solid white;
-        border-radius: 50%;
-        box-shadow: 0 0 4px rgba(0,0,0,0.5);
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-    }
-    .adui-color-picker-slider {
-        position: relative;
-        width: 200px;
-        height: 12px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-    .adui-color-picker-input-row {
-        display: flex;
-        gap: 8px;
-    }
-    .adui-color-picker-input {
-        flex: 1;
-        padding: 4px 8px;
-        border: 1px solid #d9d9d9;
-        border-radius: 4px;
-        font-family: monospace;
-    }
-    .adui-color-picker-clear {
-        padding: 4px 12px;
-        border: 1px solid #d9d9d9;
-        border-radius: 4px;
-        background: white;
-        cursor: pointer;
-    }
-    .adui-color-picker-clear:hover {
-        background: #f0f0f0;
-    }
-    .adui-color-picker-disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-"#;
+fn main() {
+    dioxus::launch(app);
+}
 
 fn app() -> Element {
-    let mut value = use_signal(|| Some("#1677ff".to_string()));
     rsx! {
-        style { {DEMO_STYLE} }
-        div { class: "demo-column",
-            div { class: "demo-row",
-                span { class: "demo-label", "基础" }
-                ColorPicker {
-                    default_value: Some("#1677ff".to_string()),
-                    on_change: move |hex| {
-                        value.set(Some(hex));
-                    },
+        ThemeProvider {
+            ColorPickerDemo {}
+        }
+    }
+}
+
+#[component]
+fn ColorPickerDemo() -> Element {
+    let theme = use_theme();
+    let mut mode = use_signal(|| ThemeMode::Light);
+    let basic_value = use_signal(|| Some("#1677ff".to_string()));
+    let controlled_value = use_signal(|| Some("#52c41a".to_string()));
+
+    use_effect(move || {
+        theme.set_mode(*mode.read());
+    });
+
+    rsx! {
+        div {
+            style: "padding: 24px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
+
+            // 控制工具栏
+            div {
+                style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 24px; padding: 12px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); border: 1px solid var(--adui-color-border);",
+                span { style: "font-weight: 600;", "主题控制：" }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Light,
+                    "Light"
                 }
-                {
-                    let val_str = value.read().clone().unwrap_or_else(|| "(empty)".into());
-                    rsx! { span { class: "demo-value", "{val_str}" } }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Dark,
+                    "Dark"
                 }
             }
-            div { class: "demo-row",
-                span { class: "demo-label", "禁用" }
-                ColorPicker { value: Some("#faad14".into()), disabled: true, allow_clear: false }
+
+            Title { level: TitleLevel::H2, style: "margin-bottom: 16px;", "基础用法" }
+
+            // 基础颜色选择
+            DemoSection {
+                title: "基础颜色选择",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 12px;",
+                    div {
+                        style: "display: flex; align-items: center; gap: 12px;",
+                        ColorPicker {
+                            value: basic_value.read().clone(),
+                            on_change: {
+                                let mut sig = basic_value;
+                                move |hex: String| sig.set(if hex.is_empty() { None } else { Some(hex) })
+                            },
+                        }
+                        div {
+                            style: "display: flex; flex-direction: column; gap: 4px;",
+                            span {
+                                style: "font-size: 12px; color: var(--adui-color-text-secondary);",
+                                "当前颜色: ",
+                                {
+                                    let val = basic_value.read();
+                                    val.as_ref().map(|v| v.clone()).unwrap_or_else(|| "(未选择)".to_string())
+                                }
+                            }
+                            {
+                                let val = basic_value.read();
+                                if let Some(color) = val.as_ref() {
+                                    let style_str = format!("width: 60px; height: 30px; background: {}; border: 1px solid var(--adui-color-border); border-radius: 4px;", color);
+                                    rsx! {
+                                        div {
+                                            style: style_str,
+                                        }
+                                    }
+                                } else {
+                                    rsx! {}
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            div { class: "demo-row",
-                span { class: "demo-label", "允许清除" }
+
+            // 受控模式
+            DemoSection {
+                title: "受控模式",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 12px;",
+                    div {
+                        style: "display: flex; align-items: center; gap: 12px;",
+                        ColorPicker {
+                            value: controlled_value.read().clone(),
+                            on_change: {
+                                let mut sig = controlled_value;
+                                move |hex: String| sig.set(if hex.is_empty() { None } else { Some(hex) })
+                            },
+                        }
+                        div {
+                            style: "display: flex; flex-direction: column; gap: 4px;",
+                            span {
+                                style: "font-size: 12px; color: var(--adui-color-text-secondary);",
+                                "当前颜色: ",
+                                {
+                                    let val = controlled_value.read();
+                                    val.as_ref().map(|v| v.clone()).unwrap_or_else(|| "(未选择)".to_string())
+                                }
+                            }
+                            {
+                                let val = controlled_value.read();
+                                if let Some(color) = val.as_ref() {
+                                    let style_str = format!("width: 60px; height: 30px; background: {}; border: 1px solid var(--adui-color-border); border-radius: 4px;", color);
+                                    rsx! {
+                                        div {
+                                            style: style_str,
+                                        }
+                                    }
+                                } else {
+                                    rsx! {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 允许清除
+            DemoSection {
+                title: "允许清除",
                 ColorPicker {
-                    default_value: value.read().clone(),
+                    default_value: Some("#faad14".to_string()),
                     allow_clear: true,
-                    on_change: move |hex| {
-                        value.set(Some(hex));
-                    },
+                }
+            }
+
+            // 禁用状态
+            DemoSection {
+                title: "禁用状态",
+                ColorPicker {
+                    value: Some("#faad14".to_string()),
+                    disabled: true,
+                    allow_clear: false,
+                }
+            }
+
+            Title { level: TitleLevel::H2, style: "margin: 32px 0 16px 0;", "高级用法" }
+
+            // 预设颜色示例
+            DemoSection {
+                title: "预设颜色示例",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 12px;",
+                    div {
+                        style: "display: flex; flex-wrap: wrap; gap: 8px;",
+                        for preset in ["#1677ff", "#52c41a", "#faad14", "#f5222d", "#722ed1"] {
+                            div {
+                                style: format!("width: 40px; height: 40px; background: {}; border: 1px solid var(--adui-color-border); border-radius: 4px; cursor: pointer;", preset),
+                                title: preset,
+                            }
+                        }
+                    }
+                    span {
+                        style: "font-size: 12px; color: var(--adui-color-text-secondary);",
+                        "点击上面的颜色块可以查看效果（实际应用中可以通过onChange设置）"
+                    }
                 }
             }
         }
     }
 }
 
-fn main() {
-    dioxus::launch(app);
+// 统一的demo section组件
+#[derive(Props, Clone, PartialEq)]
+struct DemoSectionProps {
+    title: &'static str,
+    children: Element,
+}
+
+#[component]
+fn DemoSection(props: DemoSectionProps) -> Element {
+    rsx! {
+        div {
+            style: "margin-bottom: 24px; padding: 16px; background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius);",
+            div {
+                style: "font-weight: 600; margin-bottom: 12px; color: var(--adui-color-text); font-size: 14px;",
+                {props.title}
+            }
+            {props.children}
+        }
+    }
 }

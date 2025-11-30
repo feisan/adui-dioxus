@@ -1,8 +1,13 @@
+//! Layout 组件演示
+//!
+//! 展示 Layout 组件的基础用法和高级用法，包括：
+//! - Layout 基础布局（Header/Content/Footer）
+//! - Sider 侧边栏（可折叠、主题、零宽度触发）
+//! - 响应式布局
+
 use adui_dioxus::{
-    Button, ButtonType, Col, Content, Divider, DividerOrientation, Flex, FlexAlign, FlexDirection,
-    FlexJustify, Footer, Header, Layout, Masonry, MasonryResponsive, Row, RowAlign, RowJustify,
-    Sider, SiderTheme, Space, SpaceDirection, Splitter, SplitterOrientation, Text, TextType,
-    ThemeMode, ThemeProvider, Title, TitleLevel,
+    Button, ButtonType, Content, Footer, Header, Layout, Sider, SiderTheme, ThemeMode,
+    ThemeProvider, Title, TitleLevel, use_theme,
 };
 use dioxus::prelude::*;
 
@@ -20,114 +25,173 @@ fn app() -> Element {
 
 #[component]
 fn LayoutDemo() -> Element {
+    let theme = use_theme();
     let mut mode = use_signal(|| ThemeMode::Light);
-    let split_ratio = use_signal(|| 0.4f32);
     let sider_collapsed = use_signal(|| false);
     let mini_collapsed = use_signal(|| true);
-    let action_buttons = [
-        (ButtonType::Primary, "Action"),
-        (ButtonType::Default, "Cancel"),
-        (ButtonType::Text, "More"),
-    ];
 
     use_effect(move || {
-        adui_dioxus::use_theme().set_mode(*mode.read());
+        theme.set_mode(*mode.read());
     });
 
     rsx! {
         div {
-            style: "padding: 16px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
-            Title { level: TitleLevel::H3, "Layout Components" }
+            style: "padding: 24px; background: var(--adui-color-bg-base); min-height: 100vh; color: var(--adui-color-text);",
+
+            // 控制工具栏
             div {
-                style: "display: flex; gap: 8px; align-items: center; margin-bottom: 16px;",
-                Button { r#type: ButtonType::Default, onclick: move |_| *mode.write() = ThemeMode::Light, "Light" }
-                Button { r#type: ButtonType::Default, onclick: move |_| *mode.write() = ThemeMode::Dark, "Dark" }
-            }
-
-            {section_card("Divider", rsx! {
-                Divider { orientation: DividerOrientation::Left, content: Some(rsx!("Left")) }
-                Divider { orientation: DividerOrientation::Center, content: Some(rsx!("Center")) }
-                Divider { orientation: DividerOrientation::Right, dashed: true, orientation_margin: Some("24px".into()), content: Some(rsx!("Right Dashed")) }
-                Divider { vertical: true }
-                Text { r#type: TextType::Secondary, "Inline vertical divider above." }
-            })}
-
-            {section_card("Flex & Space", rsx! {
-                Flex {
-                    direction: FlexDirection::Row,
-                    justify: FlexJustify::Between,
-                    align: FlexAlign::Center,
-                    gap: Some(8.0),
-                    {sample_box("A")}
-                    {sample_box("B")}
-                    {sample_box("C")}
-                }
-                Space {
-                    direction: SpaceDirection::Horizontal,
-                    gap: Some(12.0),
-                    split: Some(rsx!(Divider { vertical: true })),
-                    {action_buttons.into_iter().map(|(kind, label)| rsx!(
-                        Button { r#type: kind, "{label}" }
-                    ))}
-                }
-            })}
-
-            {section_card("Grid 24 Columns", rsx! {
-                Row {
-                    gutter: Some(12.0),
-                    justify: RowJustify::Start,
-                    align: RowAlign::Top,
-                    Col { span: 6, {sample_box("6") } }
-                    Col { span: 6, {sample_box("6") } }
-                    Col { span: 6, {sample_box("6") } }
-                    Col { span: 6, {sample_box("6") } }
-                }
-                Row {
-                    gutter: Some(12.0),
-                    Col { span: 8, {sample_box("8")} }
-                    Col { span: 8, {sample_box("8")} }
-                    Col { span: 8, {sample_box("8")} }
-                }
-            })}
-
-            {section_card("Layout", rsx! {
-                Text { r#type: TextType::Secondary, "Sider 支持 collapsible + 受控 collapsed" }
+                style: "display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 24px; padding: 12px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); border: 1px solid var(--adui-color-border);",
+                span { style: "font-weight: 600;", "主题控制：" }
                 Button {
                     r#type: ButtonType::Default,
-                    onclick: {
-                        let mut sig = sider_collapsed;
-                        move |_| {
-                            let next = {
-                                let current = *sig.read();
-                                !current
-                            };
-                            sig.set(next);
-                        }
-                    },
-                    if *sider_collapsed.read() { "展开" } else { "收起" }
+                    onclick: move |_| *mode.write() = ThemeMode::Light,
+                    "Light"
                 }
+                Button {
+                    r#type: ButtonType::Default,
+                    onclick: move |_| *mode.write() = ThemeMode::Dark,
+                    "Dark"
+                }
+            }
+
+            Title { level: TitleLevel::H2, style: "margin-bottom: 16px;", "基础用法" }
+
+            // 基础布局
+            DemoSection {
+                title: "基础布局（Header + Content + Footer）",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 12px;",
+                    Layout {
+                        Header {
+                            div {
+                                style: "padding: 16px; background: var(--adui-color-primary-bg); border-radius: var(--adui-radius); text-align: center; color: var(--adui-color-text);",
+                                "Header - 顶部导航区域"
+                            }
+                        }
+                        Content {
+                            div {
+                                style: "padding: 24px; min-height: 200px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius);",
+                                "Content - 主要内容区域"
+                            }
+                        }
+                        Footer {
+                            div {
+                                style: "padding: 16px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); text-align: center; color: var(--adui-color-text-secondary);",
+                                "Footer - 底部区域"
+                            }
+                        }
+                    }
+                }
+            }
+
+            Title { level: TitleLevel::H2, style: "margin: 32px 0 16px 0;", "高级用法" }
+
+            // 带侧边栏的布局
+            DemoSection {
+                title: "带侧边栏的布局",
+                div {
+                    style: "display: flex; flex-direction: column; gap: 12px;",
+                    div {
+                        style: "display: flex; gap: 8px; align-items: center;",
+                        Button {
+                            r#type: ButtonType::Default,
+                            onclick: {
+                                let mut sig = sider_collapsed;
+                                move |_| {
+                                    let current = *sig.read();
+                                    sig.set(!current);
+                                }
+                            },
+                            if *sider_collapsed.read() { "展开侧边栏" } else { "收起侧边栏" }
+                        }
+                    }
+                    Layout {
+                        has_sider: Some(true),
+                        Sider {
+                            collapsible: true,
+                            theme: SiderTheme::Dark,
+                            width: Some(220.0),
+                            collapsed_width: Some(72.0),
+                            collapsed: Some(*sider_collapsed.read()),
+                            on_collapse: {
+                                let mut sig = sider_collapsed;
+                                move |next| sig.set(next)
+                            },
+                            div {
+                                style: "padding: 16px; color: #fff;",
+                                "侧边栏内容"
+                            }
+                        }
+                        Layout {
+                            Header {
+                                div {
+                                    style: "padding: 16px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius);",
+                                    "Header"
+                                }
+                            }
+                            Content {
+                                div {
+                                    style: "padding: 24px; min-height: 200px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius);",
+                                    "Content"
+                                }
+                            }
+                            Footer {
+                                div {
+                                    style: "padding: 16px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius); text-align: center;",
+                                    "Footer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 浅色主题侧边栏
+            DemoSection {
+                title: "浅色主题侧边栏",
                 Layout {
                     has_sider: Some(true),
                     Sider {
+                        theme: SiderTheme::Light,
                         collapsible: true,
-                        theme: SiderTheme::Dark,
-                        width: Some(220.0),
-                        collapsed_width: Some(72.0),
+                        width: Some(200.0),
+                        collapsed_width: Some(80.0),
                         collapsed: Some(*sider_collapsed.read()),
                         on_collapse: {
                             let mut sig = sider_collapsed;
                             move |next| sig.set(next)
                         },
-                        {sample_bar("导航菜单")}
+                        div {
+                            style: "padding: 16px;",
+                            "浅色侧边栏"
+                        }
                     }
-                    Layout {
-                        Header { {sample_bar("Header")} }
-                        Content { {sample_bar("Content")} }
-                        Footer { {sample_bar("Footer")} }
+                    Content {
+                        div {
+                            style: "padding: 24px; min-height: 200px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius);",
+                            "主要内容区域"
+                        }
                     }
                 }
-                Divider { }
-                Text { r#type: TextType::Secondary, "Zero Width Trigger（collapsed_width = 0）" }
+            }
+
+            // 零宽度触发
+            DemoSection {
+                title: "零宽度触发（collapsed_width = 0）",
+                div {
+                    style: "display: flex; gap: 8px; align-items: center; margin-bottom: 8px;",
+                    Button {
+                        r#type: ButtonType::Default,
+                        onclick: {
+                            let mut sig = mini_collapsed;
+                            move |_| {
+                                let current = *sig.read();
+                                sig.set(!current);
+                            }
+                        },
+                        if *mini_collapsed.read() { "展开" } else { "收起" }
+                    }
+                }
                 Layout {
                     has_sider: Some(true),
                     Sider {
@@ -141,87 +205,40 @@ fn LayoutDemo() -> Element {
                             let mut sig = mini_collapsed;
                             move |next| sig.set(next)
                         },
-                        {sample_bar("Mini Sider")}
+                        div {
+                            style: "padding: 16px;",
+                            "零宽度侧边栏"
+                        }
                     }
                     Content {
-                        {sample_bar("Content Area")}
-                    }
-                }
-            })}
-
-            {section_card("Masonry", rsx! {
-                Masonry {
-                    columns: 4,
-                    responsive: Some(MasonryResponsive {
-                        xs: Some(1),
-                        sm: Some(2),
-                        md: Some(3),
-                        lg: Some(4),
-                        ..Default::default()
-                    }),
-                    gap: Some(12.0),
-                    row_gap: Some(20.0),
-                    min_column_width: Some(180.0),
-                    {
-                        (0..6).map(|i| {
-                            let h = 60 + i * 20;
-                            rsx!(
-                                div {
-                                    style: format!("background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 8px; height:{}px;", h),
-                                    "Card {i}"
-                                }
-                            )
-                        })
-                    }
-                }
-            })}
-
-            {section_card("Splitter", rsx! {
-                {
-                    let value = *split_ratio.read();
-                    let label = format!("{:.0}% / {:.0}%", value * 100.0, (1.0 - value) * 100.0);
-                    rsx!(Text { r#type: TextType::Secondary, {label} })
-                }
-                Text { r#type: TextType::Secondary, "拖动中线可调整 Pane 宽度" }
-                Splitter {
-                    orientation: SplitterOrientation::Horizontal,
-                    split: Some(*split_ratio.read()),
-                    on_change: {
-                        let mut ratio_sig = split_ratio;
-                        move |v| {
-                            ratio_sig.set(v);
-                            println!("split changed to {:.2}", v);
+                        div {
+                            style: "padding: 24px; min-height: 200px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius);",
+                            "内容区域 - 侧边栏收起时宽度为0"
                         }
-                    },
-                    first: rsx!({sample_bar("Pane A")}),
-                    second: rsx!({sample_bar("Pane B")}),
+                    }
                 }
-            })}
+            }
         }
     }
 }
 
-fn sample_box(label: &str) -> Element {
-    rsx! {
-        div {
-            style: "background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); padding: 12px; text-align: center; border-radius: var(--adui-radius);",
-            "{label}"
-        }
-    }
+// 统一的demo section组件
+#[derive(Props, Clone, PartialEq)]
+struct DemoSectionProps {
+    title: &'static str,
+    children: Element,
 }
 
-fn sample_bar(label: &str) -> Element {
-    rsx! {
-        div { style: "padding: 12px; border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); background: var(--adui-color-bg-container);", "{label}" }
-    }
-}
-
-fn section_card(title: &str, body: Element) -> Element {
+#[component]
+fn DemoSection(props: DemoSectionProps) -> Element {
     rsx! {
         div {
-            style: "border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius); padding: 12px; background: var(--adui-color-bg-container); display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;",
-            span { style: "font-weight: 600; color: var(--adui-color-text);", "{title}" }
-            {body}
+            style: "margin-bottom: 24px; padding: 16px; background: var(--adui-color-bg-container); border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius);",
+            div {
+                style: "font-weight: 600; margin-bottom: 12px; color: var(--adui-color-text); font-size: 14px;",
+                {props.title}
+            }
+            {props.children}
         }
     }
 }

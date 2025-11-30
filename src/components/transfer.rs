@@ -660,7 +660,11 @@ mod tests {
     #[test]
     fn default_filter_matches_description() {
         let item = TransferItem::new("1", "Title").with_description("Some description here");
-        assert!(default_filter("description", &item, TransferDirection::Right));
+        assert!(default_filter(
+            "description",
+            &item,
+            TransferDirection::Right
+        ));
         assert!(!default_filter("notfound", &item, TransferDirection::Right));
     }
 }

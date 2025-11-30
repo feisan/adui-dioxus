@@ -139,10 +139,13 @@ pub fn Badge(props: BadgeProps) -> Element {
         class_list.push(extra);
     }
     let class_attr = class_list.join(" ");
-    
+
     let mut style_attr = style.unwrap_or_default();
     if let Some((x, y)) = offset {
-        style_attr.push_str(&format!("--adui-badge-offset-x: {}px; --adui-badge-offset-y: {}px;", x, y));
+        style_attr.push_str(&format!(
+            "--adui-badge-offset-x: {}px; --adui-badge-offset-y: {}px;",
+            x, y
+        ));
     }
     if let Some(BadgeColor::Custom(color_str)) = color {
         style_attr.push_str(&format!("--adui-badge-color: {};", color_str));
@@ -158,8 +161,8 @@ pub fn Badge(props: BadgeProps) -> Element {
     let title_attr = title.unwrap_or_default();
 
     rsx! {
-        span { 
-            class: "{class_attr}", 
+        span {
+            class: "{class_attr}",
             style: "{style_attr}",
             title: "{title_attr}",
             if let Some(node) = children { {node} }
@@ -167,7 +170,7 @@ pub fn Badge(props: BadgeProps) -> Element {
                 if is_dot {
                     span { class: "adui-badge-dot" }
                 } else {
-                    span { 
+                    span {
                         class: "adui-badge-count",
                         if let Some(custom_count) = count {
                             {custom_count}

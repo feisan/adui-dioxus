@@ -43,7 +43,7 @@ impl SelectMode {
     pub fn is_multiple(&self) -> bool {
         matches!(self, SelectMode::Multiple | SelectMode::Tags)
     }
-    
+
     /// Whether this mode allows free text input.
     pub fn allows_input(&self) -> bool {
         matches!(self, SelectMode::Tags | SelectMode::Combobox)
@@ -207,7 +207,7 @@ impl PartialEq for SelectProps {
             && self.on_dropdown_visible_change == other.on_dropdown_visible_change
             && self.on_open_change == other.on_open_change
             && self.token_separators == other.token_separators
-            // Function pointers cannot be compared for equality
+        // Function pointers cannot be compared for equality
     }
 }
 
@@ -396,7 +396,11 @@ pub fn Select(props: SelectProps) -> Element {
     if let Some(extra) = root_class_name {
         class_list.push(extra);
     }
-    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+    let class_attr = class_list
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
 
     let mut style_attr = style.unwrap_or_default();
     style_attr.append_semantic(&styles, SelectSemantic::Root);
