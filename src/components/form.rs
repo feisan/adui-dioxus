@@ -1,4 +1,7 @@
 use crate::components::grid::ColProps;
+use crate::foundation::{
+    ClassListExt, FormClassNames, FormSemantic, FormStyles, StyleStringExt, Variant,
+};
 use dioxus::{
     core::{current_scope_id, schedule_update_any},
     prelude::*,
@@ -45,6 +48,44 @@ pub enum LabelAlign {
     Left,
     #[default]
     Right,
+}
+
+/// Configuration for feedback icons displayed in form items.
+///
+/// When enabled, shows success/error/warning/validating icons in form items.
+#[derive(Clone, Default, PartialEq)]
+pub struct FeedbackIcons {
+    /// Custom success icon element.
+    pub success: Option<Element>,
+    /// Custom error icon element.
+    pub error: Option<Element>,
+    /// Custom warning icon element.
+    pub warning: Option<Element>,
+    /// Custom validating icon element.
+    pub validating: Option<Element>,
+}
+
+impl FeedbackIcons {
+    /// Create feedback icons with default icons.
+    pub fn default_icons() -> Self {
+        Self {
+            success: None, // Will use default Icon component
+            error: None,
+            warning: None,
+            validating: None,
+        }
+    }
+}
+
+/// Configuration for scroll behavior when validation fails.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ScrollToFirstErrorConfig {
+    /// Block position for scrollIntoView.
+    pub block: Option<String>,
+    /// Inline position for scrollIntoView.
+    pub inline: Option<String>,
+    /// Behavior for scrollIntoView (smooth/instant/auto).
+    pub behavior: Option<String>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -230,6 +271,8 @@ struct FormContext {
     _label_col: Option<ColProps>,
     _wrapper_col: Option<ColProps>,
     disabled: bool,
+    variant: Option<Variant>,
+    feedback_icons: Option<FeedbackIcons>,
     registry: Rc<RefCell<HashMap<String, Vec<FormRule>>>>,
     on_values_change: Option<EventHandler<ValuesChangeEvent>>,
 }
@@ -375,10 +418,33 @@ pub struct FormProps {
     pub wrapper_col: Option<ColProps>,
     #[props(default)]
     pub disabled: bool,
+    /// Visual variant for form controls (outlined/filled/borderless).
+    #[props(optional)]
+    pub variant: Option<Variant>,
+    /// Whether to scroll to the first field with error on submit failure.
+    /// Can be true (default scroll behavior) or a config object.
+    #[props(default)]
+    pub scroll_to_first_error: bool,
+    /// Custom scroll config for scroll_to_first_error.
+    #[props(optional)]
+    pub scroll_to_first_error_config: Option<ScrollToFirstErrorConfig>,
+    /// Feedback icons configuration for form items.
+    #[props(optional)]
+    pub feedback_icons: Option<FeedbackIcons>,
     #[props(optional)]
     pub initial_values: Option<FormValues>,
     #[props(optional)]
     pub form: Option<FormHandle>,
+    #[props(optional)]
+    pub class: Option<String>,
+    #[props(optional)]
+    pub style: Option<String>,
+    /// Semantic class names for sub-parts.
+    #[props(optional)]
+    pub class_names: Option<FormClassNames>,
+    /// Semantic styles for sub-parts.
+    #[props(optional)]
+    pub styles: Option<FormStyles>,
     #[props(optional)]
     pub on_finish: Option<EventHandler<FormFinishEvent>>,
     #[props(optional)]
@@ -400,8 +466,16 @@ pub fn Form(props: FormProps) -> Element {
         label_col,
         wrapper_col,
         disabled,
+        variant,
+        scroll_to_first_error,
+        scroll_to_first_error_config,
+        feedback_icons,
         initial_values,
         form,
+        class,
+        style,
+        class_names,
+        styles,
         on_finish,
         on_finish_failed,
         on_values_change,
@@ -433,6 +507,8 @@ pub fn Form(props: FormProps) -> Element {
         _label_col: label_col,
         _wrapper_col: wrapper_col,
         disabled,
+        variant,
+        feedback_icons,
         registry: registry.clone(),
         on_values_change,
     };
@@ -443,20 +519,82 @@ pub fn Form(props: FormProps) -> Element {
     let finish_cb = on_finish;
     let failed_cb = on_finish_failed;
 
+    // Build form classes
+    let mut form_classes = vec![form_class(layout, size)];
+    form_classes.push_semantic(&class_names, FormSemantic::Root);
+    if let Some(extra) = class {
+        form_classes.push(extra);
+    }
+    let form_class_attr = form_classes.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+
+    let mut form_style_attr = style.unwrap_or_default();
+    form_style_attr.append_semantic(&styles, FormSemantic::Root);
+
+    // Store scroll config for use in submit handler
+    let _scroll_config = scroll_to_first_error_config;
+
     rsx! {
         form {
-            class: form_class(layout, size),
+            class: "{form_class_attr}",
+            style: "{form_style_attr}",
             onsubmit: move |evt| {
                 evt.prevent_default();
                 if validate_all(&submit_handle, &submit_registry) {
                     if let Some(cb) = finish_cb.as_ref() {
                         cb.call(FormFinishEvent { values: submit_handle.values() });
                     }
-                } else if let Some(cb) = failed_cb.as_ref() {
-                    cb.call(FormFinishFailedEvent { errors: submit_handle.errors() });
+                } else {
+                    // Scroll to first error if enabled
+                    if scroll_to_first_error {
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            scroll_to_first_error_field(&submit_handle, &submit_registry);
+                        }
+                    }
+                    if let Some(cb) = failed_cb.as_ref() {
+                        cb.call(FormFinishFailedEvent { errors: submit_handle.errors() });
+                    }
                 }
             },
             {children}
+        }
+    }
+}
+
+/// Scroll to the first field with an error (WASM only).
+#[cfg(target_arch = "wasm32")]
+fn scroll_to_first_error_field(
+    handle: &FormHandle,
+    registry: &Rc<RefCell<HashMap<String, Vec<FormRule>>>>,
+) {
+    let errors = handle.errors();
+    if errors.is_empty() {
+        return;
+    }
+
+    // Get field names in registration order
+    let field_names: Vec<String> = match registry.try_borrow() {
+        Ok(map) => map.keys().cloned().collect(),
+        Err(_) => return,
+    };
+
+    // Find first field with error
+    for name in field_names {
+        if errors.contains_key(&name) {
+            // Try to find and scroll to the form item
+            if let Some(window) = web_sys::window() {
+                if let Some(document) = window.document() {
+                    // Try to find by name attribute or data-field attribute
+                    if let Some(element) = document
+                        .query_selector(&format!("[name=\"{}\"]", name))
+                        .ok()
+                        .flatten()
+                    {
+                        let _ = element.scroll_into_view();
+                    }
+                }
+            }
+            break;
         }
     }
 }

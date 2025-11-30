@@ -112,7 +112,7 @@ pub fn Affix(props: AffixProps) -> Element {
         let mut last_affixed_signal = last_affixed;
 
         use_effect(move || {
-            use wasm_bindgen::{closure::Closure, JsCast};
+            use wasm_bindgen::{JsCast, closure::Closure};
 
             let window = match web_sys::window() {
                 Some(w) => w,
@@ -127,61 +127,73 @@ pub fn Affix(props: AffixProps) -> Element {
             let placeholder_id_clone = placeholder_id_for_effect.clone();
 
             // Create the event handler closure
-            let handler = Closure::<dyn FnMut(web_sys::Event)>::wrap(Box::new(move |_evt: web_sys::Event| {
-                let Some(window) = web_sys::window() else { return };
-                let Some(document) = window.document() else { return };
+            let handler = Closure::<dyn FnMut(web_sys::Event)>::wrap(Box::new(
+                move |_evt: web_sys::Event| {
+                    let Some(window) = web_sys::window() else {
+                        return;
+                    };
+                    let Some(document) = window.document() else {
+                        return;
+                    };
 
-                let placeholder = match document.get_element_by_id(&placeholder_id_clone) {
-                    Some(el) => el,
-                    None => return,
-                };
+                    let placeholder = match document.get_element_by_id(&placeholder_id_clone) {
+                        Some(el) => el,
+                        None => return,
+                    };
 
-                let placeholder_rect = placeholder.get_bounding_client_rect();
+                    let placeholder_rect = placeholder.get_bounding_client_rect();
 
-                // Skip if element is not visible
-                if placeholder_rect.width() == 0.0 && placeholder_rect.height() == 0.0 {
-                    return;
-                }
-
-                let window_height = window.inner_height().ok().and_then(|v| v.as_f64()).unwrap_or(0.0);
-
-                let mut new_state = AffixState::default();
-                new_state.placeholder_width = placeholder_rect.width();
-                new_state.placeholder_height = placeholder_rect.height();
-                new_state.placeholder_left = placeholder_rect.left();
-
-                // Check if should affix to top
-                if let Some(top_offset) = offset_top_val {
-                    if placeholder_rect.top() < top_offset {
-                        new_state.affixed = true;
-                        new_state.fixed_top = Some(top_offset);
+                    // Skip if element is not visible
+                    if placeholder_rect.width() == 0.0 && placeholder_rect.height() == 0.0 {
+                        return;
                     }
-                }
 
-                // Check if should affix to bottom
-                // Element should be fixed when its bottom edge goes below the viewport bottom minus offset
-                if let Some(bottom_offset) = offset_bottom_val {
-                    if placeholder_rect.bottom() > window_height - bottom_offset {
-                        new_state.affixed = true;
-                        new_state.fixed_bottom = Some(bottom_offset);
-                        new_state.fixed_top = None; // Bottom takes precedence
+                    let window_height = window
+                        .inner_height()
+                        .ok()
+                        .and_then(|v| v.as_f64())
+                        .unwrap_or(0.0);
+
+                    let mut new_state = AffixState::default();
+                    new_state.placeholder_width = placeholder_rect.width();
+                    new_state.placeholder_height = placeholder_rect.height();
+                    new_state.placeholder_left = placeholder_rect.left();
+
+                    // Check if should affix to top
+                    if let Some(top_offset) = offset_top_val {
+                        if placeholder_rect.top() < top_offset {
+                            new_state.affixed = true;
+                            new_state.fixed_top = Some(top_offset);
+                        }
                     }
-                }
 
-                let prev_affixed = *last_affixed_signal.read();
-                if prev_affixed != new_state.affixed {
-                    last_affixed_signal.set(new_state.affixed);
-                    if let Some(cb) = on_change_cb {
-                        cb.call(new_state.affixed);
+                    // Check if should affix to bottom
+                    // Element should be fixed when its bottom edge goes below the viewport bottom minus offset
+                    if let Some(bottom_offset) = offset_bottom_val {
+                        if placeholder_rect.bottom() > window_height - bottom_offset {
+                            new_state.affixed = true;
+                            new_state.fixed_bottom = Some(bottom_offset);
+                            new_state.fixed_top = None; // Bottom takes precedence
+                        }
                     }
-                }
 
-                state_signal.set(new_state);
-            }));
+                    let prev_affixed = *last_affixed_signal.read();
+                    if prev_affixed != new_state.affixed {
+                        last_affixed_signal.set(new_state.affixed);
+                        if let Some(cb) = on_change_cb {
+                            cb.call(new_state.affixed);
+                        }
+                    }
+
+                    state_signal.set(new_state);
+                },
+            ));
 
             // Add event listeners
-            let _ = window.add_event_listener_with_callback("scroll", handler.as_ref().unchecked_ref());
-            let _ = window.add_event_listener_with_callback("resize", handler.as_ref().unchecked_ref());
+            let _ =
+                window.add_event_listener_with_callback("scroll", handler.as_ref().unchecked_ref());
+            let _ =
+                window.add_event_listener_with_callback("resize", handler.as_ref().unchecked_ref());
 
             // Keep the closure alive
             handler.forget();
@@ -233,11 +245,7 @@ pub fn Affix(props: AffixProps) -> Element {
         String::new()
     };
 
-    let fixed_class = if state.affixed {
-        "adui-affix"
-    } else {
-        ""
-    };
+    let fixed_class = if state.affixed { "adui-affix" } else { "" };
 
     rsx! {
         div {
@@ -302,4 +310,3 @@ mod tests {
         assert!(id1 <= 1_000_000 || true); // Always passes, just checks execution
     }
 }
-

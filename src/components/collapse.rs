@@ -1,7 +1,14 @@
 use crate::components::config_provider::{ComponentSize, use_config};
 use crate::components::icon::{Icon, IconKind};
+use crate::foundation::{
+    ClassListExt, CollapseClassNames, CollapseSemantic, CollapseStyles, StyleStringExt,
+};
 use crate::theme::use_theme;
 use dioxus::prelude::*;
+
+/// Function type for custom expand icon rendering.
+/// Takes (panel_props, is_active) and returns Element.
+pub type ExpandIconRenderFn = fn(&CollapsePanel, bool) -> Element;
 
 /// Collapsible trigger type.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -104,6 +111,8 @@ impl CollapsePanel {
     }
 }
 
+// Function pointer only used for props equality in diffing.
+#[allow(unpredictable_function_pointer_comparisons)]
 /// Props for the Collapse component.
 #[derive(Props, Clone, PartialEq)]
 pub struct CollapseProps {
@@ -136,12 +145,24 @@ pub struct CollapseProps {
     /// Default collapsible type for all panels.
     #[props(optional)]
     pub collapsible: Option<CollapsibleType>,
+    /// Whether to destroy inactive panel content.
+    #[props(default = true)]
+    pub destroy_on_hidden: bool,
+    /// Custom expand icon render function.
+    #[props(optional)]
+    pub expand_icon: Option<ExpandIconRenderFn>,
     /// Extra class name.
     #[props(optional)]
     pub class: Option<String>,
     /// Inline style.
     #[props(optional)]
     pub style: Option<String>,
+    /// Semantic class names.
+    #[props(optional)]
+    pub class_names: Option<CollapseClassNames>,
+    /// Semantic styles.
+    #[props(optional)]
+    pub styles: Option<CollapseStyles>,
 }
 
 /// Ant Design flavored Collapse component.
@@ -158,8 +179,12 @@ pub fn Collapse(props: CollapseProps) -> Element {
         size,
         expand_icon_placement,
         collapsible,
+        destroy_on_hidden,
+        expand_icon,
         class,
         style,
+        class_names,
+        styles,
     } = props;
 
     let config = use_config();
@@ -194,16 +219,15 @@ pub fn Collapse(props: CollapseProps) -> Element {
     if ghost {
         class_list.push("adui-collapse-ghost".into());
     }
+    class_list.push_semantic(&class_names, CollapseSemantic::Root);
     if let Some(extra) = class {
         class_list.push(extra);
     }
-    let class_attr = class_list.join(" ");
+    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
 
-    let style_attr = format!(
-        "border-color:{};{}",
-        tokens.color_border,
-        style.unwrap_or_default()
-    );
+    let mut style_attr = format!("border-color:{};", tokens.color_border);
+    style_attr.push_str(&style.unwrap_or_default());
+    style_attr.append_semantic(&styles, CollapseSemantic::Root);
 
     let on_change_cb = on_change;
 
@@ -303,6 +327,20 @@ pub fn Collapse(props: CollapseProps) -> Element {
                                 let on_change_for_icon = on_change_cb;
                                 let key_for_icon = key.clone();
                                 let active_key_for_icon = active_key.clone();
+
+                                // Use custom expand_icon if provided
+                                let icon_element = if let Some(render_fn) = expand_icon {
+                                    render_fn(panel, is_active)
+                                } else {
+                                    rsx! {
+                                        Icon {
+                                            kind: IconKind::ArrowRight,
+                                            rotate: if is_active { Some(90.0) } else { None },
+                                            aria_label: if is_active { "collapse" } else { "expand" },
+                                        }
+                                    }
+                                };
+
                                 rsx! {
                                     span {
                                         class: "adui-collapse-expand-icon",
@@ -355,11 +393,7 @@ pub fn Collapse(props: CollapseProps) -> Element {
                                                 }
                                             }
                                         },
-                                        Icon {
-                                            kind: IconKind::ArrowRight,
-                                            rotate: if is_active { Some(90.0) } else { None },
-                                            aria_label: if is_active { "collapse" } else { "expand" },
-                                        }
+                                        {icon_element}
                                     }
                                 }
                             })},
@@ -372,15 +406,27 @@ pub fn Collapse(props: CollapseProps) -> Element {
                                 }
                             })},
                         },
-                        {is_active.then(|| rsx! {
+                        // Content rendering based on destroy_on_hidden
+                        if destroy_on_hidden {
+                            {is_active.then(|| rsx! {
+                                div {
+                                    class: "adui-collapse-content",
+                                    role: "region",
+                                    div { class: "adui-collapse-content-box",
+                                        {content}
+                                    }
+                                }
+                            })}
+                        } else {
                             div {
-                                class: "adui-collapse-content",
+                                class: if is_active { "adui-collapse-content" } else { "adui-collapse-content adui-collapse-content-hidden" },
                                 role: "region",
+                                hidden: !is_active,
                                 div { class: "adui-collapse-content-box",
                                     {content}
                                 }
                             }
-                        })},
+                        },
                     }
                 }
             })}

@@ -16,8 +16,18 @@ pub enum MessageType {
 pub struct MessageConfig {
     pub content: String,
     pub r#type: MessageType,
-    /// Auto close delay in seconds.
+    /// Auto close delay in seconds. Set to 0 for no auto-dismiss.
     pub duration: f32,
+    /// Custom icon element. When None, default icon based on type is used.
+    pub icon: Option<Element>,
+    /// Additional CSS class.
+    pub class: Option<String>,
+    /// Inline styles.
+    pub style: Option<String>,
+    /// Unique key for this message (for programmatic updates).
+    pub key: Option<String>,
+    /// Callback when message is clicked.
+    pub on_click: Option<EventHandler<()>>,
 }
 
 impl Default for MessageConfig {
@@ -26,6 +36,11 @@ impl Default for MessageConfig {
             content: String::new(),
             r#type: MessageType::Info,
             duration: 3.0,
+            icon: None,
+            class: None,
+            style: None,
+            key: None,
+            on_click: None,
         }
     }
 }
@@ -85,6 +100,11 @@ impl MessageApi {
             content: content.into(),
             r#type: kind,
             duration: 3.0,
+            icon: None,
+            class: None,
+            style: None,
+            key: None,
+            on_click: None,
         };
         self.open(cfg)
     }
@@ -111,6 +131,11 @@ impl MessageApi {
             content: content.into(),
             r#type: MessageType::Loading,
             duration: 0.0,
+            icon: None,
+            class: None,
+            style: None,
+            key: None,
+            on_click: None,
         };
         self.open(cfg)
     }

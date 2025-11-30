@@ -93,7 +93,8 @@ pub fn InputNumber(props: InputNumberProps) -> Element {
         let inner_value_signal = inner_value.clone();
         let form_control_ctx = form_control.clone();
         use_effect(move || {
-            let current = resolve_current_value(value, &form_control_ctx, inner_value_signal.clone());
+            let current =
+                resolve_current_value(value, &form_control_ctx, inner_value_signal.clone());
             draft_signal.set(format_value(current, precision));
         });
     }

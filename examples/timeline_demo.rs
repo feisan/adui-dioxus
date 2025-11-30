@@ -1,7 +1,7 @@
 use adui_dioxus::{
-    Button, Divider, Icon, IconKind, Text, TextType, Theme, ThemeMode, ThemeProvider, Timeline,
-    TimelineColor, TimelineItem, TimelineMode, TitleLevel, use_theme, THEME_BASE_STYLE,
-    Title as AduiTitle,
+    Button, Divider, Icon, IconKind, THEME_BASE_STYLE, Text, TextType, Theme, ThemeMode,
+    ThemeProvider, Timeline, TimelineColor, TimelineItem, TimelineMode, Title as AduiTitle,
+    TitleLevel, use_theme,
 };
 use dioxus::prelude::*;
 

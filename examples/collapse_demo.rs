@@ -1,6 +1,6 @@
 use adui_dioxus::{
-    Button, Collapse, CollapsePanel, Divider, ExpandIconPlacement, Text, TextType, Theme,
-    ThemeMode, ThemeProvider, TitleLevel, use_theme, THEME_BASE_STYLE, Title as AduiTitle,
+    Button, Collapse, CollapsePanel, Divider, ExpandIconPlacement, THEME_BASE_STYLE, Text,
+    TextType, Theme, ThemeMode, ThemeProvider, Title as AduiTitle, TitleLevel, use_theme,
 };
 use dioxus::prelude::*;
 
@@ -98,7 +98,7 @@ fn BasicCollapseDemo() -> Element {
     let panels = vec![
         CollapsePanel::new(
             "1",
-            rsx! { 
+            rsx! {
                 span { style: "font-weight: 500;", "📋 产品信息" }
             },
             rsx! {
@@ -120,7 +120,7 @@ fn BasicCollapseDemo() -> Element {
         ),
         CollapsePanel::new(
             "2",
-            rsx! { 
+            rsx! {
                 span { style: "font-weight: 500;", "⚙️ 技术栈" }
             },
             rsx! {
@@ -134,7 +134,7 @@ fn BasicCollapseDemo() -> Element {
         ),
         CollapsePanel::new(
             "3",
-            rsx! { 
+            rsx! {
                 span { style: "font-weight: 500; color: #999;", "🚫 功能特性（禁用状态）" }
             },
             rsx! {
@@ -149,7 +149,7 @@ fn BasicCollapseDemo() -> Element {
 
     rsx! {
         div {
-            Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;", 
+            Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;",
                 "基础用法：可同时展开多个面板，第一个默认展开"
             }
             Collapse {
@@ -209,7 +209,7 @@ fn AccordionDemo() -> Element {
 
     rsx! {
         div {
-            Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;", 
+            Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;",
                 "手风琴模式：一次只展开一个，点击试试"
             }
             Collapse {
@@ -385,7 +385,7 @@ fn IconPlacementDemo() -> Element {
     rsx! {
         div { style: "display: flex; gap: 24px;",
             div { style: "flex: 1;",
-                Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;", 
+                Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;",
                     "← 图标在左侧（默认）"
                 }
                 Collapse {
@@ -395,7 +395,7 @@ fn IconPlacementDemo() -> Element {
                 }
             },
             div { style: "flex: 1;",
-                Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;", 
+                Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;",
                     "图标在右侧 →"
                 }
                 Collapse {
@@ -432,17 +432,15 @@ fn NestedCollapseDemo() -> Element {
         ),
     ];
 
-    let inner_panels2 = vec![
-        CollapsePanel::new(
-            "inner2-1",
-            rsx! { "子面板 2-1" },
-            rsx! {
-                div { style: "padding: 16px;",
-                    Text { "这个父面板也包含嵌套的 Collapse。" }
-                }
-            },
-        ),
-    ];
+    let inner_panels2 = vec![CollapsePanel::new(
+        "inner2-1",
+        rsx! { "子面板 2-1" },
+        rsx! {
+            div { style: "padding: 16px;",
+                Text { "这个父面板也包含嵌套的 Collapse。" }
+            }
+        },
+    )];
 
     let outer_panels = vec![
         CollapsePanel::new(
@@ -451,8 +449,8 @@ fn NestedCollapseDemo() -> Element {
             rsx! {
                 div { style: "padding: 16px;",
                     Text { style: "margin-bottom: 12px; display: block;", "这是外层面板的内容。" }
-                    Text { r#type: TextType::Secondary, style: "margin-bottom: 12px; display: block;", 
-                        "下面是嵌套的 Collapse 组件（使用无边框样式）：" 
+                    Text { r#type: TextType::Secondary, style: "margin-bottom: 12px; display: block;",
+                        "下面是嵌套的 Collapse 组件（使用无边框样式）："
                     }
                     Collapse {
                         items: inner_panels1,
@@ -492,7 +490,7 @@ fn NestedCollapseDemo() -> Element {
 
     rsx! {
         div {
-            Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;", 
+            Text { r#type: TextType::Secondary, style: "margin-bottom: 8px; display: block;",
                 "嵌套用法：Collapse 内可以再嵌套 Collapse，建议内层使用无边框样式"
             }
             Collapse {
@@ -502,4 +500,3 @@ fn NestedCollapseDemo() -> Element {
         }
     }
 }
-

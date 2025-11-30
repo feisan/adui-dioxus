@@ -156,21 +156,21 @@ pub fn ColorPicker(props: ColorPickerProps) -> Element {
             if is_disabled {
                 return;
             }
-            
+
             // 只在按下或拖动时响应
             let buttons = evt.held_buttons();
             if !buttons.contains(dioxus::html::input_data::MouseButton::Primary) {
                 is_dragging.set(false);
                 return;
             }
-            
+
             is_dragging.set(true);
-            
+
             // 获取元素相对坐标
             let elem_coords = evt.element_coordinates();
             let s = (elem_coords.x / 200.0).clamp(0.0, 1.0);
             let v = 1.0 - (elem_coords.y / 150.0).clamp(0.0, 1.0);
-            
+
             let current_color = color_signal.read().clone();
             let current_alpha = current_color.map(|c| c.a).unwrap_or(1.0);
             let mut next = current_color.unwrap_or(Hsva {
@@ -193,19 +193,19 @@ pub fn ColorPicker(props: ColorPickerProps) -> Element {
             if is_disabled {
                 return;
             }
-            
+
             let buttons = evt.held_buttons();
             if !buttons.contains(dioxus::html::input_data::MouseButton::Primary) {
                 is_dragging.set(false);
                 return;
             }
-            
+
             is_dragging.set(true);
-            
+
             let elem_coords = evt.element_coordinates();
             let ratio = (elem_coords.x / 200.0).clamp(0.0, 1.0);
             let h = ratio * 360.0;
-            
+
             let current_color = color_signal.read().clone();
             let current_alpha = current_color.map(|c| c.a).unwrap_or(1.0);
             let mut next = current_color.unwrap_or(Hsva {
@@ -227,18 +227,18 @@ pub fn ColorPicker(props: ColorPickerProps) -> Element {
             if is_disabled {
                 return;
             }
-            
+
             let buttons = evt.held_buttons();
             if !buttons.contains(dioxus::html::input_data::MouseButton::Primary) {
                 is_dragging.set(false);
                 return;
             }
-            
+
             is_dragging.set(true);
-            
+
             let elem_coords = evt.element_coordinates();
             let ratio = (elem_coords.x / 200.0).clamp(0.0, 1.0);
-            
+
             let current_color = color_signal.read().clone();
             let mut next = current_color.unwrap_or(Hsva {
                 h: base_hue,

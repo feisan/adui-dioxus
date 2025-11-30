@@ -196,7 +196,7 @@ pub fn Anchor(props: AnchorProps) -> Element {
 
     // Collect all hrefs from items recursively
     let all_hrefs = collect_hrefs(&items);
-    
+
     // Silence warnings for non-wasm targets
     let _ = (
         &animating,
@@ -220,7 +220,7 @@ pub fn Anchor(props: AnchorProps) -> Element {
         let animating_signal = animating;
 
         use_effect(move || {
-            use wasm_bindgen::{closure::Closure, JsCast};
+            use wasm_bindgen::{JsCast, closure::Closure};
 
             let window = match web_sys::window() {
                 Some(w) => w,
@@ -229,39 +229,46 @@ pub fn Anchor(props: AnchorProps) -> Element {
 
             let items_clone = items_for_effect.clone();
 
-            let handler = Closure::<dyn FnMut(web_sys::Event)>::wrap(Box::new(move |_evt: web_sys::Event| {
-                if *animating_signal.read() {
-                    return;
-                }
-
-                let Some(window) = web_sys::window() else { return };
-                let Some(document) = window.document() else { return };
-
-                let hrefs = collect_hrefs(&items_clone);
-                let current = get_internal_current_anchor(
-                    &document,
-                    &hrefs,
-                    target_offset_val,
-                    bounds_val,
-                );
-
-                // Apply custom getCurrentAnchor if provided
-                let final_link = if let Some(custom_fn) = get_current_anchor_fn {
-                    custom_fn(current.clone())
-                } else {
-                    current
-                };
-
-                let prev = active_link_signal.read().clone();
-                if prev.as_deref() != Some(&final_link) && !final_link.is_empty() {
-                    active_link_signal.set(Some(final_link.clone()));
-                    if let Some(cb) = on_change_cb {
-                        cb.call(final_link);
+            let handler = Closure::<dyn FnMut(web_sys::Event)>::wrap(Box::new(
+                move |_evt: web_sys::Event| {
+                    if *animating_signal.read() {
+                        return;
                     }
-                }
-            }));
 
-            let _ = window.add_event_listener_with_callback("scroll", handler.as_ref().unchecked_ref());
+                    let Some(window) = web_sys::window() else {
+                        return;
+                    };
+                    let Some(document) = window.document() else {
+                        return;
+                    };
+
+                    let hrefs = collect_hrefs(&items_clone);
+                    let current = get_internal_current_anchor(
+                        &document,
+                        &hrefs,
+                        target_offset_val,
+                        bounds_val,
+                    );
+
+                    // Apply custom getCurrentAnchor if provided
+                    let final_link = if let Some(custom_fn) = get_current_anchor_fn {
+                        custom_fn(current.clone())
+                    } else {
+                        current
+                    };
+
+                    let prev = active_link_signal.read().clone();
+                    if prev.as_deref() != Some(&final_link) && !final_link.is_empty() {
+                        active_link_signal.set(Some(final_link.clone()));
+                        if let Some(cb) = on_change_cb {
+                            cb.call(final_link);
+                        }
+                    }
+                },
+            ));
+
+            let _ =
+                window.add_event_listener_with_callback("scroll", handler.as_ref().unchecked_ref());
             handler.forget();
         });
     }
@@ -361,7 +368,11 @@ fn AnchorInk(props: AnchorInkProps) -> Element {
 
     let class_attr = format!(
         "adui-anchor-ink{}",
-        if visible { " adui-anchor-ink-visible" } else { "" }
+        if visible {
+            " adui-anchor-ink-visible"
+        } else {
+            ""
+        }
     );
 
     // The ink position would be calculated in WASM based on the active link element
@@ -403,7 +414,11 @@ fn AnchorLink(props: AnchorLinkProps) -> Element {
 
     let link_class = format!(
         "adui-anchor-link{}",
-        if active { " adui-anchor-link-active" } else { "" }
+        if active {
+            " adui-anchor-link-active"
+        } else {
+            ""
+        }
     );
 
     let title_class = format!(
@@ -525,7 +540,10 @@ fn get_internal_current_anchor(
     }
 
     // Return the section closest to the top
-    if let Some((href, _)) = sections.iter().max_by(|a, b| a.1.partial_cmp(&b.1).unwrap()) {
+    if let Some((href, _)) = sections
+        .iter()
+        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+    {
         href.clone()
     } else {
         String::new()
@@ -618,4 +636,3 @@ mod tests {
         assert!(hrefs.contains(&"#section-2-1".to_string()));
     }
 }
-

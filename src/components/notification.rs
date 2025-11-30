@@ -11,10 +11,24 @@ pub enum NotificationType {
 }
 
 /// Placement for notification list.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum NotificationPlacement {
+    #[default]
     TopRight,
+    TopLeft,
     BottomRight,
+    BottomLeft,
+}
+
+impl NotificationPlacement {
+    fn as_style(&self) -> &'static str {
+        match self {
+            NotificationPlacement::TopRight => "top: 24px; right: 24px;",
+            NotificationPlacement::TopLeft => "top: 24px; left: 24px;",
+            NotificationPlacement::BottomRight => "bottom: 24px; right: 24px;",
+            NotificationPlacement::BottomLeft => "bottom: 24px; left: 24px;",
+        }
+    }
 }
 
 /// Configuration of a single notification.
@@ -24,8 +38,18 @@ pub struct NotificationConfig {
     pub description: Option<String>,
     pub r#type: NotificationType,
     pub placement: NotificationPlacement,
-    /// Auto close delay in seconds.
+    /// Auto close delay in seconds. Set to 0 for no auto-dismiss.
     pub duration: f32,
+    /// Custom icon element. When None, default icon based on type is used.
+    pub icon: Option<Element>,
+    /// Additional CSS class.
+    pub class: Option<String>,
+    /// Inline styles.
+    pub style: Option<String>,
+    /// Callback when notification is clicked.
+    pub on_click: Option<EventHandler<()>>,
+    /// Unique key for this notification.
+    pub key: Option<String>,
 }
 
 impl Default for NotificationConfig {
@@ -36,6 +60,11 @@ impl Default for NotificationConfig {
             r#type: NotificationType::Info,
             placement: NotificationPlacement::TopRight,
             duration: 4.5,
+            icon: None,
+            class: None,
+            style: None,
+            on_click: None,
+            key: None,
         }
     }
 }
@@ -94,6 +123,11 @@ impl NotificationApi {
             r#type: kind,
             placement,
             duration: 4.5,
+            icon: None,
+            class: None,
+            style: None,
+            on_click: None,
+            key: None,
         };
         self.open(cfg)
     }

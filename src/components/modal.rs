@@ -1,6 +1,40 @@
+//! Modal component aligned with Ant Design 6.0.
+//!
+//! Features:
+//! - Confirm loading state
+//! - Centered positioning
+//! - Customizable buttons
+//! - Semantic classNames/styles
+
+use crate::components::button::{Button, ButtonType};
 use crate::components::overlay::{OverlayKey, OverlayKind, use_overlay};
+use crate::foundation::{
+    ClassListExt, ModalClassNames, ModalSemantic, ModalStyles, StyleStringExt,
+};
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
+
+/// Modal type for static method variants.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ModalType {
+    Info,
+    Success,
+    Error,
+    Warning,
+    Confirm,
+}
+
+impl ModalType {
+    fn as_class(&self) -> &'static str {
+        match self {
+            ModalType::Info => "adui-modal-info",
+            ModalType::Success => "adui-modal-success",
+            ModalType::Error => "adui-modal-error",
+            ModalType::Warning => "adui-modal-warning",
+            ModalType::Confirm => "adui-modal-confirm",
+        }
+    }
+}
 
 /// Basic modal props, targeting the most common controlled use cases.
 #[derive(Props, Clone, PartialEq)]
@@ -10,10 +44,12 @@ pub struct ModalProps {
     /// Optional title displayed in the header.
     #[props(optional)]
     pub title: Option<String>,
-    /// Custom footer content. When `None`, a minimal footer with OK/Cancel
-    /// buttons can be added in the future; for now we simply omit the footer.
+    /// Custom footer content. When `None`, default OK/Cancel buttons are shown.
     #[props(optional)]
     pub footer: Option<Element>,
+    /// Whether to show the footer (set to false to hide default footer).
+    #[props(default = true)]
+    pub show_footer: bool,
     /// Called when the user confirms the dialog.
     #[props(optional)]
     pub on_ok: Option<EventHandler<()>>,
@@ -32,12 +68,45 @@ pub struct ModalProps {
     /// Optional fixed width for the modal content in pixels.
     #[props(optional)]
     pub width: Option<f32>,
+    /// Whether to vertically center the modal.
+    #[props(default)]
+    pub centered: bool,
+    /// Whether the OK button is in loading state.
+    #[props(default)]
+    pub confirm_loading: bool,
+    /// OK button text.
+    #[props(optional)]
+    pub ok_text: Option<String>,
+    /// Cancel button text.
+    #[props(optional)]
+    pub cancel_text: Option<String>,
+    /// OK button type.
+    #[props(optional)]
+    pub ok_type: Option<ButtonType>,
+    /// Whether to enable keyboard (Escape to close).
+    #[props(default = true)]
+    pub keyboard: bool,
+    /// Custom close icon element.
+    #[props(optional)]
+    pub close_icon: Option<Element>,
+    /// Callback after modal closes completely.
+    #[props(optional)]
+    pub after_close: Option<EventHandler<()>>,
+    /// Callback when modal open state changes.
+    #[props(optional)]
+    pub after_open_change: Option<EventHandler<bool>>,
     /// Additional CSS class on the root container.
     #[props(optional)]
     pub class: Option<String>,
     /// Inline styles applied to the root container.
     #[props(optional)]
     pub style: Option<String>,
+    /// Semantic class names.
+    #[props(optional)]
+    pub class_names: Option<ModalClassNames>,
+    /// Semantic styles.
+    #[props(optional)]
+    pub styles: Option<ModalStyles>,
     pub children: Element,
 }
 
@@ -48,20 +117,34 @@ pub fn Modal(props: ModalProps) -> Element {
         open,
         title,
         footer,
+        show_footer,
         on_ok,
         on_cancel,
         closable,
         mask_closable,
         destroy_on_close,
         width,
+        centered,
+        confirm_loading,
+        ok_text,
+        cancel_text,
+        ok_type,
+        keyboard,
+        close_icon,
+        after_close,
+        after_open_change,
         class,
         style,
+        class_names,
+        styles,
         children,
     } = props;
 
+    // Track previous open state for after_open_change callback
+    let prev_open: Signal<bool> = use_signal(|| open);
+
     // Track the overlay key associated with this modal so we can release the
-    // z-index slot when it closes. When OverlayManager is not available we
-    // gracefully fall back to a fixed z-index.
+    // z-index slot when it closes.
     let overlay = use_overlay();
     let modal_key: Signal<Option<OverlayKey>> = use_signal(|| None);
     let z_index: Signal<i32> = use_signal(|| 1000);
@@ -70,6 +153,7 @@ pub fn Modal(props: ModalProps) -> Element {
         let overlay = overlay.clone();
         let mut key_signal = modal_key;
         let mut z_signal = z_index;
+        let mut prev_signal = prev_open;
         use_effect(move || {
             if let Some(handle) = overlay.clone() {
                 let current_key = {
@@ -87,6 +171,21 @@ pub fn Modal(props: ModalProps) -> Element {
                     key_signal.set(None);
                 }
             }
+
+            // Call after_open_change when open state changes
+            let prev = *prev_signal.read();
+            if prev != open {
+                if let Some(cb) = after_open_change {
+                    cb.call(open);
+                }
+                // Call after_close when closing
+                if !open {
+                    if let Some(cb) = after_close {
+                        cb.call(());
+                    }
+                }
+                prev_signal.set(open);
+            }
         });
     }
 
@@ -97,8 +196,19 @@ pub fn Modal(props: ModalProps) -> Element {
     let current_z = *z_index.read();
     let width_px = width.unwrap_or(520.0);
 
-    let class_attr = class.unwrap_or_else(|| "adui-modal".to_string());
-    let style_attr = style.unwrap_or_default();
+    // Build classes
+    let mut class_list = vec!["adui-modal".to_string()];
+    if centered {
+        class_list.push("adui-modal-centered".into());
+    }
+    class_list.push_semantic(&class_names, ModalSemantic::Root);
+    if let Some(extra) = class {
+        class_list.push(extra);
+    }
+    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+
+    let mut style_attr = style.unwrap_or_default();
+    style_attr.append_semantic(&styles, ModalSemantic::Root);
 
     // Handlers
     let ok_handler = on_ok;
@@ -110,17 +220,42 @@ pub fn Modal(props: ModalProps) -> Element {
         }
     };
 
-    let _handle_ok = move || {
+    let handle_ok = move || {
         if let Some(cb) = ok_handler {
             cb.call(());
         }
     };
 
     let on_keydown = move |evt: KeyboardEvent| {
-        if matches!(evt.key(), Key::Escape) {
+        if keyboard && matches!(evt.key(), Key::Escape) {
             evt.prevent_default();
             on_close();
         }
+    };
+
+    // Default button texts
+    let ok_button_text = ok_text.unwrap_or_else(|| "确定".to_string());
+    let cancel_button_text = cancel_text.unwrap_or_else(|| "取消".to_string());
+    let ok_button_type = ok_type.unwrap_or(ButtonType::Primary);
+
+    // Close icon
+    let close_icon_element = close_icon.unwrap_or_else(|| {
+        rsx! { "×" }
+    });
+
+    // Content positioning style
+    let content_style = if centered {
+        format!(
+            "position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: {}; {}",
+            current_z + 1,
+            style_attr
+        )
+    } else {
+        format!(
+            "position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: {}; {}",
+            current_z + 1,
+            style_attr
+        )
     };
 
     rsx! {
@@ -138,12 +273,13 @@ pub fn Modal(props: ModalProps) -> Element {
             // Modal content layer
             div {
                 class: "{class_attr}",
-                style: "position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: {current_z + 1}; {style_attr}",
+                style: "{content_style}",
                 onkeydown: on_keydown,
                 tabindex: 0,
                 div {
                     class: "adui-modal-content",
                     style: "min-width: {width_px}px; max-width: 80vw; background: var(--adui-color-bg-container); border-radius: var(--adui-radius-lg, 8px); box-shadow: var(--adui-shadow-secondary); border: 1px solid var(--adui-color-border); overflow: hidden;",
+                    onclick: move |evt| evt.stop_propagation(),
                     // Header
                     if title.is_some() || closable {
                         div {
@@ -158,7 +294,7 @@ pub fn Modal(props: ModalProps) -> Element {
                                     r#type: "button",
                                     style: "border: none; background: none; cursor: pointer; font-size: 16px;",
                                     onclick: move |_| on_close(),
-                                    "×"
+                                    {close_icon_element}
                                 }
                             }
                         }
@@ -170,18 +306,44 @@ pub fn Modal(props: ModalProps) -> Element {
                         {children}
                     }
                     // Footer
-                    if let Some(footer_node) = footer {
-                        div {
-                            class: "adui-modal-footer",
-                            style: "padding: 10px 16px; border-top: 1px solid var(--adui-color-border); text-align: right;",
-                            {footer_node}
+                    if show_footer {
+                        if let Some(footer_node) = footer {
+                            div {
+                                class: "adui-modal-footer",
+                                style: "padding: 10px 16px; border-top: 1px solid var(--adui-color-border); text-align: right;",
+                                {footer_node}
+                            }
+                        } else {
+                            div {
+                                class: "adui-modal-footer",
+                                style: "padding: 10px 16px; border-top: 1px solid var(--adui-color-border); text-align: right; display: flex; gap: 8px; justify-content: flex-end;",
+                                Button {
+                                    onclick: move |_| on_close(),
+                                    "{cancel_button_text}"
+                                }
+                                Button {
+                                    r#type: ok_button_type,
+                                    loading: confirm_loading,
+                                    onclick: move |_| handle_ok(),
+                                    "{ok_button_text}"
+                                }
+                            }
                         }
-                    } else {
-                        // Simple default footer with OK/Cancel buttons could be added here in the future.
-                        div { }
                     }
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn modal_type_classes() {
+        assert_eq!(ModalType::Info.as_class(), "adui-modal-info");
+        assert_eq!(ModalType::Success.as_class(), "adui-modal-success");
+        assert_eq!(ModalType::Error.as_class(), "adui-modal-error");
     }
 }

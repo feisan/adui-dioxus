@@ -139,13 +139,13 @@ pub fn Segmented(props: SegmentedProps) -> Element {
             if target.disabled {
                 return;
             }
-                apply_segmented(
-                    target.value.clone(),
-                    controlled,
-                    &mut inner_for_key,
-                    &form_for_key,
-                    &on_change_for_key,
-                );
+            apply_segmented(
+                target.value.clone(),
+                controlled,
+                &mut inner_for_key,
+                &form_for_key,
+                &on_change_for_key,
+            );
         }
     };
     rsx! {

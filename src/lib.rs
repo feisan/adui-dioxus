@@ -1,6 +1,7 @@
 //! Ant Design flavored components and theme utilities for Dioxus 0.7+.
 //! Modules are organized by theme primitives and component implementations.
 pub mod components;
+pub mod foundation;
 pub mod theme;
 
 pub use components::TreeNode;
@@ -28,6 +29,7 @@ pub use components::cascader::{Cascader, CascaderProps};
 pub use components::checkbox::{Checkbox, CheckboxGroup, CheckboxGroupProps, CheckboxProps};
 pub use components::collapse::{
     Collapse, CollapsePanel, CollapseProps, CollapseSize, CollapsibleType, ExpandIconPlacement,
+    ExpandIconRenderFn,
 };
 pub use components::config_provider::{
     ComponentSize, ConfigContextValue, ConfigProvider, ConfigProviderProps, Locale, use_config,
@@ -54,15 +56,19 @@ pub use components::float_button::{
     FloatButtonPurePanelProps, FloatButtonShape, FloatButtonType,
 };
 pub use components::form::{
-    Form, FormHandle, FormItem, FormItemProps, FormLayout, FormList, FormListContext,
-    FormListItemMeta, FormListProps, RequiredMark, use_form, use_form_item_control, use_form_list,
+    ControlSize, FeedbackIcons, Form, FormHandle, FormItem, FormItemProps, FormLayout, FormList,
+    FormListContext, FormListItemMeta, FormListProps, LabelAlign, RequiredMark,
+    ScrollToFirstErrorConfig, use_form, use_form_item_control, use_form_list,
 };
 pub use components::grid::{
     Col, ColProps, ColResponsive, ColSize, ResponsiveGutter, ResponsiveValue, Row, RowAlign,
     RowGutter, RowJustify, RowProps,
 };
 pub use components::icon::{Icon, IconKind, IconProps};
-pub use components::input::{Input, InputProps, TextArea, TextAreaProps};
+pub use components::input::{
+    Input, InputProps, InputSize, OTP, OTPProps, Password, PasswordProps, Search, SearchProps,
+    TextArea, TextAreaProps,
+};
 pub use components::layout::{
     Content, Footer, Header, Layout, LayoutProps, Sider, SiderProps, SiderTheme,
 };
@@ -70,7 +76,7 @@ pub use components::list::List;
 pub use components::masonry::{Masonry, MasonryProps, MasonryResponsive};
 pub use components::menu::{Menu, MenuItemNode, MenuMode, MenuProps};
 pub use components::message::{MessageApi, MessageConfig, MessageType};
-pub use components::modal::{Modal, ModalProps};
+pub use components::modal::{Modal, ModalProps, ModalType};
 pub use components::notification::{
     NotificationApi, NotificationConfig, NotificationPlacement, NotificationType,
 };
@@ -81,7 +87,9 @@ pub use components::progress::{Progress, ProgressProps, ProgressStatus, Progress
 pub use components::qrcode::{QRCode, QRCodeErrorLevel, QRCodeProps, QRCodeStatus, QRCodeType};
 pub use components::radio::{Radio, RadioButton, RadioGroup, RadioGroupProps, RadioProps};
 pub use components::result::{Result, ResultProps, ResultStatus};
-pub use components::select::{PublicSelectOption as SelectOption, Select, SelectProps};
+pub use components::select::{
+    PublicSelectOption as SelectOption, Select, SelectMode, SelectPlacement, SelectProps,
+};
 pub use components::skeleton::Skeleton;
 pub use components::space::{Space, SpaceAlign, SpaceDirection, SpaceProps, SpaceSize};
 pub use components::spin::{Spin, SpinProps, SpinSize};
@@ -91,8 +99,14 @@ pub use components::splitter::{
 pub use components::statistic::Statistic;
 pub use components::steps::{StepItem, StepStatus, Steps, StepsDirection, StepsProps};
 pub use components::switch::{Switch, SwitchProps, SwitchSize};
-pub use components::table::{ColumnAlign, Table, TableColumn, TableProps};
-pub use components::tabs::{TabItem, Tabs, TabsProps};
+pub use components::table::{
+    ColumnAlign, ColumnFilter, ColumnFixed, ColumnRenderFn, RowSelection, SelectionType,
+    SortOrder, Table, TableChangeEvent, TableColumn, TablePaginationState, TableProps,
+    TableScroll, TableSorterState,
+};
+pub use components::tabs::{
+    TabEditAction, TabItem, TabPlacement, Tabs, TabsProps, TabsType,
+};
 pub use components::tag::{Tag, TagColor, TagProps};
 pub use components::time_picker::{TimePicker, TimePickerProps, TimeValue};
 pub use components::timeline::{
@@ -113,4 +127,20 @@ pub use components::upload::{
 pub use components::watermark::{Watermark, WatermarkFont, WatermarkProps};
 pub use theme::{
     THEME_BASE_STYLE, Theme, ThemeHandle, ThemeMode, ThemeProvider, ThemeTokens, use_theme,
+};
+
+// Foundation exports
+pub use foundation::{
+    // Semantic system
+    ClassListExt, SemanticClassNames, SemanticStyles, StyleStringExt,
+    // Semantic slot enums
+    AnchorSemantic, ButtonSemantic, CollapseSemantic, DescriptionsSemantic, FormSemantic,
+    InputSemantic, MessageSemantic, ModalSemantic, NotificationSemantic, SelectPopupSemantic,
+    SelectSemantic, TablePartSemantic, TableSemantic, TabsSemantic, TimelineSemantic,
+    // Type aliases
+    ButtonClassNames, ButtonStyles, CollapseClassNames, CollapseStyles, FormClassNames,
+    FormStyles, InputClassNames, InputStyles, ModalClassNames, ModalStyles, SelectClassNames,
+    SelectStyles, TableClassNames, TableStyles, TabsClassNames, TabsStyles,
+    // Variant system
+    Variant, variant_from_bordered,
 };

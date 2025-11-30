@@ -3,9 +3,9 @@
 //! 运行命令: cargo run --example anchor_demo
 
 use adui_dioxus::{
-    Affix, Anchor, AnchorDirection, AnchorLinkItem, Button, ButtonType, Card, Divider, Text,
-    TextType, Theme, ThemeMode, ThemeProvider, Title as AduiTitle, TitleLevel, use_theme,
-    THEME_BASE_STYLE,
+    Affix, Anchor, AnchorDirection, AnchorLinkItem, Button, ButtonType, Card, Divider,
+    THEME_BASE_STYLE, Text, TextType, Theme, ThemeMode, ThemeProvider, Title as AduiTitle,
+    TitleLevel, use_theme,
 };
 use dioxus::prelude::*;
 

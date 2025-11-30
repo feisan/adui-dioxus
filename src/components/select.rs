@@ -1,10 +1,19 @@
+//! Select component aligned with Ant Design 6.0.
+//!
+//! Supports single select, multiple select, and tags mode.
+
 use crate::components::config_provider::{ComponentSize, use_config};
 use crate::components::control::{ControlStatus, push_status_class};
 use crate::components::form::{FormItemControlContext, use_form_item_control};
+use crate::components::icon::{Icon, IconKind};
 use crate::components::select_base::{
     DropdownLayer, OptionKey, SelectOption, handle_option_list_key_event, option_key_to_value,
     option_keys_to_value, toggle_option_key, use_dropdown_layer, value_to_option_key,
     value_to_option_keys,
+};
+use crate::foundation::{
+    ClassListExt, SelectClassNames, SelectSemantic, SelectStyles, StyleStringExt, Variant,
+    variant_from_bordered,
 };
 use dioxus::events::KeyboardEvent;
 use dioxus::prelude::*;
@@ -14,7 +23,47 @@ use serde_json::Value;
 /// without depending on the internal `select_base` module path.
 pub use crate::components::select_base::SelectOption as PublicSelectOption;
 
-/// Props for the Select component (MVP subset).
+/// Select mode determining single/multiple selection behavior.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum SelectMode {
+    /// Single selection (default).
+    #[default]
+    Single,
+    /// Multiple selection.
+    Multiple,
+    /// Tags mode - allows creating new options from input.
+    Tags,
+}
+
+impl SelectMode {
+    /// Whether this mode allows multiple selections.
+    pub fn is_multiple(&self) -> bool {
+        matches!(self, SelectMode::Multiple | SelectMode::Tags)
+    }
+}
+
+/// Placement of the dropdown relative to the select trigger.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum SelectPlacement {
+    #[default]
+    BottomLeft,
+    BottomRight,
+    TopLeft,
+    TopRight,
+}
+
+impl SelectPlacement {
+    fn as_style(&self) -> &'static str {
+        match self {
+            SelectPlacement::BottomLeft => "top: 100%; left: 0;",
+            SelectPlacement::BottomRight => "top: 100%; right: 0;",
+            SelectPlacement::TopLeft => "bottom: 100%; left: 0;",
+            SelectPlacement::TopRight => "bottom: 100%; right: 0;",
+        }
+    }
+}
+
+/// Props for the Select component.
 #[derive(Props, Clone, PartialEq)]
 pub struct SelectProps {
     /// Controlled value for single-select mode.
@@ -25,7 +74,10 @@ pub struct SelectProps {
     pub values: Option<Vec<String>>,
     /// Option list rendered in the dropdown.
     pub options: Vec<SelectOption>,
-    /// When true, allow selecting multiple options.
+    /// Selection mode: single, multiple, or tags.
+    #[props(default)]
+    pub mode: SelectMode,
+    /// @deprecated Use `mode` instead. When true, allow selecting multiple options.
     #[props(default)]
     pub multiple: bool,
     /// Whether to show a clear icon when there is a selection.
@@ -46,10 +98,37 @@ pub struct SelectProps {
     /// Override component size; falls back to ConfigProvider when `None`.
     #[props(optional)]
     pub size: Option<ComponentSize>,
+    /// Visual variant (outlined/filled/borderless).
+    #[props(optional)]
+    pub variant: Option<Variant>,
+    /// @deprecated Use `variant="borderless"` instead.
+    #[props(optional)]
+    pub bordered: Option<bool>,
+    /// Prefix element displayed before the selection.
+    #[props(optional)]
+    pub prefix: Option<Element>,
+    /// Custom suffix icon (defaults to down arrow).
+    #[props(optional)]
+    pub suffix_icon: Option<Element>,
+    /// Dropdown placement relative to the select.
+    #[props(default)]
+    pub placement: SelectPlacement,
+    /// Whether dropdown width should match select width.
+    #[props(default = true)]
+    pub popup_match_select_width: bool,
     #[props(optional)]
     pub class: Option<String>,
+    /// Extra class applied to root element.
+    #[props(optional)]
+    pub root_class_name: Option<String>,
     #[props(optional)]
     pub style: Option<String>,
+    /// Semantic class names for sub-parts.
+    #[props(optional)]
+    pub class_names: Option<SelectClassNames>,
+    /// Semantic styles for sub-parts.
+    #[props(optional)]
+    pub styles: Option<SelectStyles>,
     /// Optional extra classes/styles for the dropdown popup.
     #[props(optional)]
     pub dropdown_class: Option<String>,
@@ -58,9 +137,12 @@ pub struct SelectProps {
     /// Change event emitted with the full set of selected keys.
     #[props(optional)]
     pub on_change: Option<EventHandler<Vec<String>>>,
+    /// Called when dropdown visibility changes.
+    #[props(optional)]
+    pub on_dropdown_visible_change: Option<EventHandler<bool>>,
 }
 
-/// Ant Design flavored Select (MVP).
+/// Ant Design flavored Select.
 #[allow(clippy::collapsible_if)]
 #[component]
 pub fn Select(props: SelectProps) -> Element {
@@ -68,6 +150,7 @@ pub fn Select(props: SelectProps) -> Element {
         value,
         values,
         options,
+        mode,
         multiple,
         allow_clear,
         placeholder,
@@ -75,15 +158,31 @@ pub fn Select(props: SelectProps) -> Element {
         show_search,
         status,
         size,
+        variant,
+        bordered,
+        prefix,
+        suffix_icon,
+        placement,
+        popup_match_select_width,
         class,
+        root_class_name,
         style,
+        class_names,
+        styles,
         dropdown_class,
         dropdown_style,
         on_change,
+        on_dropdown_visible_change,
     } = props;
 
     let config = use_config();
     let form_control = use_form_item_control();
+
+    // Resolve if multiple selection is enabled (mode takes precedence over deprecated `multiple`)
+    let is_multiple = mode.is_multiple() || multiple;
+
+    // Resolve variant
+    let resolved_variant = variant_from_bordered(bordered, variant);
 
     let final_size = size.unwrap_or(config.size);
 
@@ -97,7 +196,7 @@ pub fn Select(props: SelectProps) -> Element {
     let has_form = form_control.is_some();
     let prop_single = value.clone();
     let prop_multi = values.clone();
-    let multiple_flag = multiple;
+    let multiple_flag = is_multiple;
 
     // Snapshot of currently selected keys for this render.
     let selected_keys: Vec<OptionKey> = if let Some(ctx) = form_control.as_ref() {
@@ -123,6 +222,9 @@ pub fn Select(props: SelectProps) -> Element {
     let open_state: Signal<bool> = use_signal(|| false);
     let active_index: Signal<Option<usize>> = use_signal(|| None);
 
+    // Tags mode: input for creating new tags
+    let tags_input: Signal<String> = use_signal(String::new);
+
     // Flag used to distinguish between internal clicks (on the select trigger
     // or dropdown) and genuine outside clicks. This allows us to install a
     // document-level click handler for "click outside to close" without
@@ -135,6 +237,7 @@ pub fn Select(props: SelectProps) -> Element {
     {
         let mut open_for_global = open_state;
         let mut internal_flag = internal_click_flag;
+        let on_visible_cb = on_dropdown_visible_change;
         use_effect(move || {
             use wasm_bindgen::{JsCast, closure::Closure};
 
@@ -153,6 +256,9 @@ pub fn Select(props: SelectProps) -> Element {
                             let mut open_signal = open_for_global;
                             if *open_signal.read() {
                                 open_signal.set(false);
+                                if let Some(cb) = on_visible_cb {
+                                    cb.call(false);
+                                }
                             }
                         },
                     ));
@@ -188,8 +294,11 @@ pub fn Select(props: SelectProps) -> Element {
 
     // Build wrapper classes.
     let mut class_list = vec!["adui-select".to_string()];
-    if multiple {
+    if is_multiple {
         class_list.push("adui-select-multiple".into());
+    }
+    if matches!(mode, SelectMode::Tags) {
+        class_list.push("adui-select-tags".into());
     }
     if is_disabled {
         class_list.push("adui-select-disabled".into());
@@ -202,12 +311,19 @@ pub fn Select(props: SelectProps) -> Element {
         ComponentSize::Large => class_list.push("adui-select-lg".into()),
         ComponentSize::Middle => {}
     }
+    class_list.push(resolved_variant.class_for("adui-select"));
     push_status_class(&mut class_list, status);
+    class_list.push_semantic(&class_names, SelectSemantic::Root);
     if let Some(extra) = class {
         class_list.push(extra);
     }
-    let class_attr = class_list.join(" ");
-    let style_attr = style.unwrap_or_default();
+    if let Some(extra) = root_class_name {
+        class_list.push(extra);
+    }
+    let class_attr = class_list.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ");
+
+    let mut style_attr = style.unwrap_or_default();
+    style_attr.append_semantic(&styles, SelectSemantic::Root);
 
     // Helper to find the label for a given key.
     let find_label = |key: &str| -> String {
@@ -218,7 +334,12 @@ pub fn Select(props: SelectProps) -> Element {
             .unwrap_or_else(|| key.to_string())
     };
 
-    let display_node = if multiple {
+    // Clone form_control and selected_keys early for use in display_node closures
+    let form_for_tags = form_control.clone();
+    let selected_for_tags = selected_keys.clone();
+    let selected_for_clear = selected_keys.clone();
+
+    let display_node = if is_multiple {
         if selected_keys.is_empty() {
             rsx! { span { class: "adui-select-selection-placeholder", "{placeholder_str}" } }
         } else {
@@ -226,10 +347,66 @@ pub fn Select(props: SelectProps) -> Element {
                 div { class: "adui-select-selection-overflow",
                     {selected_keys.iter().map(|k| {
                         let label = find_label(k);
+                        let key_for_remove = k.clone();
+                        let form_for_remove = form_control.clone();
+                        let internal_selected_for_remove = internal_selected;
+                        let selected_snapshot = selected_keys.clone();
+
                         rsx! {
-                            span { class: "adui-select-selection-item", "{label}" }
+                            span { class: "adui-select-selection-item",
+                                "{label}"
+                                span {
+                                    class: "adui-select-selection-item-remove",
+                                    onclick: move |evt| {
+                                        evt.stop_propagation();
+                                        let next_keys = selected_snapshot.iter()
+                                            .filter(|k| **k != key_for_remove)
+                                            .cloned()
+                                            .collect();
+                                        apply_selected_keys(
+                                            &form_for_remove,
+                                            multiple_flag,
+                                            controlled_by_prop,
+                                            &internal_selected_for_remove,
+                                            on_change,
+                                            next_keys,
+                                        );
+                                    },
+                                    "×"
+                                }
+                            }
                         }
                     })}
+                    if matches!(mode, SelectMode::Tags) {
+                        input {
+                            class: "adui-select-selection-search-input",
+                            value: "{tags_input.read()}",
+                            oninput: move |evt| {
+                                let mut sig = tags_input;
+                                sig.set(evt.value());
+                            },
+                            onkeydown: move |evt: KeyboardEvent| {
+                                use dioxus::prelude::Key;
+                                if matches!(evt.key(), Key::Enter) {
+                                    let input_val = tags_input.read().trim().to_string();
+                                    if !input_val.is_empty() && !selected_for_tags.contains(&input_val) {
+                                        let mut next_keys = selected_for_tags.clone();
+                                        next_keys.push(input_val);
+                                        apply_selected_keys(
+                                            &form_for_tags,
+                                            multiple_flag,
+                                            controlled_by_prop,
+                                            &internal_selected,
+                                            on_change,
+                                            next_keys,
+                                        );
+                                        let mut sig = tags_input;
+                                        sig.set(String::new());
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -244,8 +421,6 @@ pub fn Select(props: SelectProps) -> Element {
     let form_for_handlers = form_control.clone();
     let internal_selected_for_handlers = internal_selected;
     let on_change_cb = on_change;
-    let multiple_flag = multiple;
-    let controlled_flag = controlled_by_prop;
 
     let open_for_toggle = open_state;
     let is_disabled_flag = is_disabled;
@@ -268,11 +443,31 @@ pub fn Select(props: SelectProps) -> Element {
         }
         list.join(" ")
     };
+
+    let min_width_style = if popup_match_select_width {
+        "min-width: 100%;"
+    } else {
+        ""
+    };
+
     let dropdown_style_attr = format!(
-        "position: absolute; top: 100%; left: 0; min-width: 100%; z-index: {}; {}",
+        "position: absolute; {} {} z-index: {}; {}",
+        placement.as_style(),
+        min_width_style,
         current_z,
         dropdown_style.unwrap_or_default()
     );
+
+    // Default suffix icon
+    let suffix_element = suffix_icon.unwrap_or_else(|| {
+        rsx! {
+            span { class: "adui-select-arrow",
+                Icon { kind: IconKind::ArrowDown, size: 12.0 }
+            }
+        }
+    });
+
+    let on_visible_cb = on_dropdown_visible_change;
 
     rsx! {
         div {
@@ -296,7 +491,11 @@ pub fn Select(props: SelectProps) -> Element {
 
                     let mut open_signal = open_for_toggle;
                     let current = *open_signal.read();
-                    open_signal.set(!current);
+                    let next = !current;
+                    open_signal.set(next);
+                    if let Some(cb) = on_visible_cb {
+                        cb.call(next);
+                    }
                 },
                 onkeydown: move |evt: KeyboardEvent| {
                     if is_disabled_flag {
@@ -311,6 +510,9 @@ pub fn Select(props: SelectProps) -> Element {
                                 evt.prevent_default();
                                 let mut open_signal = open_for_keydown;
                                 open_signal.set(true);
+                                if let Some(cb) = on_visible_cb {
+                                    cb.call(true);
+                                }
                             }
                             Key::Escape => {
                                 // 没有打开时按 Escape 不做任何事。
@@ -323,6 +525,9 @@ pub fn Select(props: SelectProps) -> Element {
                     if matches!(evt.key(), Key::Escape) {
                         let mut open_signal = open_for_keydown;
                         open_signal.set(false);
+                        if let Some(cb) = on_visible_cb {
+                            cb.call(false);
+                        }
                         return;
                     }
 
@@ -354,7 +559,7 @@ pub fn Select(props: SelectProps) -> Element {
                             apply_selected_keys(
                                 &form_for_keydown,
                                 multiple_flag,
-                                controlled_flag,
+                                controlled_by_prop,
                                 &internal_selected_for_keydown,
                                 on_change_cb,
                                 next_keys,
@@ -363,19 +568,27 @@ pub fn Select(props: SelectProps) -> Element {
                             if !multiple_flag {
                                 let mut open_signal = open_for_keydown;
                                 open_signal.set(false);
+                                if let Some(cb) = on_visible_cb {
+                                    cb.call(false);
+                                }
                             }
                         }
                     }
                 },
+                if let Some(prefix_el) = prefix {
+                    span { class: "adui-select-prefix", {prefix_el} }
+                }
                 div { class: "adui-select-selector", {display_node} }
-                if allow_clear && !selected_keys.is_empty() && !is_disabled_flag {
+                {suffix_element}
+                if allow_clear && !selected_for_clear.is_empty() && !is_disabled_flag {
                     span {
                         class: "adui-select-clear",
-                        onclick: move |_| {
+                        onclick: move |evt| {
+                            evt.stop_propagation();
                             apply_selected_keys(
                                 &form_for_handlers,
                                 multiple_flag,
-                                controlled_flag,
+                                controlled_by_prop,
                                 &internal_selected_for_handlers,
                                 on_change_cb,
                                 Vec::new(),
@@ -391,6 +604,11 @@ pub fn Select(props: SelectProps) -> Element {
                     style: "{dropdown_style_attr}",
                     role: "listbox",
                     "aria-multiselectable": multiple_flag,
+                    onclick: move |_| {
+                        // Prevent clicks inside dropdown from closing it
+                        let mut flag = internal_click_flag;
+                        flag.set(true);
+                    },
                     if show_search {
                         div { class: "adui-select-search",
                             input {
@@ -456,7 +674,7 @@ pub fn Select(props: SelectProps) -> Element {
                                         apply_selected_keys(
                                             &form_for_click,
                                             multiple_flag,
-                                            controlled_flag,
+                                            controlled_by_prop,
                                             &internal_selected_for_click,
                                             on_change_cb,
                                             next_keys,
@@ -465,9 +683,17 @@ pub fn Select(props: SelectProps) -> Element {
                                         if !multiple_flag {
                                             let mut open_signal = open_for_click;
                                             open_signal.set(false);
+                                            if let Some(cb) = on_visible_cb {
+                                                cb.call(false);
+                                            }
                                         }
                                     },
                                     "{label}"
+                                    if is_selected {
+                                        span { class: "adui-select-item-option-state",
+                                            Icon { kind: IconKind::Check, size: 12.0 }
+                                        }
+                                    }
                                 }
                             }
                         })}
@@ -503,5 +729,23 @@ fn apply_selected_keys(
 
     if let Some(cb) = on_change {
         cb.call(new_keys);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn select_mode_is_multiple() {
+        assert!(!SelectMode::Single.is_multiple());
+        assert!(SelectMode::Multiple.is_multiple());
+        assert!(SelectMode::Tags.is_multiple());
+    }
+
+    #[test]
+    fn select_placement_styles() {
+        assert!(SelectPlacement::BottomLeft.as_style().contains("top: 100%"));
+        assert!(SelectPlacement::TopLeft.as_style().contains("bottom: 100%"));
     }
 }

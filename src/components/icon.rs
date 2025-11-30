@@ -12,10 +12,14 @@ pub enum IconKind {
     Question,
     ArrowRight,
     ArrowLeft,
+    ArrowUp,
+    ArrowDown,
     Search,
     Copy,
     Edit,
     Loading,
+    Eye,
+    EyeInvisible,
 }
 
 /// Icon props.
@@ -162,6 +166,16 @@ fn icon_def(kind: IconKind) -> IconDef {
             fill: false,
             paths: &["M19 12H5", "M11 6l-6 6 6 6"],
         },
+        IconKind::ArrowUp => IconDef {
+            view_box: "0 0 24 24",
+            fill: false,
+            paths: &["M12 19V5", "M6 11l6-6 6 6"],
+        },
+        IconKind::ArrowDown => IconDef {
+            view_box: "0 0 24 24",
+            fill: false,
+            paths: &["M12 5v14", "M18 13l-6 6-6-6"],
+        },
         IconKind::Search => IconDef {
             view_box: "0 0 24 24",
             fill: false,
@@ -195,6 +209,24 @@ fn icon_def(kind: IconKind) -> IconDef {
                 "M18 12h4",
                 "M4.93 19.07l2.83-2.83",
                 "M16.24 7.76l2.83-2.83",
+            ],
+        },
+        IconKind::Eye => IconDef {
+            view_box: "0 0 24 24",
+            fill: false,
+            paths: &[
+                "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z",
+                "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z",
+            ],
+        },
+        IconKind::EyeInvisible => IconDef {
+            view_box: "0 0 24 24",
+            fill: false,
+            paths: &[
+                "M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94",
+                "M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19",
+                "M14.12 14.12a3 3 0 1 1-4.24-4.24",
+                "M1 1l22 22",
             ],
         },
     }
