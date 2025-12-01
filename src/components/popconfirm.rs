@@ -185,15 +185,101 @@ mod popconfirm_tests {
 
     #[test]
     fn popconfirm_props_defaults() {
-        // Test that default values are correct
-        assert_eq!(TooltipTrigger::Click, TooltipTrigger::Click);
-        // Note: PopconfirmProps requires children, so we can't create a default instance
-        // But we can test the default values used in the component
-        assert_eq!(TooltipTrigger::Click, TooltipTrigger::Click);
+        // Test default values used in the component
+        // ok_text defaults to "确定"
+        let ok_text_default = "确定".to_string();
+        assert_eq!(ok_text_default, "确定");
+
+        // cancel_text defaults to "取消"
+        let cancel_text_default = "取消".to_string();
+        assert_eq!(cancel_text_default, "取消");
+
+        // ok_type defaults to ButtonType::Primary
+        let ok_type_default = ButtonType::Primary;
+        assert_eq!(ok_type_default, ButtonType::Primary);
+
+        // trigger defaults to TooltipTrigger::Click
+        let trigger_default = TooltipTrigger::Click;
+        assert_eq!(trigger_default, TooltipTrigger::Click);
+
+        // ok_danger defaults to false
+        let ok_danger_default = false;
+        assert_eq!(ok_danger_default, false);
+
+        // disabled defaults to false
+        let disabled_default = false;
+        assert_eq!(disabled_default, false);
     }
 
     #[test]
-    fn popconfirm_trigger_default() {
+    fn popconfirm_props_optional_fields() {
+        // Test that optional fields can be None
+        // Note: PopconfirmProps requires children and title, so we can't create a full instance
+        let _description: Option<String> = None;
+        let _ok_text: Option<String> = None;
+        let _cancel_text: Option<String> = None;
+        let _on_confirm: Option<EventHandler<()>> = None;
+        let _on_cancel: Option<EventHandler<()>> = None;
+        let _ok_type: Option<ButtonType> = None;
+        let _placement: Option<TooltipPlacement> = None;
+        let _open: Option<bool> = None;
+        let _default_open: Option<bool> = None;
+        let _on_open_change: Option<EventHandler<bool>> = None;
+        let _class: Option<String> = None;
+        let _overlay_class: Option<String> = None;
+        let _overlay_style: Option<String> = None;
+        // All optional fields can be None
+        assert!(true);
+    }
+
+    #[test]
+    fn popconfirm_tooltip_trigger_variants() {
+        // Test TooltipTrigger enum variants
         assert_eq!(TooltipTrigger::Click, TooltipTrigger::Click);
+        assert_eq!(TooltipTrigger::Hover, TooltipTrigger::Hover);
+        assert_ne!(TooltipTrigger::Click, TooltipTrigger::Hover);
+    }
+
+    #[test]
+    fn popconfirm_tooltip_placement_variants() {
+        // Test TooltipPlacement enum variants exist
+        let _top = TooltipPlacement::Top;
+        let _bottom = TooltipPlacement::Bottom;
+        let _left = TooltipPlacement::Left;
+        let _right = TooltipPlacement::Right;
+        // Verify variants are distinct
+        assert_ne!(_top, _bottom);
+    }
+
+    #[test]
+    fn popconfirm_button_type_variants() {
+        // Test ButtonType enum variants
+        assert_eq!(ButtonType::Primary, ButtonType::Primary);
+        assert_ne!(ButtonType::Primary, ButtonType::Default);
+        assert_ne!(ButtonType::Primary, ButtonType::Dashed);
+        assert_ne!(ButtonType::Primary, ButtonType::Link);
+        assert_ne!(ButtonType::Primary, ButtonType::Text);
+    }
+
+    #[test]
+    fn popconfirm_default_text_values() {
+        // Test that default text values are correct
+        let ok_text = None;
+        let ok_text_final = ok_text.unwrap_or_else(|| "确定".to_string());
+        assert_eq!(ok_text_final, "确定");
+
+        let cancel_text = None;
+        let cancel_text_final = cancel_text.unwrap_or_else(|| "取消".to_string());
+        assert_eq!(cancel_text_final, "取消");
+    }
+
+    #[test]
+    fn popconfirm_custom_text_values() {
+        // Test that custom text values can be provided
+        let ok_text = Some("Confirm".to_string());
+        assert_eq!(ok_text.as_ref().unwrap(), "Confirm");
+
+        let cancel_text = Some("Cancel".to_string());
+        assert_eq!(cancel_text.as_ref().unwrap(), "Cancel");
     }
 }

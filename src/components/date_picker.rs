@@ -866,4 +866,122 @@ mod tests {
         let value = DateValue::from_ymd(2024, 5, 17).expect("valid date");
         assert_eq!(value.to_ymd_string(), "2024-05-17");
     }
+
+    #[test]
+    fn date_value_from_ymd_valid_dates() {
+        // Test various valid dates
+        assert!(DateValue::from_ymd(2024, 1, 1).is_some());
+        assert!(DateValue::from_ymd(2024, 12, 31).is_some());
+        assert!(DateValue::from_ymd(2000, 2, 29).is_some()); // Leap year
+        assert!(DateValue::from_ymd(2024, 2, 29).is_some()); // Leap year
+    }
+
+    #[test]
+    fn date_value_from_ymd_invalid_dates() {
+        // Test invalid dates
+        assert!(DateValue::from_ymd(2024, 2, 30).is_none()); // Invalid day
+        assert!(DateValue::from_ymd(2023, 2, 29).is_none()); // Not a leap year
+        assert!(DateValue::from_ymd(2024, 13, 1).is_none()); // Invalid month
+        assert!(DateValue::from_ymd(2024, 0, 1).is_none()); // Invalid month
+        assert!(DateValue::from_ymd(2024, 4, 31).is_none()); // April has 30 days
+    }
+
+    #[test]
+    fn date_value_to_ymd_string_formatting() {
+        let value1 = DateValue::from_ymd(2024, 1, 1).expect("valid date");
+        assert_eq!(value1.to_ymd_string(), "2024-01-01");
+
+        let value2 = DateValue::from_ymd(2024, 12, 31).expect("valid date");
+        assert_eq!(value2.to_ymd_string(), "2024-12-31");
+
+        let value3 = DateValue::from_ymd(2000, 2, 29).expect("valid date");
+        assert_eq!(value3.to_ymd_string(), "2000-02-29");
+
+        let value4 = DateValue::from_ymd(1999, 3, 15).expect("valid date");
+        assert_eq!(value4.to_ymd_string(), "1999-03-15");
+    }
+
+    #[test]
+    fn date_value_leap_year_handling() {
+        // Test leap years
+        assert!(DateValue::from_ymd(2000, 2, 29).is_some()); // 2000 is divisible by 400
+        assert!(DateValue::from_ymd(2004, 2, 29).is_some()); // 2004 is divisible by 4 but not 100
+        assert!(DateValue::from_ymd(1900, 2, 29).is_none()); // 1900 is divisible by 100 but not 400
+        assert!(DateValue::from_ymd(2024, 2, 29).is_some()); // 2024 is divisible by 4
+    }
+
+    #[test]
+    fn days_in_month_regular_months() {
+        assert_eq!(days_in_month(2024, 1), 31); // January
+        assert_eq!(days_in_month(2024, 3), 31); // March
+        assert_eq!(days_in_month(2024, 4), 30); // April
+        assert_eq!(days_in_month(2024, 5), 31); // May
+        assert_eq!(days_in_month(2024, 6), 30); // June
+        assert_eq!(days_in_month(2024, 7), 31); // July
+        assert_eq!(days_in_month(2024, 8), 31); // August
+        assert_eq!(days_in_month(2024, 9), 30); // September
+        assert_eq!(days_in_month(2024, 10), 31); // October
+        assert_eq!(days_in_month(2024, 11), 30); // November
+        assert_eq!(days_in_month(2024, 12), 31); // December
+    }
+
+    #[test]
+    fn days_in_month_february_leap_years() {
+        assert_eq!(days_in_month(2000, 2), 29); // Leap year (divisible by 400)
+        assert_eq!(days_in_month(2004, 2), 29); // Leap year (divisible by 4, not 100)
+        assert_eq!(days_in_month(2024, 2), 29); // Leap year
+        assert_eq!(days_in_month(2023, 2), 28); // Not a leap year
+        assert_eq!(days_in_month(1900, 2), 28); // Not a leap year (divisible by 100, not 400)
+        assert_eq!(days_in_month(2100, 2), 28); // Not a leap year (divisible by 100, not 400)
+    }
+
+    #[test]
+    fn weekday_index_monday_calculation() {
+        // Test known dates and their weekdays
+        // 2024-01-01 is a Monday (index 0)
+        assert_eq!(weekday_index_monday(2024, 1, 1), 0);
+
+        // 2024-01-02 is a Tuesday (index 1)
+        assert_eq!(weekday_index_monday(2024, 1, 2), 1);
+
+        // 2024-01-07 is a Sunday (index 6)
+        assert_eq!(weekday_index_monday(2024, 1, 7), 6);
+
+        // 2024-05-17 is a Friday (index 4)
+        assert_eq!(weekday_index_monday(2024, 5, 17), 4);
+
+        // 2000-02-29 is a Tuesday (index 1) - leap year
+        assert_eq!(weekday_index_monday(2000, 2, 29), 1);
+    }
+
+    #[test]
+    fn weekday_index_monday_consistency() {
+        // Test that consecutive days increment correctly
+        let base = weekday_index_monday(2024, 1, 1);
+        assert_eq!(weekday_index_monday(2024, 1, 2), (base + 1) % 7);
+        assert_eq!(weekday_index_monday(2024, 1, 3), (base + 2) % 7);
+        assert_eq!(weekday_index_monday(2024, 1, 8), base); // Same weekday next week
+    }
+
+    #[test]
+    fn date_range_value_empty() {
+        let range = DateRangeValue::empty();
+        assert_eq!(range.start, None);
+        assert_eq!(range.end, None);
+    }
+
+    #[test]
+    fn date_value_clone_and_copy() {
+        let value1 = DateValue::from_ymd(2024, 5, 17).expect("valid date");
+        let value2 = value1; // Copy
+        assert_eq!(value1, value2);
+        assert_eq!(value1.to_ymd_string(), value2.to_ymd_string());
+    }
+
+    #[test]
+    fn date_value_debug() {
+        let value = DateValue::from_ymd(2024, 5, 17).expect("valid date");
+        let debug_str = format!("{:?}", value);
+        assert!(debug_str.contains("DateValue"));
+    }
 }

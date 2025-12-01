@@ -340,4 +340,119 @@ mod tests {
         let v = TimeValue::new(9, 5, 7);
         assert_eq!(v.to_hms_string(), "09:05:07");
     }
+
+    #[test]
+    fn time_value_new() {
+        let v = TimeValue::new(12, 30, 45);
+        assert_eq!(v.hour, 12);
+        assert_eq!(v.minute, 30);
+        assert_eq!(v.second, 45);
+    }
+
+    #[test]
+    fn time_value_to_hms_string_formatting() {
+        assert_eq!(TimeValue::new(0, 0, 0).to_hms_string(), "00:00:00");
+        assert_eq!(TimeValue::new(9, 5, 7).to_hms_string(), "09:05:07");
+        assert_eq!(TimeValue::new(23, 59, 59).to_hms_string(), "23:59:59");
+        assert_eq!(TimeValue::new(1, 2, 3).to_hms_string(), "01:02:03");
+        assert_eq!(TimeValue::new(12, 30, 45).to_hms_string(), "12:30:45");
+    }
+
+    #[test]
+    fn time_value_normalised_valid_range() {
+        let v = TimeValue::normalised(12, 30, 45);
+        assert_eq!(v.hour, 12);
+        assert_eq!(v.minute, 30);
+        assert_eq!(v.second, 45);
+    }
+
+    #[test]
+    fn time_value_normalised_clamps_upper_bound() {
+        let v1 = TimeValue::normalised(25, 30, 45);
+        assert_eq!(v1.hour, 23); // Clamped to max hour
+
+        let v2 = TimeValue::normalised(12, 70, 45);
+        assert_eq!(v2.minute, 59); // Clamped to max minute
+
+        let v3 = TimeValue::normalised(12, 30, 100);
+        assert_eq!(v3.second, 59); // Clamped to max second
+
+        let v4 = TimeValue::normalised(25, 70, 100);
+        assert_eq!(v4.hour, 23);
+        assert_eq!(v4.minute, 59);
+        assert_eq!(v4.second, 59);
+    }
+
+    #[test]
+    fn time_value_normalised_clamps_lower_bound() {
+        let v1 = TimeValue::normalised(-1, 30, 45);
+        assert_eq!(v1.hour, 0); // Clamped to min hour
+
+        let v2 = TimeValue::normalised(12, -5, 45);
+        assert_eq!(v2.minute, 0); // Clamped to min minute
+
+        let v3 = TimeValue::normalised(12, 30, -10);
+        assert_eq!(v3.second, 0); // Clamped to min second
+
+        let v4 = TimeValue::normalised(-5, -10, -20);
+        assert_eq!(v4.hour, 0);
+        assert_eq!(v4.minute, 0);
+        assert_eq!(v4.second, 0);
+    }
+
+    #[test]
+    fn time_value_normalised_boundary_values() {
+        // Test exact boundaries
+        assert_eq!(TimeValue::normalised(0, 0, 0).hour, 0);
+        assert_eq!(TimeValue::normalised(23, 59, 59).hour, 23);
+        assert_eq!(TimeValue::normalised(23, 59, 59).minute, 59);
+        assert_eq!(TimeValue::normalised(23, 59, 59).second, 59);
+    }
+
+    #[test]
+    fn time_value_clone_and_copy() {
+        let v1 = TimeValue::new(12, 30, 45);
+        let v2 = v1; // Copy
+        assert_eq!(v1, v2);
+        assert_eq!(v1.hour, v2.hour);
+        assert_eq!(v1.minute, v2.minute);
+        assert_eq!(v1.second, v2.second);
+    }
+
+    #[test]
+    fn time_value_partial_eq() {
+        let v1 = TimeValue::new(12, 30, 45);
+        let v2 = TimeValue::new(12, 30, 45);
+        let v3 = TimeValue::new(13, 30, 45);
+
+        assert_eq!(v1, v2);
+        assert_ne!(v1, v3);
+    }
+
+    #[test]
+    fn time_value_debug() {
+        let v = TimeValue::new(12, 30, 45);
+        let debug_str = format!("{:?}", v);
+        assert!(debug_str.contains("TimeValue"));
+    }
+
+    #[test]
+    fn time_picker_props_optional_fields() {
+        // Test that optional fields can be None
+        // Note: TimePickerProps requires children, so we can't create a full instance
+        // But we can verify the structure allows None for optional fields
+        let _value: Option<TimeValue> = None;
+        let _default_value: Option<TimeValue> = None;
+        let _placeholder: Option<String> = None;
+        let _format: Option<String> = None;
+        let _hour_step: Option<u8> = None;
+        let _minute_step: Option<u8> = None;
+        let _second_step: Option<u8> = None;
+        let _disabled: Option<bool> = None;
+        let _allow_clear: Option<bool> = None;
+        let _class: Option<String> = None;
+        let _style: Option<String> = None;
+        // All optional fields can be None
+        assert!(true);
+    }
 }

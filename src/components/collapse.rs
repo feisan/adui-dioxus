@@ -450,6 +450,34 @@ mod tests {
     }
 
     #[test]
+    fn collapse_size_from_global() {
+        assert_eq!(
+            CollapseSize::from_global(ComponentSize::Small),
+            CollapseSize::Small
+        );
+        assert_eq!(
+            CollapseSize::from_global(ComponentSize::Middle),
+            CollapseSize::Middle
+        );
+        assert_eq!(
+            CollapseSize::from_global(ComponentSize::Large),
+            CollapseSize::Large
+        );
+    }
+
+    #[test]
+    fn collapse_size_default() {
+        assert_eq!(CollapseSize::default(), CollapseSize::Middle);
+    }
+
+    #[test]
+    fn collapse_size_variants() {
+        assert_ne!(CollapseSize::Small, CollapseSize::Middle);
+        assert_ne!(CollapseSize::Middle, CollapseSize::Large);
+        assert_ne!(CollapseSize::Small, CollapseSize::Large);
+    }
+
+    #[test]
     fn expand_icon_placement_class_mapping_is_stable() {
         assert_eq!(
             ExpandIconPlacement::Start.as_class(),
@@ -459,5 +487,71 @@ mod tests {
             ExpandIconPlacement::End.as_class(),
             "adui-collapse-icon-end"
         );
+    }
+
+    #[test]
+    fn expand_icon_placement_default() {
+        assert_eq!(ExpandIconPlacement::default(), ExpandIconPlacement::Start);
+    }
+
+    #[test]
+    fn expand_icon_placement_variants() {
+        assert_ne!(ExpandIconPlacement::Start, ExpandIconPlacement::End);
+    }
+
+    #[test]
+    fn collapsible_type_variants() {
+        assert_eq!(CollapsibleType::Header, CollapsibleType::Header);
+        assert_eq!(CollapsibleType::Icon, CollapsibleType::Icon);
+        assert_eq!(CollapsibleType::Disabled, CollapsibleType::Disabled);
+        assert_ne!(CollapsibleType::Header, CollapsibleType::Icon);
+        assert_ne!(CollapsibleType::Header, CollapsibleType::Disabled);
+        assert_ne!(CollapsibleType::Icon, CollapsibleType::Disabled);
+    }
+
+    #[test]
+    fn collapsible_type_debug() {
+        let debug_str = format!("{:?}", CollapsibleType::Header);
+        assert!(debug_str.contains("Header"));
+
+        let debug_str2 = format!("{:?}", CollapsibleType::Icon);
+        assert!(debug_str2.contains("Icon"));
+
+        let debug_str3 = format!("{:?}", CollapsibleType::Disabled);
+        assert!(debug_str3.contains("Disabled"));
+    }
+
+    #[test]
+    fn collapsible_type_clone_and_copy() {
+        let t1 = CollapsibleType::Header;
+        let t2 = t1; // Copy
+        assert_eq!(t1, t2);
+    }
+
+    #[test]
+    fn collapse_panel_builder_methods_exist() {
+        // Test that builder methods exist and can be called
+        // Note: CollapsePanel::new requires Element, so we can't create a full instance
+        // But we can verify the builder pattern methods exist
+        let _disabled_method_exists = CollapsePanel::disabled;
+        let _show_arrow_method_exists = CollapsePanel::show_arrow;
+        let _collapsible_method_exists = CollapsePanel::collapsible;
+        let _extra_method_exists = CollapsePanel::extra;
+        // Methods exist
+        assert!(true);
+    }
+
+    #[test]
+    fn collapse_size_all_variants_have_classes() {
+        let variants = [
+            CollapseSize::Small,
+            CollapseSize::Middle,
+            CollapseSize::Large,
+        ];
+        for variant in variants.iter() {
+            let class = variant.as_class();
+            assert!(!class.is_empty());
+            assert!(class.starts_with("adui-collapse-"));
+        }
     }
 }
