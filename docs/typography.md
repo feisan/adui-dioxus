@@ -1,82 +1,183 @@
-# Typography 使用说明
+# Typography
 
-Typography 组件族由 `Text`、`Paragraph`、`Title` 组成，遵循 Ant Design 6.0.0 的 Tone / 可交互能力，并加入 Rust/Dioxus 语义化 Props。所有组件共享以下特性：
+## Overview
 
-- Tone：`TextType`（`Default/Secondary/Success/Warning/Danger/Disabled`）会映射到主题 token `--adui-color-*`。
-- 修饰：`strong/italic/underline/delete/code/mark` 与 antd 原始样式保持一致。
-- Wrap：`wrap=false` 时添加 `.adui-text-nowrap` 并使用 `text-overflow`。
-- Ellipsis：布尔开关兼容旧 API，或通过 `TypographyEllipsis` 控制多行省略、tooltip 与 `expand/collapse` 标签。
-- Copyable/Editable：使用结构体 Props 传入配置，并自动生成 ARIA/键盘交互。
+The Typography component provides text components including Title, Paragraph, and Text. It supports various text styles, ellipsis, copyable text, and inline editing.
 
-## API 摘要
+## API Reference
 
-| 属性 | 说明 |
-| --- | --- |
-| `TextProps::copyable` | `Option<TypographyCopyable>`，提供 `text/icon/copied_icon/tooltips`，默认展示内置 Copy/Icon | 
-| `TextProps::ellipsis_config` | `Option<TypographyEllipsis>`，可设置 `rows`、`expandable`、`expand_text`、`collapse_text`、`tooltip` |
-| `TextProps::editable` | `Option<TypographyEditable>`，包含 `text/placeholder/auto_focus/max_length/enter_icon/cancel_icon` | 
-| `TextProps::on_copy` | 回调，在复制逻辑触发后同步通知外部 |
-| `TextProps::on_edit` / `on_edit_cancel` / `on_edit_start` | 编辑模式进入/提交/取消时的回调 |
+### TitleProps
 
-`ParagraphProps` 与 `TitleProps` 复用了上述字段，因此 Paragraph/Title 也支持 copy/ellipsis/编辑行为。`TypographyEditable` 默认在 Paragraph 中渲染 `textarea`，其余组件使用 `input`，并支持 `Enter/Escape` 键盘交互。
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `level` | `TitleLevel` | `TitleLevel::H1` | Heading level (H1-H5) |
+| `type` | `TextType` | `TextType::Default` | Text tone |
+| `strong` | `bool` | `false` | Bold text |
+| `italic` | `bool` | `false` | Italic text |
+| `underline` | `bool` | `false` | Underlined text |
+| `delete` | `bool` | `false` | Strikethrough text |
+| `code` | `bool` | `false` | Code style |
+| `mark` | `bool` | `false` | Highlighted text |
+| `copyable` | `Option<TypographyCopyable>` | `None` | Copyable configuration |
+| `ellipsis` | `bool` | `false` | Enable ellipsis |
+| `ellipsis_config` | `Option<TypographyEllipsis>` | `None` | Ellipsis configuration |
+| `editable` | `Option<TypographyEditable>` | `None` | Inline editing configuration |
+| `disabled` | `bool` | `false` | Disable text |
+| `on_copy` | `Option<EventHandler<String>>` | `None` | Called when text is copied |
+| `on_edit` | `Option<EventHandler<String>>` | `None` | Called when editing finishes |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `children` | `Element` | - | Title content (required) |
 
-## Ellipsis 行为
+### TextProps
+
+Similar to TitleProps but for text elements.
+
+### ParagraphProps
+
+Similar to TitleProps but for paragraph elements.
+
+### TitleLevel
+
+- `H1` - Heading 1 (default)
+- `H2` - Heading 2
+- `H3` - Heading 3
+- `H4` - Heading 4
+- `H5` - Heading 5
+
+### TextType
+
+- `Default` - Default text (default)
+- `Secondary` - Secondary text
+- `Success` - Success text (green)
+- `Warning` - Warning text (orange)
+- `Danger` - Danger text (red)
+- `Disabled` - Disabled text
+
+### TypographyCopyable
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `text` | `String` | Text to copy |
+| `icon` | `Option<Element>` | Custom copy icon |
+| `copied_icon` | `Option<Element>` | Custom copied icon |
+| `tooltips` | `Option<(String, String)>` | Tooltip texts (before, after) |
+
+### TypographyEllipsis
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rows` | `Option<u16>` | Number of rows before ellipsis |
+| `expandable` | `bool` | Whether text can be expanded |
+| `expand_text` | `Option<String>` | Expand button text |
+| `collapse_text` | `Option<String>` | Collapse button text |
+| `tooltip` | `Option<String>` | Tooltip text |
+
+### TypographyEditable
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `text` | `Option<String>` | Editable text value |
+| `placeholder` | `Option<String>` | Placeholder text |
+| `auto_focus` | `bool` | Auto focus when editing |
+| `max_length` | `Option<usize>` | Maximum length |
+| `enter_icon` | `Option<Element>` | Enter icon |
+| `cancel_icon` | `Option<Element>` | Cancel icon |
+
+## Usage Examples
+
+### Basic Title
 
 ```rust
-Text {
-    r#type: TextType::Secondary,
-    ellipsis: true,
-    ellipsis_config: Some(TypographyEllipsis {
-        rows: Some(2),
-        expandable: true,
-        tooltip: Some("悬停展示完整内容".into()),
-        expand_text: Some("展开".into()),
-        collapse_text: Some("收起".into()),
-    }),
-    "多行文本"
+use adui_dioxus::{Title, TitleLevel};
+
+rsx! {
+    Title {
+        level: TitleLevel::H1,
+        "Main Title"
+    }
 }
 ```
 
-- `rows=1` 时仍使用单行 `text-overflow: ellipsis`。
-- `expandable=true` 时在尾部渲染 `.adui-typography-expand` 按钮，可切换展开/收起。
-
-## Copyable
+### Text with Styles
 
 ```rust
-Text {
-    copyable: Some(TypographyCopyable {
-        tooltips: Some(("复制".into(), "已复制".into())),
-        ..TypographyCopyable::new("复制内容")
-    }),
-    "复制示例"
+use adui_dioxus::{Text, TextType};
+
+rsx! {
+    div {
+        Text { r#type: TextType::Default, "Default text" }
+        Text { r#type: TextType::Success, "Success text" }
+        Text { r#type: TextType::Warning, "Warning text" }
+        Text { r#type: TextType::Danger, "Danger text" }
+    }
 }
 ```
 
-- 默认图标为 `IconKind::Copy` / `IconKind::Check`。
-- 在 Web 端自动调用 `navigator.clipboard.writeText`，其他端会触发回调但不改变剪贴板。
-- `title` 根据复制状态在 `tooltips` 两个文案之间切换。
-
-## Editable
+### Copyable Text
 
 ```rust
-let paragraph_text = use_signal(|| "可编辑段落".to_string());
+use adui_dioxus::{Text, TypographyCopyable};
 
-Paragraph {
-    editable: Some(TypographyEditable {
-        text: Some(paragraph_text.read().clone()),
-        placeholder: Some("输入新的内容".into()),
-        auto_focus: true,
-        ..Default::default()
-    }),
-    on_edit: move |value: String| paragraph_text.set(value),
-    on_edit_cancel: move |_| log::info!("edit canceled"),
-    "{paragraph_text.read().clone()}"
+rsx! {
+    Text {
+        copyable: Some(TypographyCopyable::new("Copy this text")),
+        "This text can be copied"
+    }
 }
 ```
 
-- 编辑状态下会显示输入框 + `确认/取消` 图标按钮（默认采用 `Check/Close`）。
-- `Enter`（Text）或 `Ctrl+Enter`（Paragraph）提交，`Escape` 取消。
+### Ellipsis Text
 
-## 示例
+```rust
+use adui_dioxus::{Paragraph, TypographyEllipsis};
 
-可直接运行 `dx serve --example typography_demo` 查看 Tone、Copyable、Ellipsis、Editable 组合效果，对应源码位于 `examples/typography_demo.rs`。
+rsx! {
+    Paragraph {
+        ellipsis: true,
+        ellipsis_config: Some(TypographyEllipsis {
+            rows: Some(2),
+            expandable: true,
+            expand_text: Some("展开".to_string()),
+            collapse_text: Some("收起".to_string()),
+            ..Default::default()
+        }),
+        "Long text that will be truncated with ellipsis when it exceeds the specified number of rows..."
+    }
+}
+```
+
+### Editable Text
+
+```rust
+use adui_dioxus::{Text, TypographyEditable};
+
+rsx! {
+    Text {
+        editable: Some(TypographyEditable {
+            text: Some("Editable text".to_string()),
+            placeholder: Some("Enter text".to_string()),
+            ..Default::default()
+        }),
+        "Click to edit"
+    }
+}
+```
+
+## Use Cases
+
+- **Headings**: Display page and section headings
+- **Body Text**: Display body text with various styles
+- **Code**: Display code snippets
+- **Copyable Content**: Make text easily copyable
+- **Truncated Text**: Display truncated text with expand option
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Title, Text, and Paragraph components
+- ✅ Text tones and styles
+- ✅ Copyable functionality
+- ✅ Ellipsis with expand/collapse
+- ✅ Inline editing
+- ⚠️ Some advanced styling options may differ
+

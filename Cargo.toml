@@ -2,6 +2,11 @@
 name = "adui-dioxus"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "A UI component library for Dioxus that ports Ant Design 6.0.0 to Rust, providing rich components with Ant Design's design language and patterns"
+repository = "https://github.com/feisan/adui-dioxus"
+homepage = "https://github.com/feisan/adui-dioxus"
+documentation = "https://github.com/feisan/adui-dioxus/tree/main/docs"
 
 [dependencies]
 dioxus = { version = "0.7", features = ["macro", "signals", "hooks", "html", "launch", "web", "logger"] }

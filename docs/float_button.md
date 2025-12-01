@@ -1,48 +1,140 @@
-# FloatButton / BackTop 使用说明
+# FloatButton
 
-## FloatButton
-- `type` (`Default/Primary`) 与 `shape` (`Circle/Square`) 控制基色与外观，`danger` 会应用危险色调。若提供 `Group` 上下文则自动继承。
-- `icon` + `content/description` 组成主体区域；仅 icon 时会打上 `.adui-float-btn-icon-only`，Square 形态下 `content` 会垂直排列。
-- `badge` (`BadgeConfig`) 支持文本或 `dot`，位置与 antd 一致；`tooltip` 会同步到 `title`/`aria-label`。
-- 定位通过 `right/left/top/bottom/z_index` 控制，默认挂载在右下角（24px / 72px）。单独使用时会追加 `.adui-float-btn-individual` 方便覆写。
+## Overview
 
-## FloatButtonGroup
-- Props：`shape`、`type`、`gap`、`pure`、`right/left/top/bottom/z_index`。默认竖向堆叠，`pure=true` 时仅渲染容器，无绝对定位，可嵌进任意布局。
-- 组内按钮自动继承 `shape/type`，并通过 CSS 变量控制间距。
-- 示例：
+The FloatButton component displays a floating action button that stays fixed on the page. It supports primary and default types, danger styling, and can be grouped.
+
+## API Reference
+
+### FloatButtonProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `type` | `FloatButtonType` | `FloatButtonType::Primary` | Visual type |
+| `shape` | `FloatButtonShape` | `FloatButtonShape::Circle` | Button shape |
+| `danger` | `bool` | `false` | Whether button uses danger styling |
+| `href` | `Option<String>` | `None` | If provided, renders as link |
+| `icon` | `Option<Element>` | `None` | Icon element |
+| `description` | `Option<String>` | `None` | Description text shown on hover |
+| `content` | `Option<String>` | `None` | Text content (alternative to icon) |
+| `tooltip` | `Option<String>` | `None` | Tooltip text |
+| `right` | `Option<f32>` | `None` | Right position (defaults to 24px) |
+| `left` | `Option<f32>` | `None` | Left position |
+| `top` | `Option<f32>` | `None` | Top position |
+| `bottom` | `Option<f32>` | `None` | Bottom position (defaults to 72px) |
+| `z_index` | `Option<i32>` | `None` | Z-index (defaults to 99) |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `onclick` | `Option<EventHandler<MouseEvent>>` | `None` | Click event handler |
+| `children` | `Element` | - | Button content (required) |
+
+### FloatButtonGroupProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `shape` | `FloatButtonShape` | `FloatButtonShape::Circle` | Shared shape for all buttons |
+| `type` | `FloatButtonType` | `FloatButtonType::Primary` | Shared type for all buttons |
+| `gap` | `f32` | `12.0` | Gap between buttons |
+| `right` | `Option<f32>` | `None` | Right position |
+| `left` | `Option<f32>` | `None` | Left position |
+| `top` | `Option<f32>` | `None` | Top position |
+| `bottom` | `Option<f32>` | `None` | Bottom position |
+| `z_index` | `Option<i32>` | `None` | Z-index |
+| `pure` | `bool` | `false` | Pure panel mode (no positioning) |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `children` | `Element` | - | FloatButton children (required) |
+
+### BackTopProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `visibility_height` | `Option<f32>` | `None` | Scroll height to show button |
+| `right` | `Option<f32>` | `None` | Right position |
+| `bottom` | `Option<f32>` | `None` | Bottom position |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `children` | `Element` | - | Button content (required) |
+
+### FloatButtonType
+
+- `Default` - Default type
+- `Primary` - Primary type (default)
+
+### FloatButtonShape
+
+- `Circle` - Circular button (default)
+- `Square` - Square button
+
+## Usage Examples
+
+### Basic FloatButton
+
 ```rust
-FloatButtonGroup {
-    right: Some(24.0),
-    bottom: Some(120.0),
-    FloatButton { r#type: FloatButtonType::Primary, icon: rsx!(span { "＋" }), tooltip: Some("快速创建".into()) }
-    FloatButton { shape: FloatButtonShape::Square, content: Some("帮助".into()), badge: Some(BadgeConfig::text("New")) }
+use adui_dioxus::{FloatButton, Icon, IconKind};
+
+rsx! {
+    FloatButton {
+        icon: Some(rsx!(Icon { kind: IconKind::Plus, size: 20.0 })),
+    }
 }
 ```
 
-## FloatButtonPurePanel
-- `FloatButtonPurePanel` 是 `FloatButtonGroup` 的精简包装（`pure=true`、无定位），适合在卡片/抽屉内展示快捷操作面板。
-- Props：`shape`、`type`、`gap`、`class`、`style`、`children`。其余定位属性会被忽略。
-- 示例：
+### With Description
+
 ```rust
-FloatButtonPurePanel {
-    FloatButton { icon: rsx!(span { "?" }), tooltip: Some("帮助中心".into()) }
-    FloatButton { icon: rsx!(span { "!" }), danger: true, tooltip: Some("告警".into()) }
+use adui_dioxus::{FloatButton, Icon, IconKind};
+
+rsx! {
+    FloatButton {
+        icon: Some(rsx!(Icon { kind: IconKind::Edit, size: 20.0 })),
+        description: Some("Edit".to_string()),
+    }
 }
 ```
 
-## BackTop
-- 封装 `FloatButton` + 滚动逻辑，新增 `type/shape/danger/content/description/badge/right/left/top/bottom/z_index` Props，便于与主按钮统一样式。
-- `onclick` 仍可监听，触发顺序为：用户回调 -> `window.scroll_to(0,0)`；若需异步滚动可在外部覆盖。
-- 示例（来自 `examples/float_button_demo.rs`）：
+### FloatButton Group
+
 ```rust
-BackTop {
-    tooltip: Some("返回顶部".into()),
-    content: Some("TOP".into()),
-    shape: FloatButtonShape::Square,
-    right: Some(24.0),
-    bottom: Some(24.0),
+use adui_dioxus::{FloatButton, FloatButtonGroup, Icon, IconKind};
+
+rsx! {
+    FloatButtonGroup {
+        FloatButton {
+            icon: Some(rsx!(Icon { kind: IconKind::Plus, size: 20.0 })),
+        }
+        FloatButton {
+            icon: Some(rsx!(Icon { kind: IconKind::Edit, size: 20.0 })),
+        }
+    }
 }
 ```
 
-## Demo
-`dx serve --example float_button_demo` 展示：主题切换、浮动按钮组、Badge/Tooltip、BackTop 自定义位置与方形文字形态。
+### BackTop
+
+```rust
+use adui_dioxus::BackTop;
+
+rsx! {
+    BackTop {
+        visibility_height: Some(400.0),
+    }
+}
+```
+
+## Use Cases
+
+- **Primary Actions**: Quick access to primary actions
+- **Back to Top**: Scroll to top functionality
+- **Action Groups**: Multiple floating actions
+- **Quick Access**: Fast access to common actions
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Basic float button functionality
+- ✅ Button groups
+- ✅ BackTop component
+- ✅ Custom positioning
+- ⚠️ Drag functionality not yet implemented
+- ⚠️ Some advanced features may differ
+

@@ -1,181 +1,148 @@
-# Tabs：页签导航（MVP）
+# Tabs
 
-> 实现位置：`src/components/tabs.rs`
->
-> 示例：`examples/tabs_demo.rs`
+## Overview
 
-## 1. 设计目标
+The Tabs component organizes content into multiple panels that can be switched between. It supports different visual types, placements, and editable tabs.
 
-Tabs 用于在单个页面中切换不同的视图区域，例如「基础信息 / 安全设置 / 通知偏好」等。当前实现为基础版，仅支持顶部线型样式与简单的 items 模式，不包含可编辑卡片、多行滚动、额外 more 菜单等高级功能。
+## API Reference
 
----
+### TabsProps
 
-## 2. 数据模型与 Props
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `Vec<TabItem>` | - | Tab items with key/label/content (required) |
+| `active_key` | `Option<String>` | `None` | Controlled active key |
+| `default_active_key` | `Option<String>` | `None` | Default active key in uncontrolled mode |
+| `on_change` | `Option<EventHandler<String>>` | `None` | Called when active tab changes |
+| `type` | `TabsType` | `TabsType::Line` | Visual type |
+| `tab_placement` | `TabPlacement` | `TabPlacement::Top` | Tab placement position |
+| `centered` | `bool` | `false` | Whether to center tabs |
+| `hide_add` | `bool` | `false` | Hide add button (for editable-card) |
+| `on_edit` | `Option<EventHandler<TabEditAction>>` | `None` | Called when tabs are added/removed |
+| `add_icon` | `Option<Element>` | `None` | Custom add icon |
+| `remove_icon` | `Option<Element>` | `None` | Custom close icon |
+| `size` | `Option<ComponentSize>` | `None` | Visual density |
+| `destroy_inactive_tab_pane` | `bool` | `false` | Destroy inactive tab panels |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `class_names` | `Option<TabsClassNames>` | `None` | Semantic class names |
+| `styles` | `Option<TabsStyles>` | `None` | Semantic styles |
 
-### 2.1 TabItem
+### TabItem
 
-```rust
-#[derive(Clone, PartialEq)]
-pub struct TabItem {
-    pub key: String,
-    pub label: String,
-    pub disabled: bool,
-    pub content: Option<Element>,
-}
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `String` | Unique key for the tab |
+| `label` | `String` | Tab label text |
+| `disabled` | `bool` | Whether tab is disabled |
+| `closable` | `bool` | Whether tab can be closed (editable-card) |
+| `icon` | `Option<Element>` | Custom icon |
+| `content` | `Option<Element>` | Tab content |
 
-impl TabItem {
-    pub fn new(key: impl Into<String>, label: impl Into<String>, content: Option<Element>) -> Self { .. }
-    pub fn disabled(key: impl Into<String>, label: impl Into<String>) -> Self { .. }
-}
-```
+### TabsType
 
-- `key`：唯一标识，Tabs 的受控/非受控状态都依赖该字段；
-- `label`：页签标题，展示在页签导航区域；
-- `disabled`：是否禁用当前页签，禁用时不会响应点击；
-- `content`：当前页签对应的内容区域；若为 `None`，则 Tabs 只渲染导航，内容由外部自行组织。
+- `Line` - Line style tabs (default)
+- `Card` - Card style tabs
+- `EditableCard` - Editable card tabs with add/remove
 
-### 2.2 TabsProps
+### TabPlacement
 
-```rust
-#[derive(Props, Clone, PartialEq)]
-pub struct TabsProps {
-    pub items: Vec<TabItem>,
-    pub active_key: Option<String>,
-    pub default_active_key: Option<String>,
-    pub on_change: Option<EventHandler<String>>,
-    pub size: Option<ComponentSize>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-}
-```
+- `Top` - Tabs on top (default)
+- `Right` - Tabs on right
+- `Bottom` - Tabs on bottom
+- `Left` - Tabs on left
 
-字段说明：
+## Usage Examples
 
-- `items`：页签列表，每个 `TabItem` 包含 `key`/`label`/`disabled`/`content`；
-- `active_key`：
-  - 存在时 Tabs 处于 **受控模式**，内部不会管理当前激活 key；
-  - 由调用方配合 `on_change` 手动更新；
-- `default_active_key`：
-  - 仅在 `active_key` 为 `None` 时生效，用作非受控模式下的初始激活页签；
-  - 未显式指定时，会使用 `items.first()` 的 key 作为初始值（若存在）；
-- `on_change(key)`：
-  - 当用户点击页签、激活 key 发生变化时触发；
-  - 受控/非受控模式下都会触发此回调；
-- `size`：
-  - 控制 Tabs 导航高度与字体大小，复用 `ComponentSize`（`Small/Middle/Large`）；
-  - 对应样式类：`.adui-tabs-sm` / `.adui-tabs-lg`；
-- `class` / `style`：作用于根 `div` 的附加类名与内联样式。
-
----
-
-## 3. 渲染结构与样式类
-
-UI 结构（简化）：
-
-```html
-<div class="adui-tabs adui-tabs-sm/lg?">
-  <div class="adui-tabs-nav">
-    <div class="adui-tabs-nav-list">
-      <button class="adui-tabs-tab adui-tabs-tab-active? adui-tabs-tab-disabled?">基础信息</button>
-      <button class="adui-tabs-tab">安全设置</button>
-      ...
-    </div>
-  </div>
-  <div class="adui-tabs-content">
-    <div class="adui-tabs-tabpane">当前激活页签的内容</div>
-  </div>
-</div>
-```
-
-主要类名（定义在 `src/theme.rs` 的 `adui_tabs_style!` 中）：
-
-- `.adui-tabs`：Tabs 根容器；
-- `.adui-tabs-nav`：页签导航区域，底部带一条分割线；
-- `.adui-tabs-nav-list`：水平排列的页签按钮容器；
-- `.adui-tabs-tab`：单个页签按钮；
-- `.adui-tabs-tab-active`：当前激活页签，文字高亮并在底部渲染主色下划线；
-- `.adui-tabs-tab-disabled`：禁用页签，文字置灰且不可点击；
-- `.adui-tabs-sm` / `.adui-tabs-lg`：控制不同尺寸下的 padding 和字体大小；
-- `.adui-tabs-content`：内容区域外层；
-- `.adui-tabs-tabpane`：具体内容面板容器。
-
-当前实现仅支持顶部线型样式，不支持 TabPosition/TabPlacement 的多方向布局，也未实现 more/overflow 等高级特性。
-
----
-
-## 4. 示例：非受控与受控 Tabs
-
-摘自 `examples/tabs_demo.rs`：
+### Basic Tabs
 
 ```rust
-#[component]
-fn TabsDemoShell() -> Element {
-    let items = vec![
-        TabItem::new(
-            "basic",
-            "基础信息",
-            Some(rsx!(div { "这里是基础信息内容" })),
-        ),
-        TabItem::new(
-            "security",
-            "安全设置",
-            Some(rsx!(div { "这里是安全设置内容" })),
-        ),
-        TabItem::new(
-            "notification",
-            "通知偏好",
-            Some(rsx!(div { "这里是通知偏好内容" })),
-        ),
-    ];
+use adui_dioxus::{Tabs, TabItem};
 
-    let mut active = use_signal(|| "basic".to_string());
-
-    rsx! {
-        // 非受控模式：不传 active_key，Tabs 自行管理当前激活 key
-        Tabs { items: items.clone() }
-
-        // 受控模式：由外部 Signal 管理 active_key
-        Tabs {
-            items: items,
-            active_key: Some((*active.read()).clone()),
-            on_change: move |key: String| {
-                active.set(key);
-            },
-        }
+rsx! {
+    Tabs {
+        items: vec![
+            TabItem::new("1", "Tab 1", Some(rsx!("Content 1"))),
+            TabItem::new("2", "Tab 2", Some(rsx!("Content 2"))),
+            TabItem::new("3", "Tab 3", Some(rsx!("Content 3"))),
+        ],
     }
 }
 ```
 
----
+### Card Tabs
 
-## 5. 与其他组件的协同
+```rust
+use adui_dioxus::{Tabs, TabsType, TabItem};
 
-- 与 Layout / Breadcrumb：
-  - 建议将 Tabs 放在页面内容区顶部，用于在同一路由下切换不同子视图；
-  - Breadcrumb 负责页面级层级导航，Tabs 负责页面内部视图切换；
-- 与 Card：
-  - 常见场景是 Tabs + Card 组合，在每个 TabPane 中放置一组 Card/表单/列表；
-- 与 List / Table / Form：
-  - 不同 Tab 中渲染不同的数据视图或表单区域，例如「基本信息表单」/「安全日志表格」等；
-- 与 ConfigProvider：
-  - `size` 受 `ComponentSize` 控制，建议与 Button/Input 保持一致，统一页面视觉密度。
+rsx! {
+    Tabs {
+        r#type: TabsType::Card,
+        items: vec![
+            TabItem::new("1", "Tab 1", Some(rsx!("Content 1"))),
+            TabItem::new("2", "Tab 2", Some(rsx!("Content 2"))),
+        ],
+    }
+}
+```
 
----
+### Editable Tabs
 
-## 6. 与 Ant Design 的差异与后续规划
+```rust
+use adui_dioxus::{Tabs, TabsType, TabItem, TabEditAction};
+use dioxus::prelude::*;
 
-与 Ant Design 6.x 的 Tabs 相比，当前实现为裁剪版：
+let tabs = use_signal(|| vec![
+    TabItem::new("1", "Tab 1", Some(rsx!("Content 1"))),
+    TabItem::new("2", "Tab 2", Some(rsx!("Content 2"))),
+]);
 
-- 暂未支持：
-  - `type="card"`/`type="editable-card"` 卡片式/可编辑页签；
-  - `tabPosition` / `tabPlacement` 多方向布局（右侧/底部等）；
-  - more/overflow Tabs 下拉、拖拽排序等高级交互；
-  - 自定义 `renderTabBar` / `items` 中的复杂结构；
-- 受控模式：
-  - 当前仅提供简单的 `active_key` + `on_change`，未直接暴露动画/过渡配置；
+rsx! {
+    Tabs {
+        r#type: TabsType::EditableCard,
+        items: tabs.read().clone(),
+        on_edit: Some(move |action| {
+            match action {
+                TabEditAction::Add => {
+                    // Add new tab
+                }
+                TabEditAction::Remove(key) => {
+                    // Remove tab
+                }
+            }
+        }),
+    }
+}
+```
 
-后续扩展方向：
+### Centered Tabs
 
-- 按需支持 `type="card"`，与 Card 视觉风格进一步统一；
-- 引入简单的 overflow 处理（Tab 较多时折叠为下拉）；
-- 与路由集成的示例（Tab 与 URL 同步），以及与 DataView/List/Table 的更丰富组合 demo。
+```rust
+use adui_dioxus::{Tabs, TabItem};
+
+rsx! {
+    Tabs {
+        centered: true,
+        items: vec![
+            TabItem::new("1", "Tab 1", Some(rsx!("Content 1"))),
+            TabItem::new("2", "Tab 2", Some(rsx!("Content 2"))),
+        ],
+    }
+}
+```
+
+## Use Cases
+
+- **Content Organization**: Organize content into multiple sections
+- **Settings Panels**: Switch between different settings panels
+- **Data Views**: Switch between different data views
+- **Documentation**: Organize documentation sections
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Line, card, and editable-card types
+- ✅ Multiple placements
+- ✅ Centered tabs
+- ✅ Editable tabs with add/remove
+- ⚠️ Some advanced features may differ
+

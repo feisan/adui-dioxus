@@ -1,27 +1,128 @@
-# Icon 使用说明
+# Icon
 
-`Icon` 提供简单的内置图标集，并允许传入自定义 SVG 内容。
+## Overview
 
-## Props
-- `kind: IconKind`：内置图标（plus/minus/check/close/info/question/arrow/search/copy/edit/loading）。
-- `size: f32`：像素尺寸，默认 20。
-- `color: Option<String>`：自定义颜色（默认 `currentColor`）。
-- `rotate: Option<f32>`：旋转角度，单位度。
-- `spin: bool`：是否添加旋转动画（`Loading` 类型默认启用）。
-- `aria_label: Option<String>`：无障碍标签，未传时使用 `kind` 名称。
-- `view_box: Option<String>`：自定义 SVG viewBox。
-- `custom: Option<Element>`：自定义 SVG 内容，传入后将忽略内置路径。
+The Icon component provides a built-in set of SVG icons commonly used in UI interfaces. It supports rotation, sizing, custom colors, and spinning animations.
 
-## 示例
+## API Reference
+
+### IconProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `kind` | `IconKind` | `IconKind::Info` | Icon type from built-in set |
+| `size` | `f32` | `20.0` | Icon size in pixels |
+| `color` | `Option<String>` | `None` | Custom color (defaults to "currentColor") |
+| `rotate` | `Option<f32>` | `None` | Rotation angle in degrees |
+| `spin` | `bool` | `false` | Whether to animate spinning |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `aria_label` | `Option<String>` | `None` | ARIA label for accessibility |
+| `view_box` | `Option<String>` | `None` | Custom SVG viewBox |
+| `custom` | `Option<Element>` | `None` | Custom SVG content (overrides `kind`) |
+
+### IconKind
+
+Built-in icon types:
+- `Plus` - Plus icon
+- `Minus` - Minus icon
+- `Check` - Check mark
+- `Close` - Close/X icon
+- `Info` - Information icon (default)
+- `Question` - Question mark
+- `ArrowRight` - Right arrow
+- `ArrowLeft` - Left arrow
+- `ArrowUp` - Up arrow
+- `ArrowDown` - Down arrow
+- `Search` - Search icon
+- `Copy` - Copy icon
+- `Edit` - Edit icon
+- `Loading` - Loading spinner (auto-spins)
+- `Eye` - Eye icon
+- `EyeInvisible` - Eye with slash icon
+
+## Usage Examples
+
+### Basic Usage
+
 ```rust
-Icon { kind: IconKind::Plus, size: 16.0 }
-Icon { kind: IconKind::Loading, spin: true, color: Some("#1677ff".into()) }
-Icon {
-    size: 24.0,
-    view_box: Some("0 0 16 16".into()),
-    aria_label: Some("自定义".into()),
-    custom: Some(rsx!(path { d: "M1 1h14v14H1z" }))
+use adui_dioxus::{Icon, IconKind};
+
+rsx! {
+    Icon {
+        kind: IconKind::Search,
+    }
 }
 ```
 
-Icon 主要用于按钮、浮动面板等组件，所有属性均可配合 Dioxus 的 `class`/`style` 进一步扩展。
+### With Custom Size and Color
+
+```rust
+use adui_dioxus::{Icon, IconKind};
+
+rsx! {
+    Icon {
+        kind: IconKind::Check,
+        size: 24.0,
+        color: Some("#52c41a".to_string()),
+    }
+}
+```
+
+### Spinning Icon
+
+```rust
+use adui_dioxus::{Icon, IconKind};
+
+rsx! {
+    Icon {
+        kind: IconKind::Loading,
+        spin: true,
+    }
+}
+```
+
+### Rotated Icon
+
+```rust
+use adui_dioxus::{Icon, IconKind};
+
+rsx! {
+    Icon {
+        kind: IconKind::ArrowRight,
+        rotate: Some(45.0),
+    }
+}
+```
+
+### Custom SVG Icon
+
+```rust
+use adui_dioxus::Icon;
+
+rsx! {
+    Icon {
+        custom: Some(rsx! {
+            path { d: "M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" }
+        }),
+        size: 24.0,
+    }
+}
+```
+
+## Use Cases
+
+- **UI Indicators**: Show status, actions, or information
+- **Buttons**: Add icons to buttons for better UX
+- **Navigation**: Use arrow icons for navigation
+- **Loading States**: Use loading spinner icon
+- **Form Controls**: Icons for input fields, checkboxes, etc.
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Built-in icon set with common icons
+- ✅ Custom SVG support
+- ✅ Rotation and spinning animations
+- ✅ Size and color customization
+- ⚠️ Limited built-in icon set compared to Ant Design's extensive icon library
+- ⚠️ Icon font support not implemented (SVG only)
+

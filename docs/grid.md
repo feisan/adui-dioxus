@@ -1,41 +1,134 @@
-# Grid 使用说明
+# Grid
 
-- ## Row
-- `gutter`: 基础水平间距（px），等同 antd `[gutter, *]` 的第一个值。
-- `gutter_vertical`: 可选的垂直间距，对应 `[horizontal, vertical]` 的第二项。
-- `gutter_spec`: 一个 `RowGutter`，用于一次性传入 `Uniform(f32)` / `Pair(h, v)` / `Responsive(ResponsiveGutter)`，与 antd 的 `gutter={[16, 8]}` 或 `gutter={{ xs: 8, md: 24 }}` 行为对齐。若设置该字段，其余 `gutter*` 将被覆盖。
-- `responsive_gutter`: 传入 `ResponsiveGutter`（由 `horizontal: ResponsiveValue` + 可选 `vertical` 组成）即可针对 xs/sm/md/lg/xl/xxl 分别覆盖 gutter；内部通过 `--adui-row-gutter-x/y` CSS 变量驱动。
-- `justify` / `align`: 映射到 Flex 行主轴/交叉轴，与 antd 语义一致。
+## Overview
 
-示例：
+The Grid component provides a 24-column grid system for responsive layouts. It consists of `Row` and `Col` components that work together to create flexible, responsive layouts.
+
+## API Reference
+
+### RowProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `gutter` | `Option<f32>` | `None` | Horizontal gutter spacing |
+| `gutter_vertical` | `Option<f32>` | `None` | Vertical gutter spacing |
+| `responsive_gutter` | `Option<ResponsiveGutter>` | `None` | Responsive gutter configuration |
+| `gutter_spec` | `Option<RowGutter>` | `None` | Gutter specification (uniform/pair/responsive) |
+| `justify` | `RowJustify` | `RowJustify::Start` | Horizontal justification |
+| `align` | `RowAlign` | `RowAlign::Top` | Cross-axis alignment |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `children` | `Element` | - | Row children (Col components) (required) |
+
+### ColProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `span` | `Option<f32>` | `None` | Number of columns to span (1-24) |
+| `offset` | `Option<f32>` | `None` | Number of columns to offset |
+| `order` | `Option<f32>` | `None` | Display order |
+| `push` | `Option<f32>` | `None` | Number of columns to push |
+| `pull` | `Option<f32>` | `None` | Number of columns to pull |
+| `flex` | `Option<String>` | `None` | Flex value |
+| `xs` | `Option<f32>` | `None` | Span for xs breakpoint |
+| `sm` | `Option<f32>` | `None` | Span for sm breakpoint |
+| `md` | `Option<f32>` | `None` | Span for md breakpoint |
+| `lg` | `Option<f32>` | `None` | Span for lg breakpoint |
+| `xl` | `Option<f32>` | `None` | Span for xl breakpoint |
+| `xxl` | `Option<f32>` | `None` | Span for xxl breakpoint |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `children` | `Element` | - | Column content (required) |
+
+### RowJustify
+
+- `Start` - Start alignment (default)
+- `End` - End alignment
+- `Center` - Center alignment
+- `SpaceAround` - Space around items
+- `SpaceBetween` - Space between items
+- `SpaceEvenly` - Space evenly
+
+### RowAlign
+
+- `Top` - Top alignment (default)
+- `Middle` - Middle alignment
+- `Bottom` - Bottom alignment
+- `Stretch` - Stretch alignment
+
+## Usage Examples
+
+### Basic Grid
+
 ```rust
-Row {
-    gutter_spec: Some(RowGutter::Pair(24.0, 16.0)),
-    responsive_gutter: Some(ResponsiveGutter {
-        horizontal: ResponsiveValue { xs: Some(8.0), md: Some(24.0), ..Default::default() },
-        vertical: Some(ResponsiveValue { md: Some(16.0), ..Default::default() }),
-    }),
-    // ...
+use adui_dioxus::{Row, Col};
+
+rsx! {
+    Row {
+        Col { span: Some(8.0), "Col 1" }
+        Col { span: Some(8.0), "Col 2" }
+        Col { span: Some(8.0), "Col 3" }
+    }
 }
 ```
 
-## Col
-- `span`/`offset`：默认 24 栅格，`span=12` 等价于占据一半宽度。
-- `push`/`pull`：通过 `position: relative; left/right` 实现偏移，适合制作左右互换的排序。
-- `order`: 设置 flex order。
-- `responsive`: `ColResponsive` 包含 xs~xxl 的 `ColSize`，可分别指定 `span/offset/push/pull/order/flex`。
+### With Gutter
 
-示例：
 ```rust
-Col {
-    span: 24,
-    responsive: Some(ColResponsive {
-        md: Some(ColSize { span: Some(12), ..Default::default() }),
-        lg: Some(ColSize { span: Some(8), order: Some(1), ..Default::default() }),
-        ..Default::default()
-    }),
-    // ...
+use adui_dioxus::{Row, Col};
+
+rsx! {
+    Row {
+        gutter: Some(16.0),
+        Col { span: Some(12.0), "Col 1" }
+        Col { span: Some(12.0), "Col 2" }
+    }
 }
 ```
 
-更多参考见 `examples/grid_demo.rs`（`dx serve --example grid_demo`）。
+### Responsive Grid
+
+```rust
+use adui_dioxus::{Row, Col};
+
+rsx! {
+    Row {
+        Col {
+            xs: Some(24.0),
+            sm: Some(12.0),
+            md: Some(8.0),
+            lg: Some(6.0),
+            "Responsive Col"
+        }
+    }
+}
+```
+
+### With Offset
+
+```rust
+use adui_dioxus::{Row, Col};
+
+rsx! {
+    Row {
+        Col { span: Some(8.0), "Col 1" }
+        Col { span: Some(8.0), offset: Some(8.0), "Col 2" }
+    }
+}
+```
+
+## Use Cases
+
+- **Page Layouts**: Create responsive page layouts
+- **Form Layouts**: Organize form fields
+- **Content Grids**: Display content in grids
+- **Dashboard**: Create dashboard layouts
+
+## Differences from Ant Design 6.0.0
+
+- ✅ 24-column grid system
+- ✅ Responsive breakpoints
+- ✅ Gutter spacing
+- ✅ Flex support
+- ⚠️ Some advanced features may differ
+

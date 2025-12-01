@@ -1,49 +1,165 @@
-# 文档索引
+# Component Library Documentation
 
-## 已撰写的组件说明
-- [App & ConfigProvider & 全局反馈](./app_config.md)：App/use_* API、ConfigProvider 全局配置、OverlayManager 抽象，Message/Notification/Modal/Drawer 的 MVP 设计。
-- [Button](./button.md)：颜色/变体映射、ButtonGroup 上下文、auto insert space 说明。
-- [FloatButton](./float_button.md)：FloatButton/Group/BackTop 的 props、定位与 demo。
-- [Flex / Space](./flex_space.md)：FlexConfigProvider 继承方式与 Space gap/split。
-- [Input / TextArea](./input.md)：受控/非受控模式、`allow_clear`、与 Form 集成示例。
-- [Checkbox / Radio / Switch](./checkbox_radio_switch.md)：布尔控件与单选控件的 Group 行为与 Form 集成。
-- [Select / TreeSelect 等选择器家族](./select_family.md)：统一的 Option/Value 模型、下拉基础设施与 TreeSelect 当前能力说明。
-- [Tooltip（及后续 Popover/Popconfirm/Dropdown）](./tooltip_popover.md)：基于 OverlayManager 的轻量浮层提示与后续规划。
-- [Menu](./menu.md)：Sider/Header 导航菜单的 MVP 实现与 API。
-- [Breadcrumb](./breadcrumb.md)：面包屑导航的基本用法与路由协作建议。
-- [Pagination](./pagination.md)：分页器的受控用法、简化省略策略与 pageSize 切换。
-- [Empty](./empty.md)：统一空状态组件，用于 List/Table/Select 等无数据场景。
-- [Spin](./spin.md)：加载指示器，支持基础与嵌套两种模式。
-- [Skeleton](./skeleton.md)：骨架屏，占位式加载体验。
-- [List](./list.md)：列表视图与 Pagination/Empty/Spin 的协作用法。
-- [Table](./table.md)：基础数据表格与分页、空/加载状态协同。
-- [Grid](./grid.md)：Row/Col 响应式 gutter 及断点语义。
-- [Typography](./typography.md)：Tone、copyable/ellipsis/editable 行为与示例。
-- [Layout](./layout.md)：Sider 折叠、zero width trigger、内容区主题。
-- [Tabs](./tabs.md)：页签导航，支持 items 模式与受控 `active_key`，常与 Layout/Card/List 组合。
-- [Card](./card.md)：卡片容器，承载统计卡片、列表块和设置表单等内容。
-- [Tag](./tag.md)：状态/类别标签，支持预设色、可关闭、简单 checkable 用法。
-- [Badge](./badge.md)：数量角标与小红点，适用于 Menu/Button/Avatar 的未读提示。
-- [Avatar](./avatar.md)：头像组件，支持图片/文字/分组，常用于顶部用户信息区域。
-- [Alert](./alert.md)：页面级重要提示与警告，用于表单顶部告警、权限提示等。
-- [Result](./result.md)：操作结果页，用于展示提交成功/失败、403/404/500 等结果视图。
-- [Progress](./progress.md)：任务进度展示，支持线形与简化圆形，用于长任务或流程状态提示。
-- [Statistic](./statistic.md)：数字统计组件，用于仪表盘和统计卡片中的关键指标展示。
-- [Steps](./steps.md)：流程步骤条，用于多步表单、审批流程等场景的进度展示。
-- [Divider](./divider.md)：水平/垂直/带文字/虚线的 API。
-- [Masonry](./masonry.md)：列数、gap、响应式配置。
-- [Splitter](./splitter.md)：拖拽/受控 split、ARIA 属性。
-- [Icon](./icon.md)：内置图标、旋转/大小、自定义 SVG。
+## Overview
 
-## 未覆盖的 Ant Design 能力与后续路线
-- Button：暂未实现波纹效果、水波纹延迟、Loading delay tailwind cancel；未来考虑通过自定义动画或注入 `<style>` 来模拟。
-- FloatButton：PurePanel/Tooltip `description` slot、漂浮拖拽自定义位置尚未实现；计划待 Sider 浮层交互稳定后补充。
-- Layout：Sider breakpoint（`collapsedWidth` 自适应）、可折叠触发器 `tooltip` 自定义尚缺，需与浏览器 resize 监听配合。
-- Grid/Flex：RTL 支持仅在样式层规划，尚未监听 `dir="rtl"` 调整 gutter；后续补充 `adui-layout-rtl` 类及 `Theme` 配置。
-- Space：Compact 模式当前只包含类名，缺少子按钮之间的边框合并；下一步计划在 Button/Inputs 中添加针对 `.adui-space-compact` 的样式。
-- Splitter：键盘操作目前仅提供 `tabindex`，未处理方向键/Enter 拖拽；后续需要添加键盘增量调整逻辑。
-- Typography：`editable.max_length` 仅作为输入属性，未向调用方暴露告警；计划增加回调/提示。
-- 表单控件扩展：`Input.Password` / `Input.Search`、`InputNumber`、`Select` 等扩展能力暂未实现，仅提供基础 `Input` / `TextArea` 与 Checkbox/Radio/Switch；Form 受控模式（`FormItem` 内由 FormStore 作为单一数据源）已基本对齐 Ant Design 6.x，后续将围绕此模型补充更多控件；扩展能力计划在 `plan/0003.md` 的 Phase 2 中补充。
-- 主题：缺少 token 自定义指南（目前仅 README 提示），后续考虑新增 `docs/theme.md` 展示可覆盖字段与暗色示例。
+This is an experimental component library that ports Ant Design 6.0.0 to Dioxus using Vibe Coding. The library provides a comprehensive set of UI components with Ant Design's design language and patterns, adapted for Rust and the Dioxus framework.
 
-> 以上缺口同步记录在 `plan/0001.md`，后续有新的组件或 API 时请更新此列表。
+## About This Project
+
+This component library is an experimental port of Ant Design 6.0.0 to Dioxus, created using Vibe Coding. It aims to bring Ant Design's rich component ecosystem and design principles to the Rust ecosystem, enabling developers to build modern web applications with type-safe, performant Rust code.
+
+**Note**: This is an experimental project. Some features may differ from the original Ant Design implementation, and the API may evolve as the project matures.
+
+## Component Categories
+
+### Layout
+
+Components for structuring page layouts and organizing content.
+
+- [Layout](layout.md) - Page layout container with Header, Footer, Sider, and Content
+- [Grid](grid.md) - 24-column grid system for responsive layouts
+- [Flex](flex.md) - Flexible box layout component
+- [Space](space.md) - Spacing component for arranging elements
+- [Divider](divider.md) - Divider line for separating content
+- [Splitter](splitter.md) - Resizable split panes
+- [Masonry](masonry.md) - Masonry layout for cards and items
+
+### Navigation
+
+Components for navigation and wayfinding.
+
+- [Menu](menu.md) - Navigation menu with horizontal and vertical modes
+- [Breadcrumb](breadcrumb.md) - Breadcrumb navigation
+- [Tabs](tabs.md) - Tab navigation component
+- [Anchor](anchor.md) - Anchor navigation for long pages
+- [Steps](steps.md) - Step indicator for processes
+- [Pagination](pagination.md) - Pagination component
+
+### Data Entry
+
+Components for data input and form controls.
+
+- [Input](input.md) - Text input component
+- [TextArea](textarea.md) - Multi-line text input
+- [Password](input.md#password) - Password input with visibility toggle
+- [Search](input.md#search) - Input with search button
+- [OTP](input.md#otp) - One-time password input
+- [InputNumber](input_number.md) - Number input with stepper
+- [Select](select.md) - Dropdown selector
+- [TreeSelect](tree_select.md) - Tree-structured selector
+- [Cascader](cascader.md) - Cascading selector
+- [AutoComplete](auto_complete.md) - Autocomplete input
+- [Mentions](mentions.md) - Mentions input for @mentions
+- [DatePicker](date_picker.md) - Date picker
+- [TimePicker](time_picker.md) - Time picker
+- [Calendar](calendar.md) - Calendar component
+- [ColorPicker](color_picker.md) - Color picker
+- [Upload](upload.md) - File upload component
+- [Rate](rate.md) - Rating component
+- [Switch](switch.md) - Switch toggle
+- [Checkbox](checkbox.md) - Checkbox input
+- [Radio](radio.md) - Radio button
+- [Slider](slider.md) - Slider input
+
+### Data Display
+
+Components for displaying data and content.
+
+- [Table](table.md) - Data table with sorting, filtering, and pagination
+- [List](list.md) - List component for displaying data
+- [Descriptions](descriptions.md) - Description list for key-value pairs
+- [Card](card.md) - Card container component
+- [Collapse](collapse.md) - Collapsible content panels
+- [Timeline](timeline.md) - Timeline component
+- [Tree](tree.md) - Tree component
+- [Tag](tag.md) - Tag component for labels
+- [Badge](badge.md) - Badge for notifications and counts
+- [Avatar](avatar.md) - Avatar component
+- [Empty](empty.md) - Empty state component
+- [Statistic](statistic.md) - Statistic display component
+- [Progress](progress.md) - Progress indicator
+- [QRCode](qrcode.md) - QR code generator
+- [Image](image.md) - Image component with preview
+
+### Feedback
+
+Components for user feedback and notifications.
+
+- [Alert](alert.md) - Alert message component
+- [Message](message.md) - Global message notification
+- [Notification](notification.md) - Notification component
+- [Modal](modal.md) - Modal dialog
+- [Drawer](drawer.md) - Drawer component
+- [Popconfirm](popconfirm.md) - Popconfirm dialog
+- [Popover](popover.md) - Popover component
+- [Tooltip](tooltip.md) - Tooltip component
+- [Spin](spin.md) - Loading spinner
+- [Skeleton](skeleton.md) - Skeleton screen loading
+- [Result](result.md) - Result page component
+- [Progress](progress.md) - Progress indicator
+
+### Other
+
+Additional utility and specialized components.
+
+- [Button](button.md) - Button component
+- [FloatButton](float_button.md) - Floating action button
+- [Icon](icon.md) - Icon component
+- [Typography](typography.md) - Typography components (Title, Text, Paragraph)
+- [Form](form.md) - Form component with validation
+- [ConfigProvider](config_provider.md) - Global configuration provider
+- [App](app.md) - App-level component and hooks
+- [Affix](affix.md) - Affix component for sticky positioning
+- [Watermark](watermark.md) - Watermark component
+- [Tour](tour.md) - Tour component for onboarding
+- [Transfer](transfer.md) - Transfer component for moving items
+- [Carousel](carousel.md) - Carousel component
+
+## Getting Started
+
+To use this component library in your Dioxus project, add it to your `Cargo.toml`:
+
+```toml
+[dependencies]
+adui-dioxus = "0.1.0"
+```
+
+Then import and use components:
+
+```rust
+use adui_dioxus::{Button, ButtonType, ThemeProvider};
+
+fn app() -> Element {
+    rsx! {
+        ThemeProvider {
+            Button {
+                r#type: ButtonType::Primary,
+                "Click Me"
+            }
+        }
+    }
+}
+```
+
+## Documentation Structure
+
+Each component has its own documentation page with:
+
+- **Overview**: Component purpose and functionality
+- **API Reference**: Complete props, events, and methods documentation
+- **Usage Examples**: Code examples for common use cases
+- **Use Cases**: Typical scenarios where the component is used
+- **Differences from Ant Design 6.0.0**: Key differences and limitations
+
+## Language Support
+
+Documentation is available in both English (default) and Chinese. Chinese documentation files are suffixed with `_CN.md`.
+
+## Contributing
+
+This is an experimental project. Contributions and feedback are welcome. Please refer to the main project repository for contribution guidelines.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](../LICENSE) file for details.
+

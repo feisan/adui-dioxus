@@ -1,171 +1,122 @@
-# Badge：角标与小红点（MVP）
+# Badge
 
-> 实现位置：`src/components/badge.rs`
->
-> 示例：`examples/badge_demo.rs`
+## Overview
 
-## 1. 设计目标
+The Badge component displays a badge or notification indicator, typically used to show counts, status, or notifications on other components like buttons, avatars, or menu items.
 
-Badge 用于在元素角落展示数量信息或状态标记，常见于按钮、图标、头像、浮动按钮等上方的小红点或数字角标。
+## API Reference
 
-当前实现为基础版：
+### BadgeProps
 
-- 支持 `count` 数字角标与 `overflow_count` 上限；
-- 支持 `dot` 小红点；
-- 支持简单 `status` 状态色（default/success/warning/error）；
-- 未实现 Ribbon、复杂文本位置调整等高级特性。
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `count` | `Option<Element>` | `None` | Number or custom element to show in badge |
+| `count_number` | `Option<u32>` | `None` | Numeric count (for backward compatibility) |
+| `overflow_count` | `u32` | `99` | Max count before displaying "overflow+" |
+| `dot` | `bool` | `false` | Whether to show red dot without number |
+| `show_zero` | `bool` | `false` | Whether to show badge when count is zero |
+| `status` | `Option<BadgeStatus>` | `None` | Optional semantic status |
+| `color` | `Option<BadgeColor>` | `None` | Badge color (preset or custom) |
+| `text` | `Option<String>` | `None` | Text shown next to status indicator |
+| `size` | `BadgeSize` | `BadgeSize::Default` | Badge size |
+| `offset` | `Option<(f32, f32)>` | `None` | Offset position [x, y] for badge placement |
+| `title` | `Option<String>` | `None` | Title attribute for badge (tooltip) |
+| `class` | `Option<String>` | `None` | Extra class on root element |
+| `style` | `Option<String>` | `None` | Inline style for root element |
+| `children` | `Option<Element>` | `None` | Wrapped element to display badge on |
 
----
+### BadgeStatus
 
-## 2. BadgeStatus 与 BadgeProps
+- `Default` - Default status
+- `Success` - Success status (green)
+- `Warning` - Warning status (orange)
+- `Error` - Error status (red)
 
-### 2.1 BadgeStatus
+### BadgeColor
 
-```rust
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum BadgeStatus {
-    Default,
-    Success,
-    Warning,
-    Error,
-}
-```
+- `Preset(String)` - Preset color name
+- `Custom(String)` - Custom color (hex, rgb, etc.)
 
-- 对应基础状态色：
-  - `Default`：默认样式；
-  - `Success`：成功状态；
-  - `Warning`：警告状态；
-  - `Error`：错误状态；
-- 在当前实现中，仅用于修改角标/小红点的背景色。
+### BadgeSize
 
-### 2.2 BadgeProps
+- `Default` - Default size
+- `Small` - Small size
 
-```rust
-#[derive(Props, Clone, PartialEq)]
-pub struct BadgeProps {
-    pub count: Option<u32>,
-    pub overflow_count: u32,
-    pub dot: bool,
-    pub show_zero: bool,
-    pub status: Option<BadgeStatus>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub children: Option<Element>,
-}
-```
+## Usage Examples
 
-字段说明：
-
-- `count`：
-  - 需要展示的数字；
-  - 若 `None` 且 `dot=false`，则不展示角标；
-- `overflow_count`：
-  - 数值上限，默认 `99`；
-  - 当 `count > overflow_count` 时展示 `"overflow+"`（如 `99+`）；
-- `dot`：
-  - 是否展示小红点，而非数字；
-  - `dot=true` 时忽略 `count` 文本，仅展示圆点；
-- `show_zero`：
-  - 当 `count = Some(0)` 时是否展示角标；
-  - 默认 `false`，即 0 不展示；
-- `status`：
-  - 可选状态色，影响角标背景：`Success`/`Warning`/`Error`；
-- `class` / `style`：
-  - 作用于根 `.adui-badge` 元素的附加类名与内联样式；
-- `children`：
-  - 被包裹的目标元素，如按钮、图标、浮动按钮等；
-  - 为空时 Badge 仍会渲染角标，但通常建议提供子元素以保证语义清晰。
-
----
-
-## 3. 渲染结构与样式类
-
-UI 结构（简化）：
-
-```html
-<span class="adui-badge adui-badge-status-success?">
-  <button>消息</button>
-  <span class="adui-badge-count">5</span>
-</span>
-```
-
-主要类名（`src/theme.rs` 的 `adui_badge_style!`）：
-
-- `.adui-badge`：根容器，`position: relative`，用于定位角标；
-- `.adui-badge-count`：数字角标圆角矩形，右上角定位；
-- `.adui-badge-dot`：小红点圆形标记；
-- `.adui-badge-status-success` / `.adui-badge-status-warning` / `.adui-badge-status-error`：修改 count/dot 的背景色，使其匹配成功/警告/错误状态颜色。
-
----
-
-## 4. 示例：按钮角标、小红点与状态标记
-
-摘自 `examples/badge_demo.rs`：
+### Basic Badge with Count
 
 ```rust
-#[component]
-fn BadgeDemoShell() -> Element {
-    rsx! {
-        // 挂在按钮上的数字角标
-        Badge {
-            count: Some(5),
-            children: Some(rsx!(
-                Button { r#type: ButtonType::Default, "消息" }
-            )),
-        }
-        Badge {
-            count: Some(120),
-            overflow_count: 99,
-            children: Some(rsx!(
-                Button { r#type: ButtonType::Default, "通知" }
-            )),
-        }
+use adui_dioxus::{Badge, Button, ButtonType};
 
-        // 小红点
-        Badge {
-            dot: true,
-            children: Some(rsx!(
-                Button { r#type: ButtonType::Default, "待处理" }
-            )),
-        }
-
-        // 状态色示例
-        Badge {
-            count: Some(1),
-            status: Some(BadgeStatus::Success),
-            children: Some(rsx!("成功")),
-        }
+rsx! {
+    Badge {
+        count_number: Some(5),
+        children: Some(rsx! {
+            Button {
+                r#type: ButtonType::Primary,
+                "Messages"
+            }
+        }),
     }
 }
 ```
 
----
+### Dot Badge
 
-## 5. 与其他组件的协同
+```rust
+use adui_dioxus::{Badge, Avatar};
 
-- 与 Button/Icon：
-  - 将 `Button` 或 `Icon` 作为 `children` 包裹，Badge 负责在右上角展示数字或小红点；
-  - 常用于通知、消息、待办按钮；
-- 与 FloatButton：
-  - 可将 `FloatButton` 作为 `children`，在右下角悬浮按钮上展示待处理数量；
-- 与 Avatar/Menu：
-  - 后续可在 Avatar 或 MenuItem 上挂 Badge，表达未读消息或新功能提示；
+rsx! {
+    Badge {
+        dot: true,
+        children: Some(rsx! {
+            Avatar { children: Some(rsx!("U")) }
+        }),
+    }
+}
+```
 
----
+### Status Badge
 
-## 6. 与 Ant Design 的差异与后续规划
+```rust
+use adui_dioxus::{Badge, BadgeStatus};
 
-与 Ant Design 6.x 的 Badge 相比，当前实现为裁剪版：
+rsx! {
+    Badge {
+        status: Some(BadgeStatus::Success),
+        text: Some("Online".to_string()),
+    }
+}
+```
 
-- 暂未支持：
-  - `Ribbon` 装饰条；
-  - 自定义 `offset` 精细位置调整；
-  - 任意自定义颜色字符串（当前仅通过 status 控制）；
-- 行为差异：
-  - 未实现所有 size 变体，仅提供默认样式；
+### Custom Color Badge
 
-后续扩展方向：
+```rust
+use adui_dioxus::{Badge, BadgeColor};
 
-- 根据需求增加 `offset` 支持，允许精细调整角标位置；
-- 提供更丰富的状态和自定义颜色接口；
-- 引入 Ribbon 能力，用于 Card/Panel 边角装饰。
+rsx! {
+    Badge {
+        count_number: Some(99),
+        color: Some(BadgeColor::Custom("#ff4d4f".to_string())),
+        children: Some(rsx!(div { "Notifications" })),
+    }
+}
+```
+
+## Use Cases
+
+- **Notifications**: Show unread message counts
+- **Status Indicators**: Display online/offline status
+- **Counters**: Show item counts on buttons or icons
+- **Alerts**: Indicate new items or updates
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Count badges with overflow handling
+- ✅ Dot badges
+- ✅ Status badges
+- ✅ Custom colors
+- ✅ Offset positioning
+- ⚠️ Some advanced styling options may differ
+

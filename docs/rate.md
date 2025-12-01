@@ -1,17 +1,120 @@
 # Rate
 
-评分组件，支持半星与可清空，受控/非受控与表单集成。
+## Overview
 
-## Props 要点
-- `value` / `default_value`：`Option<f64>`。
-- `count`（默认 5）、`allow_half`、`allow_clear`、`disabled`。
-- `character`：自定义字符/节点；`tooltips`：每项的提示文本。
-- 事件：`on_change`、`on_hover_change`，聚焦/失焦回调。
+The Rate component allows users to rate something using stars. It supports half-star ratings, custom characters, tooltips, and keyboard navigation.
 
-## 交互与可访问性
-- 指针：支持半星（基于左半/右半区域），再次点击可清空（allow_clear）。
-- 键盘：Left/Down 减一步，Right/Up 加一步，Home 到 0，End 到最大，Enter/Space 提交当前值。
-- 禁用：禁用态不响应交互，样式变灰。
+## API Reference
 
-## 示例
-- 见 `examples/rate/main.rs`：半星受控、禁用状态。 
+### RateProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `Option<f64>` | `None` | Controlled numeric value |
+| `default_value` | `Option<f64>` | `None` | Uncontrolled initial value |
+| `count` | `usize` | `5` | Total count of items (stars) |
+| `allow_half` | `bool` | `false` | Allow selecting half steps (0.5 increments) |
+| `allow_clear` | `bool` | `true` | Allow clearing when clicking the same value again |
+| `disabled` | `bool` | `false` | Disable interactions |
+| `character` | `Option<Element>` | `None` | Optional custom character for each item |
+| `tooltips` | `Option<Vec<String>>` | `None` | Optional tooltips per item (aligned by index) |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `on_change` | `Option<EventHandler<Option<f64>>>` | `None` | Change callback (None means cleared) |
+| `on_hover_change` | `Option<EventHandler<Option<f64>>>` | `None` | Hover value callback |
+| `on_focus` | `Option<EventHandler<()>>` | `None` | Focus event handler |
+| `on_blur` | `Option<EventHandler<()>>` | `None` | Blur event handler |
+
+## Usage Examples
+
+### Basic Usage
+
+```rust
+use adui_dioxus::Rate;
+use dioxus::prelude::*;
+
+let rating = use_signal(|| Some(3.0));
+
+rsx! {
+    Rate {
+        value: *rating.read(),
+        on_change: Some(move |new_rating| {
+            rating.set(new_rating);
+        }),
+    }
+}
+```
+
+### Half Star Rating
+
+```rust
+use adui_dioxus::Rate;
+
+rsx! {
+    Rate {
+        allow_half: true,
+        default_value: Some(3.5),
+    }
+}
+```
+
+### With Tooltips
+
+```rust
+use adui_dioxus::Rate;
+
+rsx! {
+    Rate {
+        tooltips: Some(vec![
+            "Terrible".to_string(),
+            "Bad".to_string(),
+            "Normal".to_string(),
+            "Good".to_string(),
+            "Wonderful".to_string(),
+        ]),
+    }
+}
+```
+
+### Custom Character
+
+```rust
+use adui_dioxus::Rate;
+
+rsx! {
+    Rate {
+        character: Some(rsx!(span { "❤" })),
+        count: 5,
+    }
+}
+```
+
+### Disabled
+
+```rust
+use adui_dioxus::Rate;
+
+rsx! {
+    Rate {
+        value: Some(4.0),
+        disabled: true,
+    }
+}
+```
+
+## Use Cases
+
+- **Product Ratings**: Rate products or services
+- **Reviews**: Collect user ratings
+- **Feedback**: Gather user feedback
+- **Surveys**: Rating questions in surveys
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Star ratings with half-star support
+- ✅ Custom characters
+- ✅ Tooltips
+- ✅ Keyboard navigation
+- ✅ Hover feedback
+- ⚠️ Some advanced styling options may differ
+

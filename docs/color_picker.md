@@ -1,18 +1,84 @@
 # ColorPicker
 
-单色取色器，支持饱和度/明度面板、色相与透明度滑条，Hex 输入与清空。
+## Overview
 
-## Props 要点
-- `value` / `default_value`：十六进制字符串（`#RRGGBB` 或 `#RRGGBBAA`），`Option<String>`。
-- `allow_clear`：允许清空（默认开启）。
-- `disabled`：禁用交互。
-- 事件：`on_change`（实时），`on_change_complete`（提交/失焦）。
+The ColorPicker component provides a color selection interface with HSVA (Hue, Saturation, Value, Alpha) color model support. It includes a color palette, saturation/value picker, hue slider, and alpha slider.
 
-## 交互与可访问性
-- 面板：拖动饱和度/明度区域更新 `S/V`，色相滑条更新 `H`，透明度滑条更新 `A`。
-- 输入：Hex 文本实时解析，非法输入被忽略；清空按钮写入空值。
-- 受控/表单：外部/表单值变化时同步预览与输入框。
-- 非 wasm 环境：退化为输入驱动。
+## API Reference
 
-## 示例
-- 见 `examples/color_picker/main.rs`：基础受控与禁用示例。 
+### ColorPickerProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `Option<String>` | `None` | Controlled color string (e.g., #RRGGBB or #RRGGBBAA) |
+| `default_value` | `Option<String>` | `None` | Initial value in uncontrolled mode |
+| `disabled` | `bool` | `false` | Disable interactions |
+| `allow_clear` | `bool` | `false` | Show clear button |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `on_change` | `Option<EventHandler<String>>` | `None` | Called on every change with hex string |
+| `on_change_complete` | `Option<EventHandler<String>>` | `None` | Called when interaction completes |
+
+## Usage Examples
+
+### Basic ColorPicker
+
+```rust
+use adui_dioxus::ColorPicker;
+use dioxus::prelude::*;
+
+let color = use_signal(|| None::<String>);
+
+rsx! {
+    ColorPicker {
+        value: color.read().clone(),
+        on_change: Some(move |c| {
+            color.set(Some(c));
+        }),
+    }
+}
+```
+
+### With Clear Button
+
+```rust
+use adui_dioxus::ColorPicker;
+
+rsx! {
+    ColorPicker {
+        allow_clear: true,
+        default_value: Some("#FF0000".to_string()),
+    }
+}
+```
+
+### With Change Complete Handler
+
+```rust
+use adui_dioxus::ColorPicker;
+
+rsx! {
+    ColorPicker {
+        on_change_complete: Some(move |color| {
+            println!("Color selection completed: {}", color);
+        }),
+    }
+}
+```
+
+## Use Cases
+
+- **Theme Customization**: Customize theme colors
+- **Design Tools**: Color selection in design tools
+- **Form Input**: Color input in forms
+- **Settings**: Color settings in applications
+
+## Differences from Ant Design 6.0.0
+
+- ✅ HSVA color model
+- ✅ Saturation/value picker
+- ✅ Hue slider
+- ✅ Alpha slider
+- ✅ Hex color format
+- ⚠️ Some advanced features may differ
+

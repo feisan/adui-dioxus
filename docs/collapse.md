@@ -1,192 +1,138 @@
-# Collapse 折叠面板
+# Collapse
 
-可以折叠/展开的内容区域。
+## Overview
 
-## 何时使用
+The Collapse component displays collapsible content panels. It supports accordion mode, custom icons, and various styling options.
 
-- 对复杂区域进行分组和隐藏，保持页面的整洁。
-- 手风琴 是一种特殊的折叠面板，只允许单个内容区域展开。
+## API Reference
 
-## 代码演示
+### CollapseProps
 
-### 基础用法
-
-最简单的用法。
-
-```rust
-use adui_dioxus::*;
-
-let panels = vec![
-    CollapsePanel::new(
-        "1",
-        rsx! { "面板标题 1" },
-        rsx! { div { "面板内容 1" } },
-    ),
-    CollapsePanel::new(
-        "2",
-        rsx! { "面板标题 2" },
-        rsx! { div { "面板内容 2" } },
-    ),
-];
-
-rsx! {
-    Collapse {
-        items: panels,
-        default_active_key: vec!["1".to_string()],
-    }
-}
-```
-
-### 手风琴模式
-
-手风琴，每次只打开一个面板。
-
-```rust
-rsx! {
-    Collapse {
-        items: panels,
-        accordion: true,
-        default_active_key: vec!["1".to_string()],
-    }
-}
-```
-
-### 无边框
-
-简洁的无边框样式。
-
-```rust
-rsx! {
-    Collapse {
-        items: panels,
-        bordered: false,
-    }
-}
-```
-
-### 幽灵模式
-
-透明背景，适合嵌入其他容器。
-
-```rust
-rsx! {
-    Collapse {
-        items: panels,
-        ghost: true,
-    }
-}
-```
-
-### 自定义图标位置
-
-可以将展开图标放在右侧。
-
-```rust
-rsx! {
-    Collapse {
-        items: panels,
-        expand_icon_placement: ExpandIconPlacement::End,
-    }
-}
-```
-
-### 面板禁用
-
-可以禁用某个面板。
-
-```rust
-let panels = vec![
-    CollapsePanel::new("1", rsx! { "正常面板" }, rsx! { "内容" }),
-    CollapsePanel::new("2", rsx! { "禁用面板" }, rsx! { "内容" })
-        .disabled(true),
-];
-```
-
-### 嵌套折叠面板
-
-折叠面板可以嵌套使用。
-
-```rust
-let inner_panels = vec![/* ... */];
-
-let outer_panels = vec![
-    CollapsePanel::new(
-        "outer",
-        rsx! { "外层面板" },
-        rsx! {
-            div {
-                "外层内容"
-                Collapse { items: inner_panels }
-            }
-        },
-    ),
-];
-```
-
-## API
-
-### Collapse Props
-
-| 属性 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| items | 面板数据 | `Vec<CollapsePanel>` | - |
-| active_key | 当前激活的面板（受控） | `Option<Vec<String>>` | - |
-| default_active_key | 初始化选中面板的 key（非受控） | `Option<Vec<String>>` | - |
-| on_change | 切换面板的回调 | `Option<EventHandler<Vec<String>>>` | - |
-| accordion | 手风琴模式 | `bool` | `false` |
-| bordered | 是否有边框 | `bool` | `true` |
-| ghost | 幽灵模式 | `bool` | `false` |
-| size | 尺寸 | `Option<CollapseSize>` | `None` |
-| expand_icon_placement | 图标位置 | `ExpandIconPlacement` | `Start` |
-| collapsible | 所有面板的可折叠触发方式 | `Option<CollapsibleType>` | `None` |
-| class | 自定义类名 | `Option<String>` | - |
-| style | 自定义样式 | `Option<String>` | - |
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `Vec<CollapsePanel>` | - | Panel items to display (required) |
+| `active_key` | `Option<Vec<String>>` | `None` | Controlled active keys (expanded panels) |
+| `default_active_key` | `Option<Vec<String>>` | `None` | Default active keys in uncontrolled mode |
+| `on_change` | `Option<EventHandler<Vec<String>>>` | `None` | Called when active keys change |
+| `accordion` | `bool` | `false` | Accordion mode (only one panel expanded) |
+| `bordered` | `bool` | `true` | Whether to show border |
+| `ghost` | `bool` | `false` | Ghost mode (transparent background) |
+| `size` | `Option<CollapseSize>` | `None` | Size variant |
+| `expand_icon_placement` | `ExpandIconPlacement` | `ExpandIconPlacement::Start` | Expand icon placement |
+| `collapsible` | `Option<CollapsibleType>` | `None` | Default collapsible type for all panels |
+| `destroy_on_hidden` | `bool` | `true` | Destroy inactive panel content |
+| `expand_icon` | `Option<ExpandIconRenderFn>` | `None` | Custom expand icon render function |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `class_names` | `Option<CollapseClassNames>` | `None` | Semantic class names |
+| `styles` | `Option<CollapseStyles>` | `None` | Semantic styles |
 
 ### CollapsePanel
 
-| 属性 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| key | 唯一标识 | `String` | - |
-| header | 面板头内容 | `Element` | - |
-| content | 面板内容 | `Element` | - |
-| disabled | 是否禁用 | `bool` | `false` |
-| show_arrow | 是否显示箭头 | `bool` | `true` |
-| collapsible | 可折叠触发方式 | `Option<CollapsibleType>` | `None` |
-| extra | 额外内容 | `Option<Element>` | `None` |
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `String` | Unique key for the panel |
+| `header` | `Element` | Panel header content |
+| `content` | `Element` | Panel content |
+| `disabled` | `bool` | Whether panel is disabled |
+| `show_arrow` | `bool` | Whether to show expand arrow |
+| `collapsible` | `Option<CollapsibleType>` | Collapsible type for this panel |
+| `extra` | `Option<Element>` | Extra content in header |
 
 ### CollapseSize
 
-```rust
-pub enum CollapseSize {
-    Small,
-    Middle,  // 默认
-    Large,
-}
-```
-
-### ExpandIconPlacement
-
-```rust
-pub enum ExpandIconPlacement {
-    Start,  // 默认，图标在左侧
-    End,    // 图标在右侧
-}
-```
+- `Small` - Small size
+- `Middle` - Middle size (default)
+- `Large` - Large size
 
 ### CollapsibleType
 
+- `Header` - Trigger by clicking header
+- `Icon` - Trigger by clicking icon only
+- `Disabled` - Disabled, cannot be triggered
+
+### ExpandIconPlacement
+
+- `Start` - Icon at start (default)
+- `End` - Icon at end
+
+## Usage Examples
+
+### Basic Collapse
+
 ```rust
-pub enum CollapsibleType {
-    Header,    // 点击头部触发（默认）
-    Icon,      // 仅点击图标触发
-    Disabled,  // 禁用
+use adui_dioxus::{Collapse, CollapsePanel};
+
+rsx! {
+    Collapse {
+        items: vec![
+            CollapsePanel::new("1", rsx!("Panel 1"), rsx!("Content 1")),
+            CollapsePanel::new("2", rsx!("Panel 2"), rsx!("Content 2")),
+            CollapsePanel::new("3", rsx!("Panel 3"), rsx!("Content 3")),
+        ],
+    }
 }
 ```
 
-## 设计指引
+### Accordion Mode
 
-- 折叠面板适用于需要对大量信息进行分组和隐藏的场景
-- 手风琴模式适用于只需要展开一个面板的场景
-- 无边框和幽灵模式适合嵌入其他容器中使用
-- 可以根据需要自定义图标位置和触发方式
+```rust
+use adui_dioxus::{Collapse, CollapsePanel};
+
+rsx! {
+    Collapse {
+        accordion: true,
+        items: vec![
+            CollapsePanel::new("1", rsx!("Panel 1"), rsx!("Content 1")),
+            CollapsePanel::new("2", rsx!("Panel 2"), rsx!("Content 2")),
+        ],
+    }
+}
+```
+
+### Ghost Mode
+
+```rust
+use adui_dioxus::{Collapse, CollapsePanel};
+
+rsx! {
+    Collapse {
+        ghost: true,
+        items: vec![
+            CollapsePanel::new("1", rsx!("Panel 1"), rsx!("Content 1")),
+        ],
+    }
+}
+```
+
+### With Extra Content
+
+```rust
+use adui_dioxus::{Collapse, CollapsePanel, Button};
+
+rsx! {
+    Collapse {
+        items: vec![
+            CollapsePanel::new("1", rsx!("Panel 1"), rsx!("Content 1"))
+                .extra(rsx!(Button { "Action" })),
+        ],
+    }
+}
+```
+
+## Use Cases
+
+- **FAQ Sections**: Display frequently asked questions
+- **Settings Panels**: Organize settings into collapsible sections
+- **Content Organization**: Organize content into collapsible sections
+- **Accordions**: Create accordion-style interfaces
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Basic collapse functionality
+- ✅ Accordion mode
+- ✅ Ghost mode
+- ✅ Custom icons
+- ✅ Size variants
+- ⚠️ Some advanced features may differ
 

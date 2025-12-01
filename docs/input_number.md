@@ -1,19 +1,161 @@
 # InputNumber
 
-数值输入框，支持步进、边界与精度约束，受控/非受控与表单集成。
+## Overview
 
-## Props 要点
-- `value` / `default_value`：受控/非受控值，`Option<f64>`。
-- `min` / `max` / `step` / `precision`：边界、步进与小数精度控制。
-- `controls`：是否显示上下步进按钮（默认开启）。
-- `prefix` / `suffix`：前后缀节点。
-- `disabled` / `status`：禁用与状态样式。
-- 事件：`on_change`（`Option<f64>`）、`on_change_complete`（提交时），支持键盘上下箭头/Enter。
+The InputNumber component is a numeric input with step controls and basic formatting. It supports min/max constraints, step increments, and precision control.
 
-## 交互与可访问性
-- 键盘：↑/↓ 步进，Enter 提交，受控/表单值变化会同步输入框显示。
-- 边界：超出 min/max 自动 clamp；精度控制会在显示时格式化。
-- 禁用：禁用态禁用输入和按钮，样式变灰。
+## API Reference
 
-## 示例
-- 见 `examples/input_number/main.rs`：基础、禁用、受控同步显示。 
+### InputNumberProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `Option<f64>` | `None` | Controlled value |
+| `default_value` | `Option<f64>` | `None` | Uncontrolled initial value |
+| `min` | `Option<f64>` | `None` | Minimum value |
+| `max` | `Option<f64>` | `None` | Maximum value |
+| `step` | `Option<f64>` | `None` | Step increment |
+| `precision` | `Option<u32>` | `None` | Decimal precision |
+| `controls` | `bool` | `true` | Whether to show step controls |
+| `disabled` | `bool` | `false` | Disable interactions |
+| `status` | `Option<ControlStatus>` | `None` | Control status (error, warning) |
+| `prefix` | `Option<Element>` | `None` | Prefix element |
+| `suffix` | `Option<Element>` | `None` | Suffix element |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `on_change` | `Option<EventHandler<Option<f64>>>` | `None` | Fired whenever numeric value changes |
+| `on_change_complete` | `Option<EventHandler<Option<f64>>>` | `None` | Fired on blur or Enter |
+
+## Usage Examples
+
+### Basic InputNumber
+
+```rust
+use adui_dioxus::InputNumber;
+use dioxus::prelude::*;
+
+let value = use_signal(|| Some(10.0));
+
+rsx! {
+    InputNumber {
+        value: *value.read(),
+        on_change: Some(move |v| {
+            value.set(v);
+        }),
+    }
+}
+```
+
+### With Min/Max
+
+```rust
+use adui_dioxus::InputNumber;
+use dioxus::prelude::*;
+
+let value = use_signal(|| Some(50.0));
+
+rsx! {
+    InputNumber {
+        value: *value.read(),
+        min: Some(0.0),
+        max: Some(100.0),
+        on_change: Some(move |v| {
+            value.set(v);
+        }),
+    }
+}
+```
+
+### With Step
+
+```rust
+use adui_dioxus::InputNumber;
+use dioxus::prelude::*;
+
+let value = use_signal(|| Some(10.0));
+
+rsx! {
+    InputNumber {
+        value: *value.read(),
+        step: Some(5.0),
+        on_change: Some(move |v| {
+            value.set(v);
+        }),
+    }
+}
+```
+
+### With Precision
+
+```rust
+use adui_dioxus::InputNumber;
+use dioxus::prelude::*;
+
+let value = use_signal(|| Some(10.5));
+
+rsx! {
+    InputNumber {
+        value: *value.read(),
+        precision: Some(2),
+        on_change: Some(move |v| {
+            value.set(v);
+        }),
+    }
+}
+```
+
+### With Prefix/Suffix
+
+```rust
+use adui_dioxus::{InputNumber, Icon, IconKind};
+use dioxus::prelude::*;
+
+let value = use_signal(|| Some(100.0));
+
+rsx! {
+    InputNumber {
+        value: *value.read(),
+        prefix: Some(rsx!(Icon { kind: IconKind::Dollar })),
+        suffix: Some(rsx!("USD")),
+        on_change: Some(move |v| {
+            value.set(v);
+        }),
+    }
+}
+```
+
+### Without Controls
+
+```rust
+use adui_dioxus::InputNumber;
+use dioxus::prelude::*;
+
+let value = use_signal(|| Some(10.0));
+
+rsx! {
+    InputNumber {
+        value: *value.read(),
+        controls: false,
+        on_change: Some(move |v| {
+            value.set(v);
+        }),
+    }
+}
+```
+
+## Use Cases
+
+- **Quantity Input**: Input quantities in forms
+- **Price Input**: Input prices with currency
+- **Rating Input**: Input ratings or scores
+- **Numeric Forms**: Any form requiring numeric input
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Min/max constraints
+- ✅ Step increments
+- ✅ Precision control
+- ✅ Prefix/suffix support
+- ✅ Keyboard navigation
+- ⚠️ Some advanced features may differ
+

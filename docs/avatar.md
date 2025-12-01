@@ -1,176 +1,123 @@
-# Avatar：头像（MVP）
+# Avatar
 
-> 实现位置：`src/components/avatar.rs`
->
-> 示例：`examples/avatar_demo.rs`
+## Overview
 
-## 1. 设计目标
+The Avatar component displays user profile pictures, icons, or text initials. It supports images, icons, and text content, with different shapes and sizes.
 
-Avatar 用于展示用户或应用的头像，常出现在顶部导航、列表项或卡片中。当前实现提供基础的图片头像、文字头像和图标头像能力，并支持简单的 AvatarGroup 组合，不追求 AntD 的全部变体（如自适应尺寸、自动缩放文字等）。
+## API Reference
 
----
+### AvatarProps
 
-## 2. AvatarShape / AvatarSize 与 AvatarProps
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | `Option<String>` | `None` | Image source URL |
+| `alt` | `Option<String>` | `None` | Alt text for the image |
+| `shape` | `Option<AvatarShape>` | `None` (defaults to `Circle`) | Shape of the avatar |
+| `size` | `Option<AvatarSize>` | `None` (defaults to `Default`) | Size variant |
+| `icon` | `Option<Element>` | `None` | Optional icon content when no image src |
+| `class` | `Option<String>` | `None` | Extra class for root element |
+| `style` | `Option<String>` | `None` | Inline style for root element |
+| `children` | `Option<Element>` | `None` | Text content for text avatar (typically initials) |
 
-### 2.1 AvatarShape
+### AvatarGroupProps
 
-```rust
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum AvatarShape {
-    Circle,
-    Square,
-}
-```
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `class` | `Option<String>` | `None` | Extra class name for the group |
+| `style` | `Option<String>` | `None` | Inline style for the group |
+| `children` | `Element` | - | Avatars inside the group (required) |
 
-- `Circle`：圆形头像（默认）；
-- `Square`：方形头像，圆角由主题 radius 控制。
+### AvatarShape
 
-### 2.2 AvatarSize
+- `Circle` - Circular avatar (default)
+- `Square` - Square avatar
 
-```rust
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum AvatarSize {
-    Small,
-    Default,
-    Large,
-}
-```
+### AvatarSize
 
-- `Small` / `Default` / `Large`：控制宽高与字体大小，对应 `.adui-avatar-sm` / `.adui-avatar-md` / `.adui-avatar-lg`。
+- `Small` - Small size
+- `Default` - Default size
+- `Large` - Large size
 
-### 2.3 AvatarProps
+## Usage Examples
 
-```rust
-#[derive(Props, Clone, PartialEq)]
-pub struct AvatarProps {
-    pub src: Option<String>,
-    pub alt: Option<String>,
-    pub shape: Option<AvatarShape>,
-    pub size: Option<AvatarSize>,
-    pub icon: Option<Element>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub children: Option<Element>,
-}
-```
-
-字段说明：
-
-- `src`：
-  - 图片地址，存在时优先渲染 `img`；
-- `alt`：
-  - 图片的 alt 文本；
-- `shape`：
-  - 头像形状，默认 `Circle`；
-- `size`：
-  - 尺寸枚举，默认 `Default`；
-- `icon`：
-  - 当 `src` 为 `None` 时可提供图标 Element 作为头像内容；
-- `class` / `style`：
-  - 附加类名与内联样式；
-- `children`：
-  - 文本头像内容（通常是简短文字，如姓名首字母）。
-
-当前渲染优先级：`src` > `icon` > `children`。
-
----
-
-## 3. AvatarGroup
+### Image Avatar
 
 ```rust
-#[derive(Props, Clone, PartialEq)]
-pub struct AvatarGroupProps {
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub children: Element,
-}
+use adui_dioxus::Avatar;
 
-#[component]
-pub fn AvatarGroup(props: AvatarGroupProps) -> Element { .. }
-```
-
-- `AvatarGroup` 用于水平排列多个头像，形成用户列表或参与者列表；
-- 当前实现为简单的 inline-flex 布局，并应用负 margin 形成轻微重叠效果。
-
----
-
-## 4. 渲染结构与样式类
-
-UI 结构示例：
-
-```html
-<span class="adui-avatar adui-avatar-circle adui-avatar-md">
-  <img class="adui-avatar-img" src="..." alt="..." />
-</span>
-```
-
-主要类名（`src/theme.rs` 的 `adui_avatar_style!`）：
-
-- `.adui-avatar`：根容器，inline-flex 居中显示内容；
-- `.adui-avatar-circle` / `.adui-avatar-square`：控制圆角；
-- `.adui-avatar-sm` / `.adui-avatar-md` / `.adui-avatar-lg`：控制宽高与字体大小；
-- `.adui-avatar-img`：图片填充整个容器，`object-fit: cover`；
-- `.adui-avatar-icon` / `.adui-avatar-text`：用于图标或文字内容的内层容器；
-- `.adui-avatar-group`：AvatarGroup 容器，水平排列头像；
-- `.adui-avatar-group .adui-avatar`：在 group 中的头像添加轻微重叠与边框，以增强区分度。
-
----
-
-## 5. 示例：图片头像、文字头像与 AvatarGroup
-
-摘自 `examples/avatar_demo.rs`：
-
-```rust
-#[component]
-fn AvatarDemoShell() -> Element {
-    rsx! {
-        // 图片头像
-        Avatar { src: Some("https://via.placeholder.com/64".to_string()), }
-        Avatar { src: Some("https://via.placeholder.com/64".to_string()), size: Some(AvatarSize::Large) }
-        Avatar { src: Some("https://via.placeholder.com/40".to_string()), size: Some(AvatarSize::Small) }
-
-        // 文字头像
-        Avatar { children: Some(rsx!("AD")), }
-        Avatar { shape: Some(AvatarShape::Square), children: Some(rsx!("U")), }
-
-        // Group
-        AvatarGroup {
-            children: rsx! {
-                Avatar { children: Some(rsx!("A")), }
-                Avatar { children: Some(rsx!("B")), }
-                Avatar { children: Some(rsx!("C")), }
-            }
-        }
+rsx! {
+    Avatar {
+        src: Some("https://example.com/avatar.jpg".to_string()),
+        alt: Some("User avatar".to_string()),
     }
 }
 ```
 
----
+### Icon Avatar
 
-## 6. 与其他组件的协同
+```rust
+use adui_dioxus::{Avatar, Icon, IconKind};
 
-- 与 Layout/Header/Menu：
-  - 将 Avatar 放在 Header 右上角，并结合 Dropdown/Menu 构建用户信息入口；
-- 与 Badge：
-  - 使用 Badge 包裹 Avatar，在头像右上角展示小红点或消息数量；
-- 与 Card/List：
-  - 在 Card 或 List 中展示用户头像与名称，构成用户列表或评论列表；
+rsx! {
+    Avatar {
+        icon: Some(rsx!(Icon { kind: IconKind::User, size: 20.0 })),
+    }
+}
+```
 
----
+### Text Avatar
 
-## 7. 与 Ant Design 的差异与后续规划
+```rust
+use adui_dioxus::Avatar;
 
-与 Ant Design 6.x 的 Avatar 相比，当前实现为裁剪版：
+rsx! {
+    Avatar {
+        children: Some(rsx!("JD")),
+    }
+}
+```
 
-- 暂未支持：
-  - 数值尺寸（直接指定像素大小）；
-  - 自动计算文字缩放、src 错误回退到文字/图标的完整策略；
-  - 带 tooltip、点击行为的封装等；
-- AvatarGroup：
-  - 当前仅支持简单水平排列和重叠效果，不支持最大显示数量与溢出计数。
+### Square Avatar
 
-后续扩展方向：
+```rust
+use adui_dioxus::{Avatar, AvatarShape};
 
-- 增加数值尺寸支持，使 Avatar 可适配更灵活的设计需求；
-- 完善图片加载失败的回退逻辑（优先 icon，然后 children 文本）；
-- 与 Dropdown/Menu/Badge 组合出“用户信息区”示例，方便在顶部导航中复用。
+rsx! {
+    Avatar {
+        shape: Some(AvatarShape::Square),
+        children: Some(rsx!("AB")),
+    }
+}
+```
+
+### Avatar Group
+
+```rust
+use adui_dioxus::{Avatar, AvatarGroup};
+
+rsx! {
+    AvatarGroup {
+        Avatar { children: Some(rsx!("A")) }
+        Avatar { children: Some(rsx!("B")) }
+        Avatar { children: Some(rsx!("C")) }
+    }
+}
+```
+
+## Use Cases
+
+- **User Profiles**: Display user profile pictures
+- **User Lists**: Show avatars in user lists
+- **Comments**: Display commenter avatars
+- **Teams**: Show team member avatars
+- **Status Indicators**: Combine with badges for status
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Image, icon, and text avatars supported
+- ✅ Circle and square shapes
+- ✅ Size variants
+- ✅ Avatar groups
+- ⚠️ Image error fallback not explicitly handled (browser default)
+- ⚠️ Some advanced styling options may differ
+

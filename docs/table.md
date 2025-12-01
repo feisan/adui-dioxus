@@ -1,197 +1,191 @@
-# Table：数据表格（MVP）
+# Table
 
-> 实现位置：`src/components/table.rs`
->
-> 示例：`examples/table_demo.rs`
+## Overview
 
-## 1. 设计目标
+The Table component displays data in a structured table format with support for sorting, filtering, pagination, row selection, and expandable rows.
 
-Table 用于展示结构化数据，是中后台应用的核心组件之一。
+## API Reference
 
-本版 Table 提供一个 **只读、轻量** 的 MVP 实现：
+### TableProps
 
-- 列定义由 `TableColumn` 描述；
-- 行数据使用 `Vec<serde_json::Value>` 表示，列通过 key 访问对应字段；
-- 支持基础边框、行布局与简单分页；
-- 暂不实现排序/筛选/合并单元格等高级能力。
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `columns` | `Vec<TableColumn>` | - | Column definitions (required) |
+| `data` | `Vec<Value>` | - | Row data as JSON values (required) |
+| `row_key_field` | `Option<String>` | `None` | Field used as row key |
+| `row_class_name` | `Option<String>` | `None` | Extra class for each row |
+| `row_class_name_fn` | `Option<RowClassNameFn>` | `None` | Dynamic row class name function |
+| `row_props_fn` | `Option<RowPropsFn>` | `None` | Dynamic row props function |
+| `bordered` | `bool` | `false` | Whether to show outer borders |
+| `size` | `Option<ComponentSize>` | `None` | Visual density |
+| `loading` | `bool` | `false` | Loading state |
+| `is_empty` | `Option<bool>` | `None` | Whether table is empty |
+| `empty` | `Option<Element>` | `None` | Custom empty node |
+| `row_selection` | `Option<RowSelection>` | `None` | Row selection configuration |
+| `scroll` | `Option<TableScroll>` | `None` | Scroll configuration |
+| `sticky` | `Option<StickyConfig>` | `None` | Sticky header configuration |
+| `expandable` | `Option<ExpandableConfig>` | `None` | Expandable row configuration |
+| `summary` | `Option<SummaryConfig>` | `None` | Summary row configuration |
+| `on_change` | `Option<EventHandler<TableChangeEvent>>` | `None` | Called when pagination/filters/sorter changes |
+| `get_popup_container` | `Option<String>` | `None` | Container selector for popups |
+| `virtual` | `bool` | `false` | Enable virtual scrolling |
+| `locale` | `Option<TableLocale>` | `None` | Locale configuration |
+| `show_header` | `bool` | `true` | Show table header |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `class_names` | `Option<TableClassNames>` | `None` | Semantic class names |
+| `styles` | `Option<TableStyles>` | `None` | Semantic styles |
+| `pagination_total` | `Option<u32>` | `None` | Pagination total items |
+| `pagination_current` | `Option<u32>` | `None` | Current page index |
+| `pagination_page_size` | `Option<u32>` | `None` | Page size |
+| `pagination_on_change` | `Option<EventHandler<(u32, u32)>>` | `None` | Pagination change callback |
 
----
+### TableColumn
 
-## 2. TableColumn / TableProps：组件属性
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `String` | Unique column key |
+| `title` | `String` | Column title |
+| `data_index` | `Option<String>` | Data field index |
+| `width` | `Option<f32>` | Column width |
+| `align` | `Option<ColumnAlign>` | Cell alignment |
+| `fixed` | `Option<ColumnFixed>` | Fixed position |
+| `sortable` | `bool` | Whether column is sortable |
+| `default_sort_order` | `Option<SortOrder>` | Default sort order |
+| `sorter` | `Option<ColumnSorterFn>` | Custom sorter function |
+| `filters` | `Option<Vec<ColumnFilter>>` | Filter options |
+| `on_filter` | `Option<ColumnFilterFn>` | Custom filter function |
+| `render` | `Option<ColumnRenderFn>` | Custom render function |
+| `hidden` | `bool` | Whether column is hidden |
+| `ellipsis` | `bool` | Ellipsis text overflow |
 
-```rust
-#[derive(Clone, PartialEq)]
-pub struct TableColumn {
-    pub key: String,
-    pub title: String,
-    pub width: Option<f32>,
-    pub align: Option<ColumnAlign>,
-    pub sortable: bool,
-}
+### ColumnAlign
 
-#[derive(Props, Clone, PartialEq)]
-pub struct TableProps {
-    pub columns: Vec<TableColumn>,
-    pub data: Vec<serde_json::Value>,
-    pub row_key_field: Option<String>,
-    pub row_class_name: Option<String>,
-    pub bordered: bool,
-    pub size: Option<ComponentSize>,
-    pub loading: bool,
-    pub is_empty: Option<bool>,
-    pub empty: Option<Element>,
-    pub pagination_total: Option<u32>,
-    pub pagination_current: Option<u32>,
-    pub pagination_page_size: Option<u32>,
-    pub pagination_on_change: Option<EventHandler<(u32, u32)>>,
-}
+- `Left` - Left alignment (default)
+- `Center` - Center alignment
+- `Right` - Right alignment
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ColumnAlign {
-    Left,
-    Center,
-    Right,
-}
-```
+### SortOrder
 
-字段说明：
+- `Ascend` - Ascending order
+- `Descend` - Descending order
 
-- `TableColumn`：
-  - `key`：对应数据中字段名；
-  - `title`：表头标题文本；
-  - `width`：可选列宽（像素）；
-  - `align`：水平对齐方式（左/中/右），映射到 `.adui-table-align-*` 类；
-  - `sortable`：预留字段，当前未启用排序逻辑；
-- `columns`：
-  - 列定义数组；
-- `data`：
-  - 行数据，使用 `serde_json::Value` 表示；
-  - 通过 `row[ key ]` 访问单元格文本；
-- `row_key_field`：
-  - 可选用于作为行 key 的字段名；
-  - 若为空，则使用行索引作为 key；
-- `row_class_name`：
-  - 行附加 class，用于高亮等自定义样式；
-- `bordered` / `size`：
-  - 外边框与尺寸（紧凑/默认/较大），对应 `.adui-table-bordered` 和 `.adui-table-sm/lg` 类；
-- `loading` / `is_empty` / `empty`：
-  - `loading = true`：使用 Spin 包裹表体，显示“加载中...”；
-  - `is_empty`：由调用方根据数据判断是否为空；
-  - `empty`：自定义空态 Element；若为空且 `is_empty = Some(true)`，使用内置 Empty；
-- `pagination_*`：
-  - 与 List 类似，控制分页组件：
-    - `pagination_total`：总条数；
-    - `pagination_current`：当前页；
-    - `pagination_page_size`：每页条数；
-    - `pagination_on_change`：页码变化时回调 `(page, page_size)`。
+### ColumnFixed
 
----
+- `Left` - Fixed to left
+- `Right` - Fixed to right
 
-## 3. DOM 结构与样式类
+## Usage Examples
 
-典型结构：
-
-```html
-<div class="adui-table adui-table-bordered?">
-  <div class="adui-table-header">
-    <div class="adui-table-row adui-table-row-header">
-      <div class="adui-table-cell adui-table-cell-header">姓名</div>
-      <div class="adui-table-cell adui-table-cell-header">年龄</div>
-      ...
-    </div>
-  </div>
-  <div class="adui-table-body">
-    <div class="adui-table-body-inner">
-      <div class="adui-table-row">
-        <div class="adui-table-cell">Alice</div>
-        <div class="adui-table-cell">28</div>
-        ...
-      </div>
-      ...
-    </div>
-  </div>
-  <div class="adui-table-pagination"> <!-- 有分页时 -->
-    <!-- Pagination -->
-  </div>
-</div>
-```
-
-主要类名：
-
-- `.adui-table`：根容器；
-- `.adui-table-bordered`：带边框样式；
-- `.adui-table-header`：表头区域；
-- `.adui-table-row`：行容器；
-- `.adui-table-row-header`：表头行；
-- `.adui-table-cell`：单元格；
-- `.adui-table-align-left/center/right`：单元格文本对齐；
-- `.adui-table-body-inner`：表体内部容器，支持简单斑马纹；
-- `.adui-table-empty`：空态容器；
-- `.adui-table-pagination`：分页区域容器。
-
-> 样式定义集中在 `src/theme.rs` 的 `adui_table_style!` 宏，使用 ThemeTokens 控制背景、边框、间距与斑马纹效果。
-
----
-
-## 4. 示例：基础表格
-
-摘自 `examples/table_demo.rs`：
+### Basic Table
 
 ```rust
-#[component]
-fn TableDemoShell() -> Element {
-    let columns = vec![
-        TableColumn::new("name", "姓名"),
-        TableColumn::new("age", "年龄"),
-        TableColumn::new("city", "城市"),
-    ];
+use adui_dioxus::{Table, TableColumn};
+use serde_json::json;
 
-    let data = vec![
-        json!({ "name": "Alice", "age": 28, "city": "上海" }),
-        json!({ "name": "Bob", "age": 35, "city": "北京" }),
-        json!({ "name": "Charlie", "age": 42, "city": "深圳" }),
-    ];
-
-    rsx! {
-        div {
-            style: "padding: 16px; min-height: 100vh; background: var(--adui-color-bg-base);",
-            h2 { "Table demo" }
-            p { "展示基础表格用法，包含简单列定义与数据映射。" }
-
-            Table {
-                columns: columns,
-                data: data,
-                bordered: true,
-                size: Some(ComponentSize::Middle),
-                loading: false,
-                is_empty: Some(false),
-            }
-        }
+rsx! {
+    Table {
+        columns: vec![
+            TableColumn::new("name", "Name"),
+            TableColumn::new("age", "Age"),
+            TableColumn::new("email", "Email"),
+        ],
+        data: vec![
+            json!({"name": "John", "age": 30, "email": "john@example.com"}),
+            json!({"name": "Jane", "age": 25, "email": "jane@example.com"}),
+        ],
     }
 }
 ```
 
----
+### With Sorting
 
-## 5. 与 Ant Design 的差异
+```rust
+use adui_dioxus::{Table, TableColumn, SortOrder};
+use serde_json::Value;
 
-相较于 AntD 6.x 的 Table，本版为大幅裁剪版：
+rsx! {
+    Table {
+        columns: vec![
+            TableColumn::new("name", "Name")
+                .sortable(),
+            TableColumn::new("age", "Age")
+                .sortable()
+                .default_sort_order(Some(SortOrder::Ascend)),
+        ],
+        data: vec![],
+    }
+}
+```
 
-- 未支持：
-  - 排序（`sorter`）与排序图标；
-  - 筛选（`filters`）、过滤下拉菜单；
-  - 合并单元格、分组表头；
-  - 虚拟滚动、固定列、树形数据、选择列等复杂能力；
-- 数据模型：
-  - 当前使用 `serde_json::Value` 作为行数据表示，便于快速迭代；
-  - 后续可考虑引入泛型 `Table<RecordType>` 与回调型 `render`；
-- 分页：
-  - 仅支持基于 Pagination 的简单分页，不支持多位置分页条（顶部/底部同时）和 `showTotal` 等高级配置。
+### With Row Selection
 
-后续若需要，可以分阶段补充：
+```rust
+use adui_dioxus::{Table, TableColumn, RowSelection, SelectionType};
+use dioxus::prelude::*;
+use serde_json::json;
 
-1. 排序与分页回调：在 `TableProps` 中增加排序状态与 `on_change` 回调；
-2. 更丰富的数据模型：支持泛型记录类型与自定义单元格渲染；
-3. 复杂布局：支持分组表头、固定列、横向滚动和行选择等特性。
+let selected = use_signal(|| vec![]);
 
-此外，`data_view_demo` 展示了 Table 与 Layout/Breadcrumb/Pagination/Empty/Spin/Skeleton 的组合，而 `dashboard_demo` 则侧重展示 List + Tabs + Card + Tag + Badge + Avatar + Pagination 的仪表盘视图，两个示例可以结合参考。
+rsx! {
+    Table {
+        columns: vec![
+            TableColumn::new("name", "Name"),
+        ],
+        data: vec![
+            json!({"name": "John"}),
+        ],
+        row_selection: Some(RowSelection {
+            selected_row_keys: selected.read().clone(),
+            on_change: Some(move |keys| {
+                selected.set(keys);
+            }),
+            selection_type: SelectionType::Checkbox,
+            preserve_selected_row_keys: false,
+        }),
+    }
+}
+```
+
+### With Pagination
+
+```rust
+use adui_dioxus::{Table, TableColumn};
+use dioxus::prelude::*;
+use serde_json::json;
+
+let current_page = use_signal(|| 1u32);
+
+rsx! {
+    Table {
+        columns: vec![
+            TableColumn::new("name", "Name"),
+        ],
+        data: vec![
+            json!({"name": "John"}),
+        ],
+        pagination_total: Some(100),
+        pagination_current: Some(*current_page.read()),
+        pagination_on_change: Some(move |(page, _size)| {
+            current_page.set(page);
+        }),
+    }
+}
+```
+
+## Use Cases
+
+- **Data Display**: Display structured data
+- **Data Management**: Manage data with sorting and filtering
+- **Reports**: Generate data reports
+- **Dashboards**: Display dashboard data
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Sorting and filtering
+- ✅ Row selection
+- ✅ Pagination
+- ✅ Expandable rows
+- ✅ Fixed columns
+- ⚠️ Some advanced features may differ
+

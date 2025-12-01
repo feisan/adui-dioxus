@@ -1,30 +1,98 @@
-# Divider 使用说明
+# Divider
 
-## Props
-- `dashed: bool`：虚线样式，对应 antd `dashed`。
-- `plain: bool`：文字采用简洁样式，与 antd `plain` 行为一致。
-- `vertical: bool`：纵向分割线，相当于 antd `type="vertical"`。
-- `orientation: DividerOrientation`：`Left/Center/Right`，仅在存在内容时生效。
-- `orientation_margin: Option<String>`：控制文字两侧 margin，默认 `16px`。
-- `content: Option<Element>` / `children: Option<Element>`：分割线中展示的内容（与 antd `children` 一致）。
+## Overview
 
-## 行为说明
-- 当 `vertical=true` 时，为 `role="separator" aria-orientation="vertical"`；横向默认为 `horizontal`。
-- 当存在内容时，会自动添加 `.adui-divider-left|center|right`，并在内部渲染 `.adui-divider-inner-text`。
-- `orientation_margin` 允许传入任意 CSS 长度字符串，例如 `"32px"`、`"2rem"`。
+The Divider component is used to separate content sections with a horizontal or vertical line. It can include optional text content and supports different orientations and styles.
 
-## 示例
+## API Reference
+
+### DividerProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `dashed` | `bool` | `false` | Whether the divider is dashed |
+| `plain` | `bool` | `false` | Whether the divider is plain (no border) |
+| `vertical` | `bool` | `false` | Whether the divider is vertical |
+| `orientation` | `DividerOrientation` | `DividerOrientation::Center` | Text orientation: `Left`, `Center`, `Right` |
+| `orientation_margin` | `Option<String>` | `None` | Margin for orientation (defaults to "16px") |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `content` | `Option<Element>` | `None` | Optional content/text to display |
+
+### DividerOrientation
+
+- `Left` - Text aligned to the left
+- `Center` - Text centered (default)
+- `Right` - Text aligned to the right
+
+## Usage Examples
+
+### Basic Horizontal Divider
+
 ```rust
-Divider { dashed: true }
-Divider {
-    orientation: DividerOrientation::Left,
-    orientation_margin: Some("24px".into()),
-    plain: true,
-    content: Some(rsx!("带文字"))
-}
-Divider {
-    vertical: true,
+use adui_dioxus::Divider;
+
+rsx! {
+    div {
+        p { "Content above" }
+        Divider {}
+        p { "Content below" }
+    }
 }
 ```
 
-运行 `dx serve --example layout_demo` 可查看多种 Divider 效果（方向、虚线、带文字、纵向等）。
+### Divider with Text
+
+```rust
+use adui_dioxus::{Divider, DividerOrientation};
+
+rsx! {
+    Divider {
+        content: Some(rsx!("OR")),
+        orientation: DividerOrientation::Center,
+    }
+}
+```
+
+### Dashed Divider
+
+```rust
+use adui_dioxus::Divider;
+
+rsx! {
+    Divider {
+        dashed: true,
+    }
+}
+```
+
+### Vertical Divider
+
+```rust
+use adui_dioxus::Divider;
+
+rsx! {
+    div {
+        style: "display: flex;",
+        span { "Left" }
+        Divider { vertical: true }
+        span { "Right" }
+    }
+}
+```
+
+## Use Cases
+
+- **Content Separation**: Separate different sections of content
+- **Form Sections**: Divide form fields into logical groups
+- **List Items**: Separate items in lists
+- **Vertical Layouts**: Create vertical separators in horizontal layouts
+
+## Differences from Ant Design 6.0.0
+
+- ✅ All basic divider styles supported
+- ✅ Horizontal and vertical orientations
+- ✅ Text content with orientation control
+- ✅ Dashed and plain variants
+- ⚠️ Some advanced styling options may differ
+

@@ -1,139 +1,195 @@
-# Input / TextArea 使用说明
+# Input
 
-`Input` 与 `TextArea` 是 Ant Design 风格的文本输入组件，封装了受控/非受控模式、清空按钮、前后缀图标，以及与 `FormItem` 的集成逻辑。
+## Overview
 
-## 核心能力概览
+The Input component provides text input functionality with support for prefixes, suffixes, clear buttons, character counts, and various visual variants. It includes specialized variants like Password, Search, and OTP.
 
-- **受控 / 非受控**：
-  - 受控：传入 `value: Option<String>`，组件不会维护内部状态，只在变更时触发 `on_change`，外部负责更新。
-  - 非受控：不传 `value`，可选传入 `default_value` 作为初始值，内部通过 `Signal<String>` 保存当前内容。
-  - 在 `FormItem` 中：若存在 `FormItemControlContext`，则优先从表单 store 读取与写入值（会覆盖内部状态）。
-- **清空按钮与前后缀**：
-  - `prefix` / `suffix`：在输入框左右侧渲染任意 RSX 内容（图标、单位、按钮等），整体使用 `.adui-input-affix-wrapper` 包裹。
-  - `allow_clear`：当内容非空且未禁用时，显示一个清空按钮，点击会将值置空，并同步表单/回调。
-- **状态与禁用**：
-  - `status: Option<ControlStatus>`：附加状态类（`success` / `warning` / `error`），与 Form 校验态对齐。
-  - `disabled: bool`：禁用输入，表单上下文的 `disabled` 也会生效。
-- **键盘行为**：
-  - `Input` 支持 `on_press_enter`，在按下 Enter 时触发，常用于搜索或提交场景。
-  - `TextArea` 当前只处理 `on_change`，不额外拦截键盘事件。
+## API Reference
 
-## InputProps 说明
+### InputProps
 
-> 定义位置：`src/components/input.rs:10` 起。
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `Option<String>` | `None` | Controlled value |
+| `default_value` | `Option<String>` | `None` | Initial value in uncontrolled mode |
+| `placeholder` | `Option<String>` | `None` | Placeholder text |
+| `disabled` | `bool` | `false` | Disable interactions |
+| `size` | `Option<InputSize>` | `None` | Component size |
+| `variant` | `Option<Variant>` | `None` | Visual variant (outlined/filled/borderless) |
+| `bordered` | `Option<bool>` | `None` | @deprecated Use `variant` instead |
+| `status` | `Option<ControlStatus>` | `None` | Control status (success/warning/error) |
+| `prefix` | `Option<Element>` | `None` | Leading element |
+| `suffix` | `Option<Element>` | `None` | Trailing element |
+| `addon_before` | `Option<Element>` | `None` | @deprecated Use `Space.Compact` instead |
+| `addon_after` | `Option<Element>` | `None` | @deprecated Use `Space.Compact` instead |
+| `allow_clear` | `bool` | `false` | Show clear icon when there is content |
+| `max_length` | `Option<usize>` | `None` | Maximum length |
+| `show_count` | `bool` | `false` | Show character count |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `root_class_name` | `Option<String>` | `None` | Extra class for root element |
+| `style` | `Option<String>` | `None` | Inline style |
+| `class_names` | `Option<InputClassNames>` | `None` | Semantic class names |
+| `styles` | `Option<InputStyles>` | `None` | Semantic styles |
+| `on_change` | `Option<EventHandler<String>>` | `None` | Called when value changes |
+| `on_press_enter` | `Option<EventHandler<()>>` | `None` | Called when Enter is pressed |
+| `data_attributes` | `Option<Vec<(String, String)>>` | `None` | Data attributes |
 
-主要字段：
+### PasswordProps
 
-字段 | 类型 | 说明
---- | --- | ---
-`value` | `Option<String>` | 受控值；存在时组件不写内部状态。
-`default_value` | `Option<String>` | 非受控初始值，仅在首次渲染时生效。
-`placeholder` | `Option<String>` | 占位文字。
-`disabled` | `bool` | 是否禁用，禁用时同时阻止内部更新与回调。
-`status` | `Option<ControlStatus>` | 视觉状态：`Success/Warning/Error`。
-`prefix` / `suffix` | `Option<Element>` | 左右侧附加内容，渲染在 `.adui-input-affix-wrapper` 中。
-`allow_clear` | `bool` | 内容非空时显示清空按钮。
-`class` / `style` | `Option<String>` | 自定义类名和行内样式。
-`on_change` | `Option<EventHandler<String>>` | 内容变更时回调，参数为最新字符串。
-`on_press_enter` | `Option<EventHandler<()>>` | 按下 Enter 时回调，仅 `Input` 支持。
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `Option<String>` | `None` | Controlled value |
+| `default_value` | `Option<String>` | `None` | Initial value |
+| `placeholder` | `Option<String>` | `None` | Placeholder text |
+| `disabled` | `bool` | `false` | Disable interactions |
+| `size` | `Option<InputSize>` | `None` | Component size |
+| `variant` | `Option<Variant>` | `None` | Visual variant |
+| `status` | `Option<ControlStatus>` | `None` | Control status |
+| `prefix` | `Option<Element>` | `None` | Leading element |
+| `visible` | `bool` | `false` | Whether password is visible by default |
+| `icon_render` | `Option<Element>` | `None` | Custom visibility toggle icon |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `on_change` | `Option<EventHandler<String>>` | `None` | Called when value changes |
+| `on_visible_change` | `Option<EventHandler<bool>>` | `None` | Called when visibility changes |
 
-### 受控 / 非受控 / Form 集成逻辑
+### SearchProps
 
-内部通过三个来源决定当前值（优先级从高到低）：
+Similar to InputProps with additional `on_search` callback.
 
-1. 若存在 `FormItemControlContext`（即包裹在 `FormItem` 中）：
-   - 从 `ctx.value()` 读取 `serde_json::Value`，通过 `form_value_to_string` 转成字符串：
-     - `String` → 直接使用；
-     - `Number` / `Bool` → 调用 `to_string`；
-     - 其他类型 → 视为空字符串。
-   - 在 `oninput` 中调用 `ctx.set_string(next)` 写回表单 store，并触发当前字段校验。
-2. 若外部传入 `value`（受控模式）：
-   - 直接渲染该值，忽略内部 `Signal`。
-   - 变更时仅调用 `on_change`，不修改内部 state。
-3. 其他情况（非受控）：
-   - 使用 `default_value` 初始化内部 `Signal<String>`，后续变更只写入 `Signal`。
+### OTPProps
 
-> 简化后行为：**在 Form 中使用时，不必手动传 `value`，Input 会自动与当前字段绑定并驱动校验。**
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `length` | `usize` | `6` | Number of OTP digits |
+| `value` | `Option<String>` | `None` | Controlled value |
+| `on_change` | `Option<EventHandler<String>>` | `None` | Called when value changes |
+| `on_finish` | `Option<EventHandler<String>>` | `None` | Called when all digits are filled |
 
-### 示例：在 Form 中使用 Input
+### InputSize
 
-摘自 `examples/form_demo.rs`：
+- `Small` - Small size
+- `Middle` - Middle size (default)
+- `Large` - Large size
+
+## Usage Examples
+
+### Basic Input
 
 ```rust
-FormDemo() -> Element {
-    let form_handle = use_signal(use_form);
+use adui_dioxus::Input;
+use dioxus::prelude::*;
 
-    rsx! {
-        Form {
-            form: Some(form_handle.read().clone()),
-            on_finish: move |evt| {
-                // evt.values: HashMap<String, Value>
-            },
-            FormItem {
-                name: Some("username".into()),
-                label: Some("用户名".into()),
-                rules: Some(vec![FormRule {
-                    required: true,
-                    message: Some("请输入用户名".into()),
-                    ..FormRule::default()
-                }]),
-                Input {
-                    placeholder: Some("请输入用户名".into()),
-                }
-            }
-        }
+let value = use_signal(|| String::new());
+
+rsx! {
+    Input {
+        value: Some(value.read().clone()),
+        on_change: Some(move |v| {
+            value.set(v);
+        }),
+        placeholder: Some("Enter text".to_string()),
     }
 }
 ```
 
-- 未传 `value`，Input 将自动从 `FormItem` 绑定的字段 `username` 读取/写入。
-- 校验失败时，`FormItem` 会展示错误提示，Input 也会通过 `.adui-form-item-has-error` 的样式得到红色边框和阴影。
-
-## TextAreaProps 说明
-
-字段 | 类型 | 说明
---- | --- | ---
-`value` / `default_value` | `Option<String>` | 与 `Input` 相同的受控/非受控语义。
-`placeholder` | `Option<String>` | 占位文本。
-`rows` | `Option<u16>` | 文本区默认行数，默认值为 3。
-`disabled` | `bool` | 是否禁用。
-`status` | `Option<ControlStatus>` | 同步 Form 状态样式。
-`class` / `style` | `Option<String>` | 自定义样式。
-`on_change` | `Option<EventHandler<String>>` | 内容变更回调。
-
-内部实现与 `Input` 共用 `resolve_current_value` / `apply_input_value` 逻辑，只是渲染为 `<textarea>` 并附加类名：
-
-- `.adui-input` + `.adui-input-textarea`：控制文本区的边框、最小高度与 `resize` 行为。
-
-### 示例：多行文本与表单
-
-摘自 `examples/input_checkbox_demo.rs`：
+### With Prefix and Suffix
 
 ```rust
-FormItem {
-    name: Some("bio".into()),
-    label: Some("简介".into()),
-    TextArea {
-        rows: Some(3),
-        placeholder: Some("简单介绍一下自己".into()),
+use adui_dioxus::{Input, Icon, IconKind};
+
+rsx! {
+    Input {
+        prefix: Some(rsx!(Icon { kind: IconKind::User })),
+        suffix: Some(rsx!("@example.com")),
+        placeholder: Some("Username".to_string()),
     }
 }
 ```
 
-提交表单时，`bio` 字段会出现在 `FormFinishEvent.values` 中，对应 `Value::String` 类型。
+### Password Input
 
-### 关于 `default_value` 与 Form 初始值
+```rust
+use adui_dioxus::Password;
+use dioxus::prelude::*;
 
-- 在 **不使用 Form** 时：
-  - `default_value` 仅在首次渲染时用于初始化内部 `Signal<String>`，之后控件完全由内部状态或受控 `value` 驱动。
-- 在 **`FormItem` 场景** 中：
-  - 推荐使用 `Form` 的 `initial_values` 或 `FormHandle::set_field_value` 设置初始值；
-  - 一旦存在 `FormItemControlContext`，Input/TextArea 会**完全忽略**自身的 `default_value`，始终以 `FormStore` 为唯一真相源（通过 `ctx.value()` 读取，通过 `ctx.set_string` 写回）；
-  - 调用 `FormHandle::reset_fields()` 时会清空字段值与错误，Input/TextArea 会立即渲染为空字符串，与当前 `FormStore` 状态保持一致。
+let password = use_signal(|| String::new());
 
-## 与 Ant Design 的差异与注意事项
+rsx! {
+    Password {
+        value: Some(password.read().clone()),
+        on_change: Some(move |v| {
+            password.set(v);
+        }),
+        placeholder: Some("Enter password".to_string()),
+    }
+}
+```
 
-- 当前版本未实现 `Input.Password` / `Input.Search` / `InputNumber` / `Select`，仅提供基础 `Input` / `TextArea` 能力；扩展能力会在后续计划中补齐（见 `plan/0003.md`）。
-- `allow_clear` 的清空按钮目前使用简单的 "×" 字符作为图标，后续可以替换为统一的 `Icon` 组件。
-- `addonBefore/After` 等组合输入区域暂未暴露为 props，但通过 `Flex` / `Space` 可以在布局层实现类似效果。
-- 在 Form 外使用时，若业务本身有受控状态管理，建议优先使用 `value + on_change` 模式，避免内部 state 与外部 state 不一致。
+### Search Input
+
+```rust
+use adui_dioxus::Search;
+
+rsx! {
+    Search {
+        placeholder: Some("Search...".to_string()),
+        on_search: Some(move |value| {
+            println!("Searching for: {}", value);
+        }),
+    }
+}
+```
+
+### With Character Count
+
+```rust
+use adui_dioxus::Input;
+
+rsx! {
+    Input {
+        max_length: Some(100),
+        show_count: true,
+        placeholder: Some("Enter text".to_string()),
+    }
+}
+```
+
+### OTP Input
+
+```rust
+use adui_dioxus::OTP;
+use dioxus::prelude::*;
+
+let otp = use_signal(|| String::new());
+
+rsx! {
+    OTP {
+        length: 6,
+        value: Some(otp.read().clone()),
+        on_change: Some(move |v| {
+            otp.set(v);
+        }),
+        on_finish: Some(move |v| {
+            println!("OTP completed: {}", v);
+        }),
+    }
+}
+```
+
+## Use Cases
+
+- **Forms**: Text input in forms
+- **Search**: Search input fields
+- **Authentication**: Password and OTP inputs
+- **Data Entry**: General data entry fields
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Basic input functionality
+- ✅ Password, Search, and OTP variants
+- ✅ Prefix and suffix support
+- ✅ Character count
+- ✅ Clear button
+- ⚠️ Some advanced features may differ
+

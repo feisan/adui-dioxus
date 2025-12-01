@@ -1,41 +1,77 @@
 # adui-dioxus
 
-## 介绍
-adui-dioxus 是一个基于 Dioxus 的 UI 库，提供了丰富的组件和样式，帮助开发者快速构建跨平台的 Web 和移动应用。
-它是从 ant design UI 库(https://github.com/ant-design/ant-design) 中提取出来的，旨在提供更简洁、更易用的组件和样式。它继承了 ant design 的设计理念和组件风格，同时结合了 Dioxus 的性能和灵活性，为开发者提供了更加高效和便捷的开发体验。
+## Introduction
 
-## 组件进度
-- Theme：Ant Design 6.x 风格的令牌与主题上下文（明/暗预设，CSS 变量导出）
-- Button：对齐 type/size/shape/danger/ghost/loading/block/icon/href
-- FloatButton：悬浮按钮，支持圆/方形、primary/default、danger、tooltip、可配置位置
-- Icon：内置常用图标集（plus/minus/check/close/info/question/search/arrow/loading），支持旋转、大小、颜色
-- Typography：Title/Text/Paragraph，支持 tone（default/secondary/success/warning/danger/disabled）、strong/italic/underline/delete/code/mark、ellipsis（单/多行 + 展开）、copyable、editable、禁用态语义
-- Form：`Form`/`FormItem`/`use_form_item_control`，支持 required/min/max/pattern/custom rule、布局控制、必填标记、上下文 Hook
-- Upload：点击选择/拖拽上传、列表（text/picture/picture-card）、`before_upload`、XHR 上传进度/abort、受控/非受控列表
-- 布局：Divider/Flex/Grid（支持基础断点 span）/Layout（Sider 支持 collapsible/trigger/theme/手动 has_sider）/Masonry（列数可响应式 + gap/row_gap/min width）/Space/Splitter（可拖拽分栏），覆盖常用布局场景
+adui-dioxus is a UI component library for Dioxus that provides rich components and styles, helping developers quickly build cross-platform web and mobile applications.
 
-## 本地运行
-要求 Rust + Dioxus 0.7 生态（推荐安装 dioxus-cli）。
+This is an **experimental project** that ports Ant Design 6.0.0 to Dioxus using **Vibe Coding**. It extracts components from the Ant Design UI library (https://github.com/ant-design/ant-design) and adapts them for the Rust/Dioxus ecosystem. The library inherits Ant Design's design philosophy and component styles while leveraging Dioxus's performance and flexibility to provide developers with an efficient and convenient development experience.
 
-- 构建与检查：`cargo fmt && cargo clippy --all-targets --all-features && cargo test`
-- 按钮示例（浏览器）：`dx serve --example button_demo`
-- 悬浮按钮示例（浏览器）：`dx serve --example float_button_demo`
-- 图标示例（浏览器）：`dx serve --example icon_demo`
-- 排版示例（浏览器）：`dx serve --example typography_demo`
-- 布局示例（浏览器）：`dx serve --example layout_demo`
-- Flex/Space 示例（浏览器）：`dx serve --example flex_space_demo`
-- Grid 示例（浏览器）：`dx serve --example grid_demo`
-- Form 示例（浏览器）：`dx serve --example form_demo`
-- Upload 示例（浏览器）：`dx serve --example upload_demo`
-- 更多文档见 `docs/` 目录（如 `docs/button.md`、`docs/float_button.md`、`docs/layout.md`、`docs/masonry.md`、`docs/splitter.md`、`docs/icon.md`、`docs/form.md`、`docs/upload.md` 等）。
+## Project Status
 
-## 示例功能概览
-- `button_demo`：主题切换（Light/Dark）、主色预设、按钮 type/size/shape 及状态开关
-- `float_button_demo`：浮动按钮主/副按钮，主题切换，位置与 tooltip 展示
-- `icon_demo`：图标列表，主题切换，大小调节，主色切换，全局旋转开关
-- `typography_demo`：Title/Text/Paragraph，展示 tone 切换、修饰、copyable、可展开 ellipsis、Inline 编辑
-- `layout_demo`：展示 Divider、Flex、Space、Grid、Layout（含 Sider 折叠/Zero Trigger）、Masonry、Splitter（拖拽调整分栏比例）
-- `grid_demo`：展示 Row 水平/垂直/响应式 gutter 以及 Col 的 span/offset/order/push/pull/flex 响应式配置
-- `flex_space_demo`：演示 `FlexConfigProvider`、gap 预设、wrap、Space size/split/compact 等布局能力
-- `form_demo`：展示 `Form` 基本校验、布局、重置/提交回调与自定义控件接入
-- `upload_demo`：展示基础上传、图片列表、dragger 拖拽区域，验证 `before_upload`、列表移除与上传日志
+This is an experimental port of Ant Design 6.0.0 to Dioxus. The library includes:
+
+- **Theme**: Ant Design 6.x style tokens and theme context (light/dark presets, CSS variable export)
+- **Button**: Supports type/size/shape/danger/ghost/loading/block/icon/href
+- **FloatButton**: Floating button with round/square, primary/default, danger, tooltip, and configurable position
+- **Icon**: Built-in common icon set (plus/minus/check/close/info/question/search/arrow/loading) with rotation, size, and color support
+- **Typography**: Title/Text/Paragraph with tone (default/secondary/success/warning/danger/disabled), strong/italic/underline/delete/code/mark, ellipsis (single/multi-line + expand), copyable, editable, and disabled state semantics
+- **Form**: `Form`/`FormItem`/`use_form_item_control` with required/min/max/pattern/custom rule support, layout control, required mark, and context hooks
+- **Upload**: Click to select/drag and drop upload, lists (text/picture/picture-card), `before_upload`, XHR upload progress/abort, controlled/uncontrolled lists
+- **Layout**: Divider/Flex/Grid (supports basic breakpoint span)/Layout (Sider supports collapsible/trigger/theme/manual has_sider)/Masonry (responsive column count + gap/row_gap/min width)/Space/Splitter (draggable split panes), covering common layout scenarios
+
+And many more components...
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[English Documentation Index](docs/README.md)** - Complete component documentation in English
+- **[中文文档索引](docs/README_CN.md)** - 完整的中文组件文档
+
+Each component has detailed documentation including:
+- API reference with all props, events, and methods
+- Usage examples
+- Use cases
+- Differences from Ant Design 6.0.0
+
+## Local Development
+
+Requires Rust + Dioxus 0.7 ecosystem (recommended to install dioxus-cli).
+
+### Build and Check
+
+```bash
+cargo fmt && cargo clippy --all-targets --all-features && cargo test
+```
+
+### Run Examples
+
+- Button example (browser): `dx serve --example button_demo`
+- Float button example (browser): `dx serve --example float_button_demo`
+- Icon example (browser): `dx serve --example icon_demo`
+- Typography example (browser): `dx serve --example typography_demo`
+- Layout example (browser): `dx serve --example layout_demo`
+- Flex/Space example (browser): `dx serve --example flex_space_demo`
+- Grid example (browser): `dx serve --example grid_demo`
+- Form example (browser): `dx serve --example form_demo`
+- Upload example (browser): `dx serve --example upload_demo`
+
+## Example Features Overview
+
+- `button_demo`: Theme switching (Light/Dark), primary color presets, button type/size/shape and state toggles
+- `float_button_demo`: Floating button primary/secondary buttons, theme switching, position and tooltip display
+- `icon_demo`: Icon list, theme switching, size adjustment, primary color switching, global rotation toggle
+- `typography_demo`: Title/Text/Paragraph, showing tone switching, modifiers, copyable, expandable ellipsis, inline editing
+- `layout_demo`: Shows Divider, Flex, Space, Grid, Layout (including Sider collapse/Zero Trigger), Masonry, Splitter (drag to adjust split ratio)
+- `grid_demo`: Shows Row horizontal/vertical/responsive gutter and Col's span/offset/order/push/pull/flex responsive configuration
+- `flex_space_demo`: Demonstrates `FlexConfigProvider`, gap presets, wrap, Space size/split/compact and other layout capabilities
+- `form_demo`: Shows `Form` basic validation, layout, reset/submit callbacks and custom control integration
+- `upload_demo`: Shows basic upload, image list, dragger drag area, validates `before_upload`, list removal and upload logs
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Note
+
+This is an experimental project. Some features may differ from the original Ant Design implementation, and the API may evolve as the project matures. Please refer to the component documentation for specific differences and limitations.

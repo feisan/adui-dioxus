@@ -1,33 +1,118 @@
-# Splitter 使用说明
+# Splitter
 
-## Props
-- `orientation`: `Horizontal`（默认）或 `Vertical`。
-- `split: Option<f32>`：受控模式传入当前分割比（0-1），不传则使用 `default_split`。
-- `default_split: f32`：非受控初始值，默认 `0.5`。
-- `on_change`：拖拽过程中及释放后回调最新分割比。
-- `on_moving` / `on_release`：分别在拖动过程中与释放时额外触发，可用于展示实时状态或保存尺寸。
-- `min_primary` / `min_secondary`：主、次 Pane 的最小尺寸（px），默认 80。
-- `gutter_aria_label`：为中间拖拽条提供无障碍标签。
+## Overview
 
-## 行为
-- 组件支持受控/非受控两种模式，内部会 clamp 到 0.05~0.95 范围并遵守最小宽度限制。
-- Gutter 使用 Pointer 事件以支持鼠标与触屏操作，并自动设置/释放 Pointer Capture。
-- `on_moving` 与 `on_change` 均在拖动时触发，若只需最终结果可使用 `on_release`。
+The Splitter component displays two resizable panes with a draggable gutter. It's commonly used for creating resizable layouts like code editors or file browsers.
 
-## 示例
+## API Reference
+
+### SplitterProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `orientation` | `SplitterOrientation` | `SplitterOrientation::Horizontal` | Splitter orientation |
+| `split` | `Option<f32>` | `None` | Controlled split ratio (0.0-1.0) |
+| `default_split` | `f32` | `0.5` | Default split ratio in uncontrolled mode |
+| `on_change` | `Option<EventHandler<f32>>` | `None` | Called when split ratio changes |
+| `on_moving` | `Option<EventHandler<f32>>` | `None` | Called while dragging |
+| `on_release` | `Option<EventHandler<f32>>` | `None` | Called when drag ends |
+| `min_primary` | `Option<f32>` | `None` | Minimum size for primary pane (defaults to 80px) |
+| `min_secondary` | `Option<f32>` | `None` | Minimum size for secondary pane (defaults to 80px) |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `gutter_aria_label` | `Option<String>` | `None` | ARIA label for gutter |
+| `first` | `Element` | - | First pane content (required) |
+| `second` | `Element` | - | Second pane content (required) |
+
+### SplitterOrientation
+
+- `Horizontal` - Horizontal splitter (default)
+- `Vertical` - Vertical splitter
+
+## Usage Examples
+
+### Basic Splitter
+
 ```rust
-let split = use_signal(|| 0.4f32);
+use adui_dioxus::Splitter;
 
-Splitter {
-    orientation: SplitterOrientation::Horizontal,
-    split: Some(*split.read()),
-    on_change: move |value| split.set(value),
-    min_primary: Some(120.0),
-    min_secondary: Some(120.0),
-    gutter_aria_label: Some("调整左右面板宽度".into()),
-    first: rsx!({sample_bar("Pane A")}),
-    second: rsx!({sample_bar("Pane B")}),
+rsx! {
+    Splitter {
+        first: rsx! {
+            div { "Left Pane" }
+        }
+        second: rsx! {
+            div { "Right Pane" }
+        }
+    }
 }
 ```
 
-更多用法可运行 `dx serve --example layout_demo`。
+### Vertical Splitter
+
+```rust
+use adui_dioxus::{Splitter, SplitterOrientation};
+
+rsx! {
+    Splitter {
+        orientation: SplitterOrientation::Vertical,
+        first: rsx! {
+            div { "Top Pane" }
+        }
+        second: rsx! {
+            div { "Bottom Pane" }
+        }
+    }
+}
+```
+
+### Controlled Splitter
+
+```rust
+use adui_dioxus::Splitter;
+use dioxus::prelude::*;
+
+let split_ratio = use_signal(|| 0.3);
+
+rsx! {
+    Splitter {
+        split: Some(*split_ratio.read()),
+        on_change: Some(move |ratio| {
+            split_ratio.set(ratio);
+        }),
+        first: rsx! { div { "Left" } }
+        second: rsx! { div { "Right" } }
+    }
+}
+```
+
+### With Minimum Sizes
+
+```rust
+use adui_dioxus::Splitter;
+
+rsx! {
+    Splitter {
+        min_primary: Some(200.0),
+        min_secondary: Some(300.0),
+        first: rsx! { div { "Left" } }
+        second: rsx! { div { "Right" } }
+    }
+}
+```
+
+## Use Cases
+
+- **Code Editors**: Split panes for code and preview
+- **File Browsers**: Resizable file and content panes
+- **Dashboards**: Resizable dashboard panels
+- **Layouts**: Create resizable layouts
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Horizontal and vertical orientations
+- ✅ Controlled and uncontrolled modes
+- ✅ Minimum size constraints
+- ✅ Drag handlers
+- ⚠️ Some advanced features may differ
+

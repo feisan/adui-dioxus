@@ -1,34 +1,124 @@
-# Layout / Sider 使用说明
+# Layout
 
-## Layout
-- `Layout` 组件额外提供 `has_sider: Option<bool>`，当使用 `Sider` 时建议显式传入 `Some(true)` 以获得与 antd 一致的 `adui-layout-has-sider` 类名，用于正确的 Flex 渲染。
-- `Header` / `Content` / `Footer` 继承 `LayoutProps`，保持 `class/style` 透传；Header/Footer 会根据主题 token 自动注入背景与文字颜色。
+## Overview
 
-## Sider
-- 新增 `collapsible`、`collapsed`、`default_collapsed`、`collapsed_width`、`reverse_arrow`、`trigger`、`zero_width_trigger_style`、`theme` 等 props，默认主题为 `Dark`，可切换为 `Light`。
-- `collapsed` 为受控模式，`default_collapsed` 为非受控初始值；触发展开/收起时会调用 `on_collapse: EventHandler<bool>`。
-- `width` 与 `collapsed_width` 以 `px` 表示（浮点数），当 `collapsed_width=0` 时会渲染 Zero Width Trigger。
-- 若未提供 `trigger`，会内置箭头图标（使用 `IconKind::ArrowLeft/Right`），可通过 `reverse_arrow` 调整方向。
-- 背景与文字颜色根据 `SiderTheme` 自动推导，边框由 `has_border` 控制。
+The Layout component provides a page layout container with Header, Footer, Sider, and Content sections. It's commonly used for structuring page layouts in applications.
 
-示例：
+## API Reference
+
+### LayoutProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `has_sider` | `Option<bool>` | `None` | Whether layout contains Sider (auto-detected if None) |
+| `children` | `Element` | - | Layout children (required) |
+
+### SiderProps
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `width` | `Option<f32>` | `None` | Sider width in pixels |
+| `collapsed_width` | `Option<f32>` | `None` | Width when collapsed |
+| `collapsed` | `Option<bool>` | `None` | Controlled collapsed state |
+| `default_collapsed` | `bool` | `false` | Initial collapsed state |
+| `collapsible` | `bool` | `false` | Whether sider can be collapsed |
+| `reverse_arrow` | `bool` | `false` | Reverse arrow direction |
+| `trigger` | `Option<Element>` | `None` | Custom trigger element |
+| `zero_width_trigger_style` | `Option<String>` | `None` | Style for zero-width trigger |
+| `theme` | `SiderTheme` | `SiderTheme::Dark` | Sider theme |
+| `has_border` | `bool` | `true` | Whether to show border |
+| `on_collapse` | `Option<EventHandler<bool>>` | `None` | Called when collapse state changes |
+| `class` | `Option<String>` | `None` | Extra class name |
+| `style` | `Option<String>` | `None` | Inline style |
+| `children` | `Element` | - | Sider content (required) |
+
+### SiderTheme
+
+- `Light` - Light theme
+- `Dark` - Dark theme (default)
+
+## Usage Examples
+
+### Basic Layout
+
 ```rust
-let collapsed = use_signal(|| false);
-Sider {
-    collapsible: true,
-    collapsed: Some(*collapsed.read()),
-    on_collapse: move |next| collapsed.set(next),
-    width: Some(220.0),
-    collapsed_width: Some(64.0),
-    theme: SiderTheme::Dark,
-    { /* menu content */ }
+use adui_dioxus::{Layout, Header, Content, Footer};
+
+rsx! {
+    Layout {
+        Header {
+            "Header"
+        }
+        Content {
+            "Content"
+        }
+        Footer {
+            "Footer"
+        }
+    }
 }
 ```
 
-## Demo
-- `dx serve --example layout_demo` 展示 Sider 折叠、Zero Width Trigger、Header/Footer 的配色与 `has_sider` 用法。
-- `dx serve --example layout_navigation_demo` 展示典型中后台导航布局：左侧 `Menu`、顶部 `Breadcrumb`、内容区列表 + `Pagination` 联动。
-- `dx serve --example data_view_demo` 展示结合 Layout + Breadcrumb + Table/List + Pagination + Empty/Spin/Skeleton 的用户列表页模板。
-- `dx serve --example dashboard_demo` 展示 Layout + Menu + Breadcrumb + Tabs + Card + Tag + Badge + Avatar + List/Pagination 的综合仪表盘页面。
-- `dx serve --example flow_feedback_demo` 展示 Layout + Steps + Form + Progress + Alert + Result/Statistic 的典型流程反馈页面，用于多步向导与结果页场景。
-- 代码位于 `examples/layout_demo.rs`、`examples/layout_navigation_demo.rs`、`examples/data_view_demo.rs`、`examples/dashboard_demo.rs` 与 `examples/flow_feedback_demo.rs`，README 中已补充运行方式。
+### With Sider
+
+```rust
+use adui_dioxus::{Layout, Header, Sider, Content, Footer};
+
+rsx! {
+    Layout {
+        has_sider: Some(true),
+        Sider {
+            width: Some(200.0),
+            "Sider"
+        }
+        Layout {
+            Header { "Header" }
+            Content { "Content" }
+            Footer { "Footer" }
+        }
+    }
+}
+```
+
+### Collapsible Sider
+
+```rust
+use adui_dioxus::{Layout, Sider, Content};
+use dioxus::prelude::*;
+
+let collapsed = use_signal(|| false);
+
+rsx! {
+    Layout {
+        Sider {
+            collapsed: Some(*collapsed.read()),
+            collapsible: true,
+            on_collapse: Some(move |is_collapsed| {
+                collapsed.set(is_collapsed);
+            }),
+            "Sider Content"
+        }
+        Content {
+            "Main Content"
+        }
+    }
+}
+```
+
+## Use Cases
+
+- **Page Structure**: Structure page layouts
+- **Admin Dashboards**: Create admin dashboard layouts
+- **Side Navigation**: Add side navigation to pages
+- **Responsive Layouts**: Create responsive page layouts
+
+## Differences from Ant Design 6.0.0
+
+- ✅ Basic layout components (Header, Footer, Content, Sider)
+- ✅ Collapsible sider
+- ✅ Sider themes
+- ⚠️ Some advanced features may differ
+- ⚠️ Responsive breakpoints may differ
+
