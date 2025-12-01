@@ -165,8 +165,8 @@ pub fn Slider(props: SliderProps) -> Element {
     );
 
     let current = use_signal(|| initial_value.clone());
+    let mut active_handle = use_signal(|| None::<usize>);
     let active_pointer = use_signal::<PointerState>(PointerState::default);
-    let active_handle = use_signal(|| None::<usize>);
     // Sync to controlled/form value changes.
     {
         let mut current_signal = current.clone();
