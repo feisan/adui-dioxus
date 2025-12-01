@@ -219,4 +219,87 @@ mod tests {
         mgr.close(key);
         assert_eq!(mgr.entries().count(), 0);
     }
+
+    #[test]
+    fn overlay_manager_close_all() {
+        let mut mgr = OverlayManager::default();
+        mgr.open(OverlayKind::Modal, true);
+        mgr.open(OverlayKind::Drawer, false);
+        mgr.open(OverlayKind::Tooltip, false);
+        assert_eq!(mgr.entries().count(), 3);
+        mgr.close_all();
+        assert_eq!(mgr.entries().count(), 0);
+    }
+
+    #[test]
+    fn overlay_manager_current_top_z_index_with_no_overlays() {
+        let mgr = OverlayManager::default();
+        assert_eq!(mgr.current_top_z_index(), 1000);
+    }
+
+    #[test]
+    fn overlay_manager_current_top_z_index_with_overlays() {
+        let mut mgr = OverlayManager::default();
+        let (_k1, m1) = mgr.open(OverlayKind::Modal, true);
+        let (_k2, m2) = mgr.open(OverlayKind::Drawer, false);
+        let (_k3, m3) = mgr.open(OverlayKind::Tooltip, false);
+        assert_eq!(mgr.current_top_z_index(), m3.z_index);
+        assert!(m3.z_index > m2.z_index);
+        assert!(m2.z_index > m1.z_index);
+    }
+
+    #[test]
+    fn overlay_manager_update_nonexistent_key() {
+        let mut mgr = OverlayManager::default();
+        let fake_key = OverlayKey(999);
+        assert!(mgr.update(fake_key, Some(true)).is_none());
+    }
+
+    #[test]
+    fn overlay_manager_close_nonexistent_key() {
+        let mut mgr = OverlayManager::default();
+        let fake_key = OverlayKey(999);
+        mgr.close(fake_key);
+        assert_eq!(mgr.entries().count(), 0);
+    }
+
+    #[test]
+    fn overlay_manager_update_without_mask_change() {
+        let mut mgr = OverlayManager::default();
+        let (key, _meta) = mgr.open(OverlayKind::Popup, true);
+        let updated = mgr.update(key, None);
+        assert!(updated.is_some());
+        assert_eq!(updated.unwrap().has_mask, true);
+    }
+
+    #[test]
+    fn overlay_key_as_u64() {
+        let mut mgr = OverlayManager::default();
+        let (key, _) = mgr.open(OverlayKind::Modal, true);
+        assert_eq!(key.as_u64(), 1);
+        let (key2, _) = mgr.open(OverlayKind::Drawer, false);
+        assert_eq!(key2.as_u64(), 2);
+    }
+
+    #[test]
+    fn overlay_kind_all_variants() {
+        assert_eq!(OverlayKind::Dropdown, OverlayKind::Dropdown);
+        assert_eq!(OverlayKind::Tooltip, OverlayKind::Tooltip);
+        assert_eq!(OverlayKind::Popup, OverlayKind::Popup);
+        assert_eq!(OverlayKind::Message, OverlayKind::Message);
+        assert_eq!(OverlayKind::Notification, OverlayKind::Notification);
+        assert_eq!(OverlayKind::Modal, OverlayKind::Modal);
+        assert_eq!(OverlayKind::Drawer, OverlayKind::Drawer);
+    }
+
+    #[test]
+    fn overlay_meta_clone() {
+        let meta = OverlayMeta {
+            kind: OverlayKind::Modal,
+            z_index: 1000,
+            has_mask: true,
+        };
+        let cloned = meta;
+        assert_eq!(meta, cloned);
+    }
 }

@@ -514,8 +514,64 @@ mod tests {
     }
 
     #[test]
+    fn tour_step_with_all_options() {
+        let step = TourStep::new("s2", "Step 2", "Description")
+            .target("#target")
+            .placement(TooltipPlacement::Bottom)
+            .next_button("Continue")
+            .prev_button("Back");
+
+        assert_eq!(step.key, "s2");
+        assert_eq!(step.title, Some("Step 2".to_string()));
+        assert_eq!(step.target, Some("#target".to_string()));
+        assert_eq!(step.placement, Some(TooltipPlacement::Bottom));
+        assert_eq!(step.next_button_text, Some("Continue".to_string()));
+        assert_eq!(step.prev_button_text, Some("Back".to_string()));
+    }
+
+    #[test]
+    fn tour_step_minimal() {
+        let step = TourStep::new("s3", "Title", "Description");
+        assert_eq!(step.key, "s3");
+        assert_eq!(step.title, Some("Title".to_string()));
+        assert!(step.target.is_none());
+        assert!(step.placement.is_none());
+    }
+
+    #[test]
+    fn tour_step_clone() {
+        let step1 = TourStep::new("s1", "Title", "Description")
+            .target("#target")
+            .placement(TooltipPlacement::Top);
+        let step2 = step1.clone();
+        assert_eq!(step1.key, step2.key);
+        assert_eq!(step1.title, step2.title);
+        assert_eq!(step1.target, step2.target);
+        assert_eq!(step1.placement, step2.placement);
+    }
+
+    #[test]
     fn tour_type_class_names() {
         assert_eq!(TourType::Default.as_class(), "adui-tour-default");
         assert_eq!(TourType::Primary.as_class(), "adui-tour-primary");
+    }
+
+    #[test]
+    fn tour_type_default() {
+        assert_eq!(TourType::default(), TourType::Default);
+    }
+
+    #[test]
+    fn tour_type_equality() {
+        assert_eq!(TourType::Default, TourType::Default);
+        assert_eq!(TourType::Primary, TourType::Primary);
+        assert_ne!(TourType::Default, TourType::Primary);
+    }
+
+    #[test]
+    fn tour_type_clone() {
+        let t1 = TourType::Primary;
+        let t2 = t1;
+        assert_eq!(t1, t2);
     }
 }

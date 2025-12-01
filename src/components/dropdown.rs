@@ -335,8 +335,14 @@ mod tests {
     #[test]
     fn dropdown_placement_all_variants() {
         assert_eq!(DropdownPlacement::BottomLeft, DropdownPlacement::BottomLeft);
-        assert_eq!(DropdownPlacement::BottomRight, DropdownPlacement::BottomRight);
-        assert_ne!(DropdownPlacement::BottomLeft, DropdownPlacement::BottomRight);
+        assert_eq!(
+            DropdownPlacement::BottomRight,
+            DropdownPlacement::BottomRight
+        );
+        assert_ne!(
+            DropdownPlacement::BottomLeft,
+            DropdownPlacement::BottomRight
+        );
     }
 
     #[test]

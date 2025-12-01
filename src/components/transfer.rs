@@ -668,6 +668,38 @@ mod tests {
     }
 
     #[test]
+    fn transfer_item_minimal() {
+        let item = TransferItem::new("key2", "Title 2");
+        assert_eq!(item.key, "key2");
+        assert_eq!(item.title, "Title 2");
+        assert!(item.description.is_none());
+        assert!(!item.disabled);
+    }
+
+    #[test]
+    fn transfer_item_with_description_only() {
+        let item = TransferItem::new("key3", "Title 3").with_description("Description only");
+        assert_eq!(item.description, Some("Description only".into()));
+        assert!(!item.disabled);
+    }
+
+    #[test]
+    fn transfer_item_with_disabled_only() {
+        let item = TransferItem::new("key4", "Title 4").with_disabled(true);
+        assert!(item.disabled);
+        assert!(item.description.is_none());
+    }
+
+    #[test]
+    fn transfer_item_clone() {
+        let item1 = TransferItem::new("key5", "Title 5")
+            .with_description("Desc")
+            .with_disabled(true);
+        let item2 = item1.clone();
+        assert_eq!(item1, item2);
+    }
+
+    #[test]
     fn default_filter_matches_title() {
         let item = TransferItem::new("1", "Hello World");
         assert!(default_filter("hello", &item, TransferDirection::Left));
@@ -684,5 +716,55 @@ mod tests {
             TransferDirection::Right
         ));
         assert!(!default_filter("notfound", &item, TransferDirection::Right));
+    }
+
+    #[test]
+    fn default_filter_case_insensitive() {
+        let item = TransferItem::new("1", "Hello World");
+        assert!(default_filter("HELLO", &item, TransferDirection::Left));
+        assert!(default_filter("world", &item, TransferDirection::Left));
+        assert!(default_filter("HeLLo", &item, TransferDirection::Left));
+    }
+
+    #[test]
+    fn default_filter_empty_string() {
+        let item = TransferItem::new("1", "Hello World");
+        assert!(default_filter("", &item, TransferDirection::Left));
+    }
+
+    #[test]
+    fn default_filter_partial_match() {
+        let item = TransferItem::new("1", "Hello World");
+        assert!(default_filter("ello", &item, TransferDirection::Left));
+        assert!(default_filter("World", &item, TransferDirection::Left));
+    }
+
+    #[test]
+    fn default_filter_no_match() {
+        let item = TransferItem::new("1", "Hello World");
+        assert!(!default_filter("xyz", &item, TransferDirection::Left));
+        assert!(!default_filter("abc", &item, TransferDirection::Right));
+    }
+
+    #[test]
+    fn default_filter_with_description_preference() {
+        let item = TransferItem::new("1", "Title")
+            .with_description("Description text");
+        assert!(default_filter("description", &item, TransferDirection::Left));
+        assert!(default_filter("title", &item, TransferDirection::Left));
+    }
+
+    #[test]
+    fn transfer_direction_variants() {
+        assert_eq!(TransferDirection::Left, TransferDirection::Left);
+        assert_eq!(TransferDirection::Right, TransferDirection::Right);
+        assert_ne!(TransferDirection::Left, TransferDirection::Right);
+    }
+
+    #[test]
+    fn transfer_direction_clone() {
+        let dir1 = TransferDirection::Left;
+        let dir2 = dir1;
+        assert_eq!(dir1, dir2);
     }
 }

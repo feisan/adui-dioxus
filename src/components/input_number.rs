@@ -403,23 +403,27 @@ mod input_number_tests {
     #[test]
     fn input_number_props_defaults() {
         // Test default values
-        assert_eq!(InputNumberProps {
-            value: None,
-            default_value: None,
-            min: None,
-            max: None,
-            step: None,
-            precision: None,
-            controls: true,
-            disabled: false,
-            status: None,
-            prefix: None,
-            suffix: None,
-            class: None,
-            style: None,
-            on_change: None,
-            on_change_complete: None,
-        }.controls, true);
+        assert_eq!(
+            InputNumberProps {
+                value: None,
+                default_value: None,
+                min: None,
+                max: None,
+                step: None,
+                precision: None,
+                controls: true,
+                disabled: false,
+                status: None,
+                prefix: None,
+                suffix: None,
+                class: None,
+                style: None,
+                on_change: None,
+                on_change_complete: None,
+            }
+            .controls,
+            true
+        );
     }
 
     #[test]
@@ -447,7 +451,10 @@ mod input_number_tests {
 
     #[test]
     fn value_from_form_string() {
-        assert_eq!(value_from_form(Some(Value::String("42.5".to_string()))), Some(42.5));
+        assert_eq!(
+            value_from_form(Some(Value::String("42.5".to_string()))),
+            Some(42.5)
+        );
     }
 
     #[test]

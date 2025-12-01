@@ -593,4 +593,97 @@ mod tree_select_tests {
         assert_eq!(result[0].depth, 0);
         assert_eq!(result[1].depth, 1);
     }
+
+    #[test]
+    fn flatten_tree_deeply_nested() {
+        let nodes = vec![TreeNode {
+            key: "1".to_string(),
+            label: "Level 1".to_string(),
+            disabled: false,
+            children: vec![TreeNode {
+                key: "2".to_string(),
+                label: "Level 2".to_string(),
+                disabled: false,
+                children: vec![TreeNode {
+                    key: "3".to_string(),
+                    label: "Level 3".to_string(),
+                    disabled: false,
+                    children: vec![],
+                }],
+            }],
+        }];
+        let mut result = Vec::new();
+        flatten_tree(&nodes, 0, &mut result);
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0].depth, 0);
+        assert_eq!(result[1].depth, 1);
+        assert_eq!(result[2].depth, 2);
+    }
+
+    #[test]
+    fn flatten_tree_with_disabled_nodes() {
+        let nodes = vec![TreeNode {
+            key: "1".to_string(),
+            label: "Node 1".to_string(),
+            disabled: true,
+            children: vec![TreeNode {
+                key: "2".to_string(),
+                label: "Node 2".to_string(),
+                disabled: false,
+                children: vec![],
+            }],
+        }];
+        let mut result = Vec::new();
+        flatten_tree(&nodes, 0, &mut result);
+        assert_eq!(result.len(), 2);
+        assert!(result[0].disabled);
+        assert!(!result[1].disabled);
+    }
+
+    #[test]
+    fn flatten_tree_multiple_siblings() {
+        let nodes = vec![
+            TreeNode {
+                key: "1".to_string(),
+                label: "Node 1".to_string(),
+                disabled: false,
+                children: vec![],
+            },
+            TreeNode {
+                key: "2".to_string(),
+                label: "Node 2".to_string(),
+                disabled: false,
+                children: vec![],
+            },
+            TreeNode {
+                key: "3".to_string(),
+                label: "Node 3".to_string(),
+                disabled: false,
+                children: vec![],
+            },
+        ];
+        let mut result = Vec::new();
+        flatten_tree(&nodes, 0, &mut result);
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0].key, "1");
+        assert_eq!(result[1].key, "2");
+        assert_eq!(result[2].key, "3");
+        assert_eq!(result[0].depth, 0);
+        assert_eq!(result[1].depth, 0);
+        assert_eq!(result[2].depth, 0);
+    }
+
+    #[test]
+    fn flatten_tree_with_starting_depth() {
+        let nodes = vec![TreeNode {
+            key: "1".to_string(),
+            label: "Node 1".to_string(),
+            disabled: false,
+            children: vec![],
+        }];
+        let mut result = Vec::new();
+        flatten_tree(&nodes, 5, &mut result);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].depth, 5);
+    }
 }

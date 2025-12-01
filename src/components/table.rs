@@ -854,6 +854,40 @@ mod tests {
     }
 
     #[test]
+    fn column_builder_with_all_options() {
+        let mut col = TableColumn::new("name", "Name")
+            .width(200.0)
+            .align(ColumnAlign::Right)
+            .fixed(ColumnFixed::Left)
+            .sortable()
+            .ellipsis();
+        col.default_sort_order = Some(SortOrder::Ascend);
+        col.hidden = false;
+
+        assert_eq!(col.key, "name");
+        assert_eq!(col.title, "Name");
+        assert_eq!(col.width, Some(200.0));
+        assert_eq!(col.align, Some(ColumnAlign::Right));
+        assert_eq!(col.fixed, Some(ColumnFixed::Left));
+        assert!(col.sortable);
+        assert_eq!(col.default_sort_order, Some(SortOrder::Ascend));
+        assert!(col.ellipsis);
+        assert!(!col.hidden);
+    }
+
+    #[test]
+    fn column_align_all_variants() {
+        assert_eq!(ColumnAlign::Left.as_class(), "adui-table-align-left");
+        assert_eq!(ColumnAlign::Center.as_class(), "adui-table-align-center");
+        assert_eq!(ColumnAlign::Right.as_class(), "adui-table-align-right");
+    }
+
+    #[test]
+    fn column_align_default() {
+        assert_eq!(ColumnAlign::default(), ColumnAlign::Left);
+    }
+
+    #[test]
     fn sort_order_classes() {
         assert_eq!(
             SortOrder::Ascend.as_class(),
@@ -863,5 +897,51 @@ mod tests {
             SortOrder::Descend.as_class(),
             "adui-table-column-sort-descend"
         );
+    }
+
+    #[test]
+    fn sort_order_equality() {
+        assert_eq!(SortOrder::Ascend, SortOrder::Ascend);
+        assert_eq!(SortOrder::Descend, SortOrder::Descend);
+        assert_ne!(SortOrder::Ascend, SortOrder::Descend);
+    }
+
+    #[test]
+    fn column_fixed_variants() {
+        assert_eq!(ColumnFixed::Left, ColumnFixed::Left);
+        assert_eq!(ColumnFixed::Right, ColumnFixed::Right);
+        assert_ne!(ColumnFixed::Left, ColumnFixed::Right);
+    }
+
+    #[test]
+    fn get_cell_text_from_string() {
+        let mut row = serde_json::Map::new();
+        row.insert("name".to_string(), Value::String("John".to_string()));
+        let row_value = Value::Object(row);
+        assert_eq!(get_cell_text(&row_value, "name"), "John");
+    }
+
+    #[test]
+    fn get_cell_text_from_number() {
+        let mut row = serde_json::Map::new();
+        row.insert("age".to_string(), Value::Number(serde_json::Number::from(25)));
+        let row_value = Value::Object(row);
+        assert_eq!(get_cell_text(&row_value, "age"), "25");
+    }
+
+    #[test]
+    fn get_cell_text_from_bool() {
+        let mut row = serde_json::Map::new();
+        row.insert("active".to_string(), Value::Bool(true));
+        let row_value = Value::Object(row);
+        assert_eq!(get_cell_text(&row_value, "active"), "true");
+    }
+
+    #[test]
+    fn get_cell_text_missing_key() {
+        let mut row = serde_json::Map::new();
+        row.insert("name".to_string(), Value::String("John".to_string()));
+        let row_value = Value::Object(row);
+        assert_eq!(get_cell_text(&row_value, "missing"), "");
     }
 }

@@ -633,6 +633,20 @@ mod tests {
     }
 
     #[test]
+    fn normalize_single_below_min() {
+        let math = SliderMath {
+            min: 5.0,
+            max: 10.0,
+            step: None,
+            precision: None,
+            reverse: false,
+            orientation: SliderOrientation::Horizontal,
+        };
+        let val = normalize_value(false, SliderValue::Single(3.0), &math);
+        assert_eq!(val.as_single(), 5.0);
+    }
+
+    #[test]
     fn normalize_range_orders_and_snaps() {
         let math = SliderMath {
             min: 0.0,
@@ -647,9 +661,122 @@ mod tests {
     }
 
     #[test]
+    fn normalize_range_out_of_bounds() {
+        let math = SliderMath {
+            min: 0.0,
+            max: 10.0,
+            step: Some(1.0),
+            precision: None,
+            reverse: false,
+            orientation: SliderOrientation::Horizontal,
+        };
+        let val = normalize_value(true, SliderValue::Range(-5.0, 15.0), &math);
+        let (start, end) = val.as_range();
+        assert_eq!(start, 0.0);
+        assert_eq!(end, 10.0);
+    }
+
+    #[test]
+    fn normalize_single_with_step() {
+        let math = SliderMath {
+            min: 0.0,
+            max: 10.0,
+            step: Some(2.0),
+            precision: None,
+            reverse: false,
+            orientation: SliderOrientation::Horizontal,
+        };
+        let val = normalize_value(false, SliderValue::Single(7.3), &math);
+        assert_eq!(val.as_single(), 8.0);
+    }
+
+    #[test]
+    fn normalize_single_with_precision() {
+        let math = SliderMath {
+            min: 0.0,
+            max: 10.0,
+            step: None,
+            precision: Some(2),
+            reverse: false,
+            orientation: SliderOrientation::Horizontal,
+        };
+        let val = normalize_value(false, SliderValue::Single(3.456789), &math);
+        assert_eq!(val.as_single(), 3.46);
+    }
+
+    #[test]
     fn choose_handle_picks_nearest() {
         let val = SliderValue::Range(10.0, 20.0);
         assert_eq!(choose_handle(&val, 12.0), 0);
         assert_eq!(choose_handle(&val, 18.0), 1);
+    }
+
+    #[test]
+    fn choose_handle_equal_distance() {
+        let val = SliderValue::Range(10.0, 20.0);
+        assert_eq!(choose_handle(&val, 15.0), 0);
+    }
+
+    #[test]
+    fn choose_handle_single_value() {
+        let val = SliderValue::Single(15.0);
+        assert_eq!(choose_handle(&val, 20.0), 0);
+    }
+
+    #[test]
+    fn slider_value_as_single() {
+        let single = SliderValue::Single(5.0);
+        assert_eq!(single.as_single(), 5.0);
+
+        let range = SliderValue::Range(10.0, 20.0);
+        assert_eq!(range.as_single(), 20.0);
+    }
+
+    #[test]
+    fn slider_value_as_range() {
+        let single = SliderValue::Single(5.0);
+        assert_eq!(single.as_range(), (5.0, 5.0));
+
+        let range = SliderValue::Range(10.0, 20.0);
+        assert_eq!(range.as_range(), (10.0, 20.0));
+    }
+
+    #[test]
+    fn slider_value_ensure_range() {
+        let single = SliderValue::Single(5.0);
+        let range = single.ensure_range();
+        assert_eq!(range.as_range(), (5.0, 5.0));
+
+        let reversed = SliderValue::Range(20.0, 10.0);
+        let fixed = reversed.ensure_range();
+        assert_eq!(fixed.as_range(), (10.0, 20.0));
+    }
+
+    #[test]
+    fn default_slider_value_single() {
+        let math = SliderMath {
+            min: 0.0,
+            max: 100.0,
+            step: None,
+            precision: None,
+            reverse: false,
+            orientation: SliderOrientation::Horizontal,
+        };
+        let val = default_slider_value(false, &math);
+        assert_eq!(val.as_single(), 0.0);
+    }
+
+    #[test]
+    fn default_slider_value_range() {
+        let math = SliderMath {
+            min: 0.0,
+            max: 100.0,
+            step: None,
+            precision: None,
+            reverse: false,
+            orientation: SliderOrientation::Horizontal,
+        };
+        let val = default_slider_value(true, &math);
+        assert_eq!(val.as_range(), (0.0, 100.0));
     }
 }
