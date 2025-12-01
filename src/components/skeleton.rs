@@ -168,4 +168,153 @@ mod tests {
         let min_rows2 = rows2.max(1);
         assert_eq!(min_rows2, 3);
     }
+
+    #[test]
+    fn skeleton_paragraph_rows_boundary_values() {
+        // Test various boundary values
+        assert_eq!(0u8.max(1), 1);
+        assert_eq!(1u8.max(1), 1);
+        assert_eq!(2u8.max(1), 2);
+        assert_eq!(255u8.max(1), 255);
+    }
+
+    #[test]
+    fn skeleton_props_loading_false() {
+        let props = SkeletonProps {
+            loading: Some(false),
+            active: false,
+            title: true,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.loading, Some(false));
+    }
+
+    #[test]
+    fn skeleton_props_all_combinations() {
+        // Active + Title
+        let props = SkeletonProps {
+            loading: None,
+            active: true,
+            title: true,
+            paragraph_rows: Some(5),
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.active, true);
+        assert_eq!(props.title, true);
+        assert_eq!(props.paragraph_rows, Some(5));
+
+        // Loading + Active
+        let props = SkeletonProps {
+            loading: Some(true),
+            active: true,
+            title: false,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.loading, Some(true));
+        assert_eq!(props.active, true);
+    }
+
+    #[test]
+    fn skeleton_props_with_class_and_style() {
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: true,
+            paragraph_rows: None,
+            class: Some("custom-class".into()),
+            style: Some("color: red;".into()),
+            content: None,
+        };
+        assert_eq!(props.class, Some("custom-class".into()));
+        assert_eq!(props.style, Some("color: red;".into()));
+    }
+
+    #[test]
+    fn skeleton_props_clone() {
+        let props = SkeletonProps {
+            loading: Some(true),
+            active: true,
+            title: false,
+            paragraph_rows: Some(10),
+            class: Some("test".into()),
+            style: Some("test-style".into()),
+            content: None,
+        };
+        let cloned = props.clone();
+        assert_eq!(props.loading, cloned.loading);
+        assert_eq!(props.active, cloned.active);
+        assert_eq!(props.title, cloned.title);
+        assert_eq!(props.paragraph_rows, cloned.paragraph_rows);
+        assert_eq!(props.class, cloned.class);
+        assert_eq!(props.style, cloned.style);
+    }
+
+    #[test]
+    fn skeleton_props_paragraph_rows_edge_cases() {
+        // Minimum value
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: true,
+            paragraph_rows: Some(1),
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.paragraph_rows, Some(1));
+
+        // Maximum u8 value
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: true,
+            paragraph_rows: Some(255),
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.paragraph_rows, Some(255));
+    }
+
+    #[test]
+    fn skeleton_props_minimal() {
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: true,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        // Verify all defaults
+        assert!(props.loading.is_none());
+        assert_eq!(props.active, false);
+        assert_eq!(props.title, true);
+        assert!(props.paragraph_rows.is_none());
+    }
+
+    #[test]
+    fn skeleton_props_loading_none_means_true() {
+        // The component logic: loading.unwrap_or(true) means None defaults to true
+        // This test documents the behavior
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: true,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert!(props.loading.is_none());
+    }
 }

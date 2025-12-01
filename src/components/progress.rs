@@ -156,6 +156,27 @@ mod tests {
     }
 
     #[test]
+    fn clamp_percent_handles_nan() {
+        assert_eq!(clamp_percent(f32::NAN), 0.0);
+    }
+
+    #[test]
+    fn clamp_percent_handles_infinity() {
+        assert_eq!(clamp_percent(f32::INFINITY), 100.0);
+        assert_eq!(clamp_percent(f32::NEG_INFINITY), 0.0);
+    }
+
+    #[test]
+    fn clamp_percent_boundary_values() {
+        assert_eq!(clamp_percent(0.0), 0.0);
+        assert_eq!(clamp_percent(100.0), 100.0);
+        assert_eq!(clamp_percent(0.1), 0.1);
+        assert_eq!(clamp_percent(99.9), 99.9);
+        assert_eq!(clamp_percent(-0.1), 0.0);
+        assert_eq!(clamp_percent(100.1), 100.0);
+    }
+
+    #[test]
     fn resolve_status_defaults_to_success_when_full() {
         assert_eq!(resolve_status(100.0, None), ProgressStatus::Success);
         assert_eq!(resolve_status(50.0, None), ProgressStatus::Normal);
@@ -163,5 +184,121 @@ mod tests {
             resolve_status(80.0, Some(ProgressStatus::Exception)),
             ProgressStatus::Exception
         );
+    }
+
+    #[test]
+    fn resolve_status_respects_explicit_status() {
+        assert_eq!(
+            resolve_status(0.0, Some(ProgressStatus::Success)),
+            ProgressStatus::Success
+        );
+        assert_eq!(
+            resolve_status(100.0, Some(ProgressStatus::Exception)),
+            ProgressStatus::Exception
+        );
+        assert_eq!(
+            resolve_status(50.0, Some(ProgressStatus::Active)),
+            ProgressStatus::Active
+        );
+        assert_eq!(
+            resolve_status(75.0, Some(ProgressStatus::Normal)),
+            ProgressStatus::Normal
+        );
+    }
+
+    #[test]
+    fn resolve_status_auto_success_at_100() {
+        assert_eq!(resolve_status(100.0, None), ProgressStatus::Success);
+        assert_eq!(resolve_status(100.1, None), ProgressStatus::Success);
+    }
+
+    #[test]
+    fn resolve_status_auto_normal_below_100() {
+        assert_eq!(resolve_status(0.0, None), ProgressStatus::Normal);
+        assert_eq!(resolve_status(50.0, None), ProgressStatus::Normal);
+        assert_eq!(resolve_status(99.9, None), ProgressStatus::Normal);
+    }
+
+    #[test]
+    fn progress_status_class_mapping() {
+        assert_eq!(
+            ProgressStatus::Normal.as_class(),
+            "adui-progress-status-normal"
+        );
+        assert_eq!(
+            ProgressStatus::Success.as_class(),
+            "adui-progress-status-success"
+        );
+        assert_eq!(
+            ProgressStatus::Exception.as_class(),
+            "adui-progress-status-exception"
+        );
+        assert_eq!(
+            ProgressStatus::Active.as_class(),
+            "adui-progress-status-active"
+        );
+    }
+
+    #[test]
+    fn progress_status_all_variants() {
+        let variants = [
+            ProgressStatus::Normal,
+            ProgressStatus::Success,
+            ProgressStatus::Exception,
+            ProgressStatus::Active,
+        ];
+        for variant in variants.iter() {
+            let class = variant.as_class();
+            assert!(!class.is_empty());
+            assert!(class.starts_with("adui-progress-status-"));
+        }
+    }
+
+    #[test]
+    fn progress_status_equality() {
+        assert_eq!(ProgressStatus::Normal, ProgressStatus::Normal);
+        assert_eq!(ProgressStatus::Success, ProgressStatus::Success);
+        assert_ne!(ProgressStatus::Normal, ProgressStatus::Success);
+        assert_ne!(ProgressStatus::Exception, ProgressStatus::Active);
+    }
+
+    #[test]
+    fn progress_status_clone() {
+        let original = ProgressStatus::Active;
+        let cloned = original;
+        assert_eq!(original, cloned);
+        assert_eq!(original.as_class(), cloned.as_class());
+    }
+
+    #[test]
+    fn progress_type_equality() {
+        assert_eq!(ProgressType::Line, ProgressType::Line);
+        assert_eq!(ProgressType::Circle, ProgressType::Circle);
+        assert_ne!(ProgressType::Line, ProgressType::Circle);
+    }
+
+    #[test]
+    fn progress_type_clone() {
+        let original = ProgressType::Circle;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn progress_type_debug() {
+        let line = ProgressType::Line;
+        let circle = ProgressType::Circle;
+        let line_str = format!("{:?}", line);
+        let circle_str = format!("{:?}", circle);
+        assert!(line_str.contains("Line"));
+        assert!(circle_str.contains("Circle"));
+    }
+
+    #[test]
+    fn progress_props_defaults() {
+        // ProgressProps requires no mandatory fields
+        // percent defaults to 0.0
+        // show_info defaults to true
+        // type defaults to ProgressType::Line
     }
 }

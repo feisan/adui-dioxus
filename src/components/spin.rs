@@ -154,4 +154,186 @@ mod tests {
         assert_ne!(default, large);
         assert_ne!(small, large);
     }
+
+    #[test]
+    fn spin_size_debug() {
+        let small = SpinSize::Small;
+        let default = SpinSize::Default;
+        let large = SpinSize::Large;
+
+        let small_str = format!("{:?}", small);
+        let default_str = format!("{:?}", default);
+        let large_str = format!("{:?}", large);
+
+        assert!(small_str.contains("Small"));
+        assert!(default_str.contains("Default"));
+        assert!(large_str.contains("Large"));
+    }
+
+    #[test]
+    fn spin_props_with_all_fields() {
+        let props = SpinProps {
+            spinning: Some(true),
+            size: Some(SpinSize::Large),
+            tip: Some("Loading...".into()),
+            class: Some("custom-class".into()),
+            style: Some("color: red;".into()),
+            fullscreen: true,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.spinning, Some(true));
+        assert_eq!(props.size, Some(SpinSize::Large));
+        assert_eq!(props.tip, Some("Loading...".into()));
+        assert_eq!(props.fullscreen, true);
+    }
+
+    #[test]
+    fn spin_props_spinning_false() {
+        let props = SpinProps {
+            spinning: Some(false),
+            size: None,
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.spinning, Some(false));
+    }
+
+    #[test]
+    fn spin_props_size_small() {
+        let props = SpinProps {
+            spinning: None,
+            size: Some(SpinSize::Small),
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.size, Some(SpinSize::Small));
+    }
+
+    #[test]
+    fn spin_props_size_default() {
+        let props = SpinProps {
+            spinning: None,
+            size: Some(SpinSize::Default),
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.size, Some(SpinSize::Default));
+    }
+
+    #[test]
+    fn spin_props_size_large() {
+        let props = SpinProps {
+            spinning: None,
+            size: Some(SpinSize::Large),
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.size, Some(SpinSize::Large));
+    }
+
+    #[test]
+    fn spin_props_with_tip() {
+        let props = SpinProps {
+            spinning: None,
+            size: None,
+            tip: Some("Please wait...".into()),
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.tip, Some("Please wait...".into()));
+    }
+
+    #[test]
+    fn spin_props_fullscreen() {
+        let props = SpinProps {
+            spinning: None,
+            size: None,
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: true,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.fullscreen, true);
+    }
+
+    #[test]
+    fn spin_props_all_combinations() {
+        // Spinning + Size + Tip
+        let props = SpinProps {
+            spinning: Some(true),
+            size: Some(SpinSize::Small),
+            tip: Some("Loading".into()),
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.spinning, Some(true));
+        assert_eq!(props.size, Some(SpinSize::Small));
+        assert_eq!(props.tip, Some("Loading".into()));
+
+        // Fullscreen + Large
+        let props = SpinProps {
+            spinning: Some(true),
+            size: Some(SpinSize::Large),
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: true,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.fullscreen, true);
+        assert_eq!(props.size, Some(SpinSize::Large));
+    }
+
+    #[test]
+    fn spin_props_clone() {
+        let props = SpinProps {
+            spinning: Some(true),
+            size: Some(SpinSize::Large),
+            tip: Some("Test".into()),
+            class: Some("test-class".into()),
+            style: Some("test-style".into()),
+            fullscreen: true,
+            children: rsx!(div {}),
+        };
+        let cloned = props.clone();
+        assert_eq!(props.spinning, cloned.spinning);
+        assert_eq!(props.size, cloned.size);
+        assert_eq!(props.tip, cloned.tip);
+        assert_eq!(props.fullscreen, cloned.fullscreen);
+    }
+
+    #[test]
+    fn spin_props_minimal() {
+        let props = SpinProps {
+            spinning: None,
+            size: None,
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        // Verify all defaults
+        assert!(props.spinning.is_none());
+        assert!(props.size.is_none());
+        assert!(props.tip.is_none());
+        assert_eq!(props.fullscreen, false);
+    }
 }

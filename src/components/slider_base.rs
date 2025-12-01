@@ -86,7 +86,9 @@ pub fn snap_value(value: f64, math: &SliderMath) -> f64 {
             clamped
         } else {
             let steps = ((clamped - math.min) / positive_step).round();
-            math.min + steps * positive_step
+            let candidate = math.min + steps * positive_step;
+            // Ensure the snapped value doesn't exceed max
+            candidate.min(math.max)
         }
     } else {
         clamped

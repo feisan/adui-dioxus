@@ -168,4 +168,152 @@ mod tests {
         assert_ne!(center, right);
         assert_ne!(left, right);
     }
+
+    #[test]
+    fn divider_orientation_debug() {
+        let left = DividerOrientation::Left;
+        let center = DividerOrientation::Center;
+        let right = DividerOrientation::Right;
+
+        let left_str = format!("{:?}", left);
+        let center_str = format!("{:?}", center);
+        let right_str = format!("{:?}", right);
+
+        assert!(left_str.contains("Left"));
+        assert!(center_str.contains("Center"));
+        assert!(right_str.contains("Right"));
+    }
+
+    #[test]
+    fn divider_props_with_all_fields() {
+        let props = DividerProps {
+            dashed: true,
+            plain: true,
+            vertical: true,
+            orientation: DividerOrientation::Left,
+            orientation_margin: Some("20px".into()),
+            class: Some("custom-class".into()),
+            style: Some("color: red;".into()),
+            content: None,
+        };
+        assert_eq!(props.dashed, true);
+        assert_eq!(props.plain, true);
+        assert_eq!(props.vertical, true);
+        assert_eq!(props.orientation, DividerOrientation::Left);
+        assert_eq!(props.orientation_margin, Some("20px".into()));
+        assert_eq!(props.class, Some("custom-class".into()));
+    }
+
+    #[test]
+    fn divider_props_dashed_only() {
+        let props = DividerProps {
+            dashed: true,
+            plain: false,
+            vertical: false,
+            orientation: DividerOrientation::Center,
+            orientation_margin: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.dashed, true);
+        assert_eq!(props.plain, false);
+    }
+
+    #[test]
+    fn divider_props_plain_only() {
+        let props = DividerProps {
+            dashed: false,
+            plain: true,
+            vertical: false,
+            orientation: DividerOrientation::Center,
+            orientation_margin: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.dashed, false);
+        assert_eq!(props.plain, true);
+    }
+
+    #[test]
+    fn divider_props_vertical() {
+        let props = DividerProps {
+            dashed: false,
+            plain: false,
+            vertical: true,
+            orientation: DividerOrientation::Center,
+            orientation_margin: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.vertical, true);
+    }
+
+    #[test]
+    fn divider_props_orientation_left() {
+        let props = DividerProps {
+            dashed: false,
+            plain: false,
+            vertical: false,
+            orientation: DividerOrientation::Left,
+            orientation_margin: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.orientation, DividerOrientation::Left);
+    }
+
+    #[test]
+    fn divider_props_orientation_right() {
+        let props = DividerProps {
+            dashed: false,
+            plain: false,
+            vertical: false,
+            orientation: DividerOrientation::Right,
+            orientation_margin: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.orientation, DividerOrientation::Right);
+    }
+
+    #[test]
+    fn divider_props_clone() {
+        let props = DividerProps {
+            dashed: true,
+            plain: true,
+            vertical: false,
+            orientation: DividerOrientation::Left,
+            orientation_margin: Some("10px".into()),
+            class: Some("test".into()),
+            style: None,
+            content: None,
+        };
+        let cloned = props.clone();
+        assert_eq!(props.dashed, cloned.dashed);
+        assert_eq!(props.plain, cloned.plain);
+        assert_eq!(props.vertical, cloned.vertical);
+        assert_eq!(props.orientation, cloned.orientation);
+        assert_eq!(props.orientation_margin, cloned.orientation_margin);
+        assert_eq!(props.class, cloned.class);
+    }
+
+    #[test]
+    fn divider_props_with_custom_margin() {
+        let props = DividerProps {
+            dashed: false,
+            plain: false,
+            vertical: false,
+            orientation: DividerOrientation::Center,
+            orientation_margin: Some("24px".into()),
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.orientation_margin, Some("24px".into()));
+    }
 }

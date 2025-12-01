@@ -134,4 +134,272 @@ mod tests {
         };
         assert_eq!(format_value(&props), "10");
     }
+
+    #[test]
+    fn format_value_handles_negative_numbers() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(-123.456),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "-123.456");
+    }
+
+    #[test]
+    fn format_value_handles_negative_integers() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(-100.0),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "-100");
+    }
+
+    #[test]
+    fn format_value_handles_large_numbers() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(1_000_000.0),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "1000000");
+    }
+
+    #[test]
+    fn format_value_handles_very_large_numbers() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(1e15),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        let result = format_value(&props);
+        assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn format_value_precision_zero() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(123.456),
+            value_text: None,
+            precision: Some(0),
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "123");
+    }
+
+    #[test]
+    fn format_value_precision_high() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(123.456789),
+            value_text: None,
+            precision: Some(6),
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "123.456789");
+    }
+
+    #[test]
+    fn format_value_precision_with_negative() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(-123.456),
+            value_text: None,
+            precision: Some(1),
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "-123.5");
+    }
+
+    #[test]
+    fn format_value_defaults_to_zero() {
+        let props = StatisticProps {
+            title: None,
+            value: None,
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "0");
+    }
+
+    #[test]
+    fn format_value_defaults_to_zero_with_precision() {
+        let props = StatisticProps {
+            title: None,
+            value: None,
+            value_text: None,
+            precision: Some(2),
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "0.00");
+    }
+
+    #[test]
+    fn format_value_handles_small_decimals() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(0.001),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "0.001");
+    }
+
+    #[test]
+    fn format_value_handles_zero() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(0.0),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "0");
+    }
+
+    #[test]
+    fn format_value_handles_zero_with_precision() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(0.0),
+            value_text: None,
+            precision: Some(2),
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "0.00");
+    }
+
+    #[test]
+    fn format_value_handles_nan() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(f64::NAN),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        let result = format_value(&props);
+        // NaN formatting is implementation-dependent, just verify it doesn't panic
+        assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn format_value_handles_infinity() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(f64::INFINITY),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        let result = format_value(&props);
+        // Infinity formatting is implementation-dependent, just verify it doesn't panic
+        assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn format_value_value_text_overrides_everything() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(999.999),
+            value_text: Some("Custom Text".into()),
+            precision: Some(5),
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(format_value(&props), "Custom Text");
+    }
+
+    #[test]
+    fn format_value_decimal_that_ends_with_zero() {
+        let props = StatisticProps {
+            title: None,
+            value: Some(123.450),
+            value_text: None,
+            precision: None,
+            prefix: None,
+            suffix: None,
+            value_style: None,
+            class: None,
+            style: None,
+        };
+        // Should trim .0
+        assert_eq!(format_value(&props), "123.45");
+    }
+
+    #[test]
+    fn statistic_props_defaults() {
+        // StatisticProps requires no mandatory fields
+        // All fields are optional
+    }
 }

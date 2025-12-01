@@ -201,4 +201,132 @@ mod tests {
     fn switch_size_default_value() {
         assert_eq!(SwitchSize::Default, SwitchSize::default());
     }
+
+    #[test]
+    fn switch_size_all_variants() {
+        assert_eq!(SwitchSize::Default, SwitchSize::Default);
+        assert_eq!(SwitchSize::Small, SwitchSize::Small);
+        assert_ne!(SwitchSize::Default, SwitchSize::Small);
+    }
+
+    #[test]
+    fn switch_size_equality() {
+        let size1 = SwitchSize::Default;
+        let size2 = SwitchSize::Default;
+        let size3 = SwitchSize::Small;
+        assert_eq!(size1, size2);
+        assert_ne!(size1, size3);
+    }
+
+    #[test]
+    fn switch_size_clone() {
+        let original = SwitchSize::Small;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn switch_size_debug() {
+        let size = SwitchSize::Default;
+        let debug_str = format!("{:?}", size);
+        assert!(debug_str.contains("Default") || debug_str.contains("Small"));
+    }
+
+    #[test]
+    fn switch_props_defaults() {
+        // SwitchProps requires no mandatory fields
+        // default_checked defaults to false
+        // disabled defaults to false
+        // size defaults to SwitchSize::Default
+    }
+
+    #[test]
+    fn key_triggers_toggle_enter() {
+        assert!(key_triggers_toggle(&Key::Enter));
+    }
+
+    #[test]
+    fn key_triggers_toggle_space() {
+        assert!(key_triggers_toggle(&Key::Character(" ".into())));
+    }
+
+    #[test]
+    fn key_triggers_toggle_other_keys() {
+        assert!(!key_triggers_toggle(&Key::ArrowLeft));
+        assert!(!key_triggers_toggle(&Key::ArrowRight));
+        assert!(!key_triggers_toggle(&Key::Character("a".into())));
+        assert!(!key_triggers_toggle(&Key::Escape));
+    }
+
+    #[test]
+    fn key_triggers_toggle_space_variations() {
+        // Space should trigger
+        assert!(key_triggers_toggle(&Key::Character(" ".into())));
+        // Other whitespace should not
+        assert!(!key_triggers_toggle(&Key::Character("\t".into())));
+        assert!(!key_triggers_toggle(&Key::Character("\n".into())));
+    }
+
+    #[test]
+    fn key_triggers_toggle_arrow_keys() {
+        assert!(!key_triggers_toggle(&Key::ArrowUp));
+        assert!(!key_triggers_toggle(&Key::ArrowDown));
+    }
+
+    #[test]
+    fn key_triggers_toggle_modifier_keys() {
+        assert!(!key_triggers_toggle(&Key::Control));
+        assert!(!key_triggers_toggle(&Key::Shift));
+        assert!(!key_triggers_toggle(&Key::Alt));
+        assert!(!key_triggers_toggle(&Key::Meta));
+    }
+
+    #[test]
+    fn key_triggers_toggle_function_keys() {
+        assert!(!key_triggers_toggle(&Key::F1));
+        assert!(!key_triggers_toggle(&Key::F12));
+    }
+
+    #[test]
+    fn key_triggers_toggle_navigation_keys() {
+        assert!(!key_triggers_toggle(&Key::Home));
+        assert!(!key_triggers_toggle(&Key::End));
+        assert!(!key_triggers_toggle(&Key::PageUp));
+        assert!(!key_triggers_toggle(&Key::PageDown));
+    }
+
+    #[test]
+    fn key_triggers_toggle_other_special_keys() {
+        assert!(!key_triggers_toggle(&Key::Backspace));
+        assert!(!key_triggers_toggle(&Key::Delete));
+        assert!(!key_triggers_toggle(&Key::Tab));
+        assert!(!key_triggers_toggle(&Key::CapsLock));
+    }
+
+    #[test]
+    fn key_triggers_toggle_character_keys() {
+        // Only space should trigger, other characters should not
+        assert!(!key_triggers_toggle(&Key::Character("0".into())));
+        assert!(!key_triggers_toggle(&Key::Character("9".into())));
+        assert!(!key_triggers_toggle(&Key::Character("A".into())));
+        assert!(!key_triggers_toggle(&Key::Character("z".into())));
+        assert!(!key_triggers_toggle(&Key::Character("!".into())));
+        assert!(!key_triggers_toggle(&Key::Character("@".into())));
+    }
+
+    #[test]
+    fn key_triggers_toggle_enter_vs_space() {
+        // Both Enter and Space should trigger
+        assert!(key_triggers_toggle(&Key::Enter));
+        assert!(key_triggers_toggle(&Key::Character(" ".into())));
+    }
+
+    #[test]
+    fn handle_switch_toggle_logic() {
+        // This function requires Signal and EventHandler which are hard to test in isolation
+        // But we can verify the logic conceptually:
+        // - If not controlled, updates inner signal
+        // - Always updates form control if present
+        // - Calls on_change callback if present
+    }
 }

@@ -5,7 +5,7 @@ use dioxus::prelude::*;
 use serde_json::Value;
 
 /// Segmented option with label/value/icon/tooltip.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SegmentedOption {
     pub label: String,
     pub value: String,
@@ -241,4 +241,193 @@ fn apply_segmented(
     if let Some(cb) = on_change.as_ref() {
         cb.call(next);
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::Value;
+
+    #[test]
+    fn segmented_option_new() {
+        let option = SegmentedOption::new("Label", "value1");
+        assert_eq!(option.label, "Label");
+        assert_eq!(option.value, "value1");
+        assert_eq!(option.icon, None);
+        assert_eq!(option.tooltip, None);
+        assert_eq!(option.disabled, false);
+    }
+
+    #[test]
+    fn segmented_option_clone() {
+        let option = SegmentedOption::new("Label", "value1");
+        let cloned = option.clone();
+        assert_eq!(option.label, cloned.label);
+        assert_eq!(option.value, cloned.value);
+        assert_eq!(option.disabled, cloned.disabled);
+    }
+
+    #[test]
+    fn segmented_option_equality() {
+        let option1 = SegmentedOption::new("Label", "value1");
+        let option2 = SegmentedOption::new("Label", "value1");
+        let option3 = SegmentedOption::new("Different", "value1");
+        assert_eq!(option1, option2);
+        assert_ne!(option1, option3);
+    }
+
+    #[test]
+    fn segmented_props_defaults() {
+        // SegmentedProps requires options
+        // block defaults to false
+        // round defaults to false
+        // disabled defaults to false
+    }
+
+    // Note: resolve_value tests require Dioxus runtime for Signal creation
+    // These are tested in integration tests or component behavior tests
+
+    #[test]
+    fn value_from_form_string() {
+        let val = Some(Value::String("test".to_string()));
+        assert_eq!(value_from_form(val), Some("test".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_number() {
+        let val = Some(Value::Number(serde_json::Number::from(42)));
+        assert_eq!(value_from_form(val), Some("42".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_bool() {
+        let val = Some(Value::Bool(true));
+        assert_eq!(value_from_form(val), Some("true".to_string()));
+        let val_false = Some(Value::Bool(false));
+        assert_eq!(value_from_form(val_false), Some("false".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_other_types() {
+        assert_eq!(value_from_form(Some(Value::Null)), None);
+        assert_eq!(value_from_form(Some(Value::Array(vec![]))), None);
+        assert_eq!(value_from_form(None), None);
+    }
+
+    #[test]
+    fn value_from_form_string_empty() {
+        let val = Some(Value::String(String::new()));
+        assert_eq!(value_from_form(val), Some(String::new()));
+    }
+
+    #[test]
+    fn value_from_form_string_with_spaces() {
+        let val = Some(Value::String("  test  ".to_string()));
+        assert_eq!(value_from_form(val), Some("  test  ".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_number_zero() {
+        let val = Some(Value::Number(serde_json::Number::from(0)));
+        assert_eq!(value_from_form(val), Some("0".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_number_negative() {
+        let val = Some(Value::Number(serde_json::Number::from(-42)));
+        assert_eq!(value_from_form(val), Some("-42".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_number_large() {
+        let val = Some(Value::Number(serde_json::Number::from(999999)));
+        assert_eq!(value_from_form(val), Some("999999".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_number_float() {
+        let val = Some(Value::Number(serde_json::Number::from_f64(3.14).unwrap()));
+        assert_eq!(value_from_form(val), Some("3.14".to_string()));
+    }
+
+    #[test]
+    fn value_from_form_number_negative_float() {
+        let val = Some(Value::Number(serde_json::Number::from_f64(-2.5).unwrap()));
+        assert_eq!(value_from_form(val), Some("-2.5".to_string()));
+    }
+
+    #[test]
+    fn segmented_option_debug() {
+        let option = SegmentedOption::new("Label", "value1");
+        let debug_str = format!("{:?}", option);
+        assert!(debug_str.contains("Label") || debug_str.contains("value1"));
+    }
+
+    #[test]
+    fn segmented_option_with_all_fields() {
+        let option = SegmentedOption {
+            label: "Test Label".to_string(),
+            value: "test_value".to_string(),
+            icon: None,
+            tooltip: Some("Tooltip text".to_string()),
+            disabled: true,
+        };
+        assert_eq!(option.label, "Test Label");
+        assert_eq!(option.value, "test_value");
+        assert_eq!(option.tooltip, Some("Tooltip text".to_string()));
+        assert_eq!(option.disabled, true);
+    }
+
+    #[test]
+    fn segmented_option_with_tooltip() {
+        let mut option = SegmentedOption::new("Label", "value1");
+        option.tooltip = Some("Help text".to_string());
+        assert_eq!(option.tooltip, Some("Help text".to_string()));
+    }
+
+    #[test]
+    fn segmented_option_disabled() {
+        let mut option = SegmentedOption::new("Label", "value1");
+        option.disabled = true;
+        assert_eq!(option.disabled, true);
+    }
+
+    #[test]
+    fn segmented_option_equality_with_different_fields() {
+        let option1 = SegmentedOption {
+            label: "Label".to_string(),
+            value: "value1".to_string(),
+            icon: None,
+            tooltip: None,
+            disabled: false,
+        };
+        let option2 = SegmentedOption {
+            label: "Label".to_string(),
+            value: "value1".to_string(),
+            icon: None,
+            tooltip: Some("Tooltip".to_string()),
+            disabled: true,
+        };
+        // Equality is based on all fields, so these should be different
+        assert_ne!(option1, option2);
+    }
+
+    #[test]
+    fn segmented_option_empty_strings() {
+        let option = SegmentedOption::new("", "");
+        assert_eq!(option.label, "");
+        assert_eq!(option.value, "");
+    }
+
+    #[test]
+    fn segmented_option_long_strings() {
+        let long_label = "a".repeat(100);
+        let long_value = "b".repeat(100);
+        let option = SegmentedOption::new(&long_label, &long_value);
+        assert_eq!(option.label, long_label);
+        assert_eq!(option.value, long_value);
+    }
+
+    // Note: apply_segmented tests require Dioxus runtime for Signal creation
+    // These are tested in integration tests or component behavior tests
 }

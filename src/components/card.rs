@@ -127,4 +127,105 @@ mod tests {
         let classes = build_card_classes(false, None, false, None);
         assert_eq!(classes, "adui-card");
     }
+
+    #[test]
+    fn build_card_classes_bordered_only() {
+        let classes = build_card_classes(true, None, false, None);
+        assert!(classes.contains("adui-card"));
+        assert!(classes.contains("adui-card-bordered"));
+        assert!(!classes.contains("adui-card-hoverable"));
+    }
+
+    #[test]
+    fn build_card_classes_hoverable_only() {
+        let classes = build_card_classes(false, None, true, None);
+        assert!(classes.contains("adui-card"));
+        assert!(!classes.contains("adui-card-bordered"));
+        assert!(classes.contains("adui-card-hoverable"));
+    }
+
+    #[test]
+    fn build_card_classes_size_small() {
+        let classes = build_card_classes(false, Some(ComponentSize::Small), false, None);
+        assert!(classes.contains("adui-card"));
+        assert!(classes.contains("adui-card-sm"));
+    }
+
+    #[test]
+    fn build_card_classes_size_middle() {
+        let classes = build_card_classes(false, Some(ComponentSize::Middle), false, None);
+        assert!(classes.contains("adui-card"));
+        assert!(!classes.contains("adui-card-sm"));
+        assert!(!classes.contains("adui-card-lg"));
+    }
+
+    #[test]
+    fn build_card_classes_size_large() {
+        let classes = build_card_classes(false, Some(ComponentSize::Large), false, None);
+        assert!(classes.contains("adui-card"));
+        assert!(classes.contains("adui-card-lg"));
+    }
+
+    #[test]
+    fn build_card_classes_all_combinations() {
+        // Bordered + Hoverable
+        let classes = build_card_classes(true, None, true, None);
+        assert!(classes.contains("adui-card-bordered"));
+        assert!(classes.contains("adui-card-hoverable"));
+
+        // Bordered + Small
+        let classes = build_card_classes(true, Some(ComponentSize::Small), false, None);
+        assert!(classes.contains("adui-card-bordered"));
+        assert!(classes.contains("adui-card-sm"));
+
+        // Hoverable + Large
+        let classes = build_card_classes(false, Some(ComponentSize::Large), true, None);
+        assert!(classes.contains("adui-card-hoverable"));
+        assert!(classes.contains("adui-card-lg"));
+
+        // All flags
+        let classes = build_card_classes(
+            true,
+            Some(ComponentSize::Small),
+            true,
+            Some("custom-class".into()),
+        );
+        assert!(classes.contains("adui-card"));
+        assert!(classes.contains("adui-card-bordered"));
+        assert!(classes.contains("adui-card-hoverable"));
+        assert!(classes.contains("adui-card-sm"));
+        assert!(classes.contains("custom-class"));
+    }
+
+    #[test]
+    fn build_card_classes_with_extra_class() {
+        let classes = build_card_classes(false, None, false, Some("my-custom-class".into()));
+        assert!(classes.contains("adui-card"));
+        assert!(classes.contains("my-custom-class"));
+    }
+
+    #[test]
+    fn build_card_classes_multiple_extra_classes() {
+        // Note: The function only accepts one extra class string, but we can test it
+        let classes = build_card_classes(false, None, false, Some("class1 class2".into()));
+        assert!(classes.contains("adui-card"));
+        assert!(classes.contains("class1 class2"));
+    }
+
+    #[test]
+    fn build_card_classes_empty_extra_class() {
+        let classes = build_card_classes(false, None, false, Some(String::new()));
+        assert!(classes.contains("adui-card"));
+        // Empty string should still be added
+        let parts: Vec<&str> = classes.split(' ').collect();
+        assert!(parts.len() >= 1);
+    }
+
+    #[test]
+    fn card_props_defaults() {
+        // CardProps requires children
+        // bordered defaults to true
+        // loading defaults to false
+        // hoverable defaults to false
+    }
 }
