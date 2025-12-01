@@ -8,18 +8,96 @@ adui-dioxus 是一个基于 Dioxus 的 UI 组件库，提供了丰富的组件�
 
 ## 项目状态
 
-这是 Ant Design 6.0.0 到 Dioxus 的实验性移植。该库包括：
+这是 Ant Design 6.0.0 到 Dioxus 的实验性移植。该库基于 **Dioxus 0.7+** 构建，包含完整的组件集合：
 
-- **Theme**：Ant Design 6.x 风格的令牌与主题上下文（明/暗预设，CSS 变量导出）
-- **Button**：对齐 type/size/shape/danger/ghost/loading/block/icon/href
+### 核心功能
+- **主题系统**：Ant Design 6.x 风格的令牌与主题上下文（明/暗预设，CSS 变量导出）
+- **配置提供者**：全局配置和主题管理
+
+### 布局组件
+- **Layout**：页面布局容器，包含 Header、Footer、Sider 和 Content
+- **Grid**：24 列网格系统，用于响应式布局
+- **Flex**：弹性盒子布局组件，支持 gap 预设和 wrap
+- **Space**：间距组件，用于排列元素
+- **Divider**：分割线，用于分隔内容
+- **Splitter**：可调整大小的分割面板，带可拖拽手柄
+- **Masonry**：响应式瀑布流布局，用于卡片和项目
+
+### 通用组件
+- **Button**：支持 type/size/shape/danger/ghost/loading/block/icon/href
 - **FloatButton**：悬浮按钮，支持圆/方形、primary/default、danger、tooltip、可配置位置
 - **Icon**：内置常用图标集（plus/minus/check/close/info/question/search/arrow/loading），支持旋转、大小、颜色
 - **Typography**：Title/Text/Paragraph，支持 tone（default/secondary/success/warning/danger/disabled）、strong/italic/underline/delete/code/mark、ellipsis（单/多行 + 展开）、copyable、editable、禁用态语义
-- **Form**：`Form`/`FormItem`/`use_form_item_control`，支持 required/min/max/pattern/custom rule、布局控制、必填标记、上下文 Hook
-- **Upload**：点击选择/拖拽上传、列表（text/picture/picture-card）、`before_upload`、XHR 上传进度/abort、受控/非受控列表
-- **布局**：Divider/Flex/Grid（支持基础断点 span）/Layout（Sider 支持 collapsible/trigger/theme/手动 has_sider）/Masonry（列数可响应式 + gap/row_gap/min width）/Space/Splitter（可拖拽分栏），覆盖常用布局场景
+- **Affix**：固钉组件
+- **Breadcrumb**：面包屑导航
+- **Dropdown**：下拉菜单组件
+- **Menu**：导航菜单，支持水平和垂直模式
+- **Pagination**：分页组件
+- **Steps**：步骤指示器，用于流程
+- **Tabs**：标签页导航组件
+- **Anchor**：锚点导航，用于长页面
 
-以及更多组件...
+### 数据录入
+- **Form**：`Form`/`FormItem`/`use_form_item_control`，支持 required/min/max/pattern/custom rule、布局控制、必填标记、上下文 Hook
+- **Input**：文本输入，支持多种变体（Password、Search、OTP）
+- **InputNumber**：数字输入，带步进器控制
+- **TextArea**：多行文本输入
+- **Select**：下拉选择器，支持搜索和多选
+- **TreeSelect**：树形选择器
+- **Cascader**：级联选择组件
+- **AutoComplete**：自动完成输入组件
+- **Checkbox**：复选框和复选框组
+- **Radio**：单选框和单选框组
+- **Switch**：开关组件
+- **Slider**：滑动输入条组件
+- **Rate**：评分组件
+- **Upload**：点击选择/拖拽上传、列表（text/picture/picture-card）、`before_upload`、XHR 上传进度/abort、受控/非受控列表
+- **DatePicker**：日期选择器，支持范围选择
+- **TimePicker**：时间选择器组件
+- **Calendar**：日历组件
+- **ColorPicker**：颜色选择器组件
+- **Mentions**：提及输入组件
+- **Segmented**：分段控制器组件
+
+### 数据展示
+- **Table**：高级数据表格，支持排序、筛选、分页和选择
+- **Tag**：标签组件，支持多种颜色
+- **Badge**：徽标和缎带组件
+- **Card**：卡片容器组件
+- **Carousel**：走马灯/轮播组件
+- **Collapse**：折叠面板组件
+- **Timeline**：时间轴组件
+- **Tree**：树形组件，支持目录树
+- **Transfer**：穿梭框组件
+- **Descriptions**：描述列表组件
+- **Empty**：空状态组件
+- **List**：列表组件
+- **Statistic**：统计数值展示组件
+- **QRCode**：二维码生成组件
+- **Avatar**：头像组件，支持组
+- **Image**：图片组件，支持预览
+- **Skeleton**：骨架屏加载组件
+- **Progress**：进度条组件
+- **Result**：结果页组件
+- **Watermark**：水印组件
+
+### 反馈
+- **Alert**：警告提示组件
+- **Message**：全局消息提示
+- **Notification**：通知提醒组件
+- **Modal**：模态对话框组件
+- **Drawer**：抽屉组件
+- **Popconfirm**：气泡确认框组件
+- **Popover**：气泡卡片组件
+- **Tooltip**：文字提示组件
+- **Spin**：加载中组件
+- **Progress**：进度指示器组件
+- **Skeleton**：骨架屏占位组件
+
+### 其他
+- **App**：应用级上下文提供者，用于 message、modal 和 notification
+- **Tour**：漫游式引导组件
+- **BackTop**：回到顶部按钮
 
 ## 安装
 
@@ -49,9 +127,13 @@ adui-dioxus = "0.1.1"
 - 使用场景
 - 与 Ant Design 6.0.0 的差异
 
-## 本地运行
+## 本地开发
 
-要求 Rust + Dioxus 0.7 生态（推荐安装 dioxus-cli）。
+### 环境要求
+
+- Rust 工具链（推荐最新稳定版）
+- Dioxus CLI (`cargo install dioxus-cli` 或使用 `dx` 命令)
+- 用于 WASM 构建的 `wasm32-unknown-unknown` target（`rustup target add wasm32-unknown-unknown`）
 
 ### 构建与检查
 
@@ -61,27 +143,93 @@ cargo fmt && cargo clippy --all-targets --all-features && cargo test
 
 ### 运行示例
 
-- 按钮示例（浏览器）：`dx serve --example button_demo`
-- 悬浮按钮示例（浏览器）：`dx serve --example float_button_demo`
-- 图标示例（浏览器）：`dx serve --example icon_demo`
-- 排版示例（浏览器）：`dx serve --example typography_demo`
-- 布局示例（浏览器）：`dx serve --example layout_demo`
-- Flex/Space 示例（浏览器）：`dx serve --example flex_space_demo`
-- Grid 示例（浏览器）：`dx serve --example grid_demo`
-- Form 示例（浏览器）：`dx serve --example form_demo`
-- Upload 示例（浏览器）：`dx serve --example upload_demo`
+使用 Dioxus CLI 在浏览器中运行示例：
 
-## 示例功能概览
+```bash
+dx serve --example <示例名称>
+```
 
-- `button_demo`：主题切换（Light/Dark）、主色预设、按钮 type/size/shape 及状态开关
-- `float_button_demo`：浮动按钮主/副按钮，主题切换，位置与 tooltip 展示
-- `icon_demo`：图标列表，主题切换，大小调节，主色切换，全局旋转开关
-- `typography_demo`：Title/Text/Paragraph，展示 tone 切换、修饰、copyable、可展开 ellipsis、Inline 编辑
-- `layout_demo`：展示 Divider、Flex、Space、Grid、Layout（含 Sider 折叠/Zero Trigger）、Masonry、Splitter（拖拽调整分栏比例）
-- `grid_demo`：展示 Row 水平/垂直/响应式 gutter 以及 Col 的 span/offset/order/push/pull/flex 响应式配置
-- `flex_space_demo`：演示 `FlexConfigProvider`、gap 预设、wrap、Space size/split/compact 等布局能力
-- `form_demo`：展示 `Form` 基本校验、布局、重置/提交回调与自定义控件接入
-- `upload_demo`：展示基础上传、图片列表、dragger 拖拽区域，验证 `before_upload`、列表移除与上传日志
+可用的示例包括：
+
+- `button_demo` - 按钮组件，带主题切换
+- `float_button_demo` - 悬浮按钮示例
+- `icon_demo` - 图标展示
+- `typography_demo` - 排版组件
+- `layout_demo` - 布局组件（Layout、Divider、Flex、Space、Grid、Masonry、Splitter）
+- `flex_space_demo` - Flex 和 Space 组件
+- `grid_demo` - 网格系统示例
+- `form_demo` - 表单验证和控件
+- `upload_demo` - 文件上传示例
+- `table_demo` - 数据表格示例
+- `menu_demo` - 导航菜单
+- `tabs_demo` - 标签页导航
+- `modal_demo` - 模态对话框
+- `drawer_demo` - 抽屉组件
+- `select_demo` - 选择器组件
+- `date_picker_demo` - 日期选择器
+- `input_demo` - 输入框变体
+- `card_demo` - 卡片组件
+- `badge_demo` - 徽标组件
+- `avatar_demo` - 头像组件
+- `alert_demo` - 警告提示组件
+- `message_demo` - 消息提示
+- `notification_demo` - 通知组件
+- `tooltip_demo` - 文字提示组件
+- `popover_demo` - 气泡卡片组件
+- `progress_demo` - 进度指示器
+- `spin_demo` - 加载中组件
+- `skeleton_demo` - 骨架屏加载
+- `steps_demo` - 步骤条组件
+- `timeline_demo` - 时间轴组件
+- `tree_demo` - 树形组件
+- `tree_select_demo` - 树形选择器
+- `transfer_demo` - 穿梭框
+- `pagination_demo` - 分页
+- `breadcrumb_demo` - 面包屑导航
+- `anchor_demo` - 锚点导航
+- `affix_demo` - 固钉组件
+- `dropdown_demo` - 下拉菜单
+- `checkbox_demo` - 复选框组件
+- `radio_demo` - 单选框组件
+- `switch_demo` - 开关组件
+- `slider_demo` - 滑动输入条组件
+- `rate_demo` - 评分组件
+- `input_number_demo` - 数字输入框
+- `cascader_demo` - 级联选择组件
+- `auto_complete_demo` - 自动完成
+- `color_picker_demo` - 颜色选择器
+- `mentions_demo` - 提及输入
+- `segmented_demo` - 分段控制器
+- `descriptions_demo` - 描述列表组件
+- `empty_demo` - 空状态
+- `list_demo` - 列表组件
+- `statistic_demo` - 统计数值展示
+- `qrcode_demo` - 二维码生成器
+- `image_demo` - 图片组件
+- `carousel_demo` - 走马灯组件
+- `collapse_demo` - 折叠面板组件
+- `tag_demo` - 标签组件
+- `result_demo` - 结果页
+- `watermark_demo` - 水印组件
+- `tour_demo` - 漫游式引导
+- `config_provider_demo` - 配置提供者
+- `app_demo` - 应用上下文
+- `dashboard_demo` - 仪表盘示例
+- `landing_page_demo` - 落地页示例
+- `login_demo` - 登录页示例
+- `register_demo` - 注册页示例
+- `settings_demo` - 设置页示例
+
+## 贡献
+
+我们欢迎贡献！请阅读我们的[仓库指南](AGENTS.md)了解开发工作流、代码规范和贡献要求。
+
+关键要点：
+- 遵循 Rust 命名规范和代码风格
+- 为新组件添加测试
+- 更新文档（英文和中文）
+- 为新组件创建示例
+- 确保所有检查通过：`cargo fmt && cargo clippy --all-targets --all-features && cargo test`
 
 ## 许可证
 
