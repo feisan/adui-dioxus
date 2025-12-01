@@ -257,3 +257,78 @@ pub fn Menu(props: MenuProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn menu_mode_default() {
+        assert_eq!(MenuMode::default(), MenuMode::Inline);
+    }
+
+    #[test]
+    fn menu_mode_all_variants() {
+        assert_eq!(MenuMode::Inline, MenuMode::Inline);
+        assert_eq!(MenuMode::Horizontal, MenuMode::Horizontal);
+        assert_ne!(MenuMode::Inline, MenuMode::Horizontal);
+    }
+
+    #[test]
+    fn menu_mode_clone() {
+        let original = MenuMode::Horizontal;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn menu_item_node_leaf() {
+        let item = MenuItemNode::leaf("item1", "Item 1");
+        assert_eq!(item.id, "item1");
+        assert_eq!(item.label, "Item 1");
+        assert!(item.icon.is_none());
+        assert_eq!(item.disabled, false);
+        assert!(item.children.is_none());
+    }
+
+    #[test]
+    fn menu_item_node_leaf_with_strings() {
+        let item = MenuItemNode::leaf(String::from("item2"), String::from("Item 2"));
+        assert_eq!(item.id, "item2");
+        assert_eq!(item.label, "Item 2");
+        assert_eq!(item.disabled, false);
+    }
+
+    #[test]
+    fn menu_item_node_clone() {
+        let item1 = MenuItemNode::leaf("item1", "Item 1");
+        let item2 = item1.clone();
+        assert!(item1 == item2);
+    }
+
+    #[test]
+    fn menu_item_node_partial_eq() {
+        let item1 = MenuItemNode::leaf("item1", "Item 1");
+        let item2 = MenuItemNode::leaf("item1", "Item 1");
+        let item3 = MenuItemNode::leaf("item2", "Item 2");
+        assert!(item1 == item2);
+        assert!(item1 != item3);
+    }
+
+    #[test]
+    fn menu_item_node_with_children() {
+        let child1 = MenuItemNode::leaf("child1", "Child 1");
+        let child2 = MenuItemNode::leaf("child2", "Child 2");
+        let parent = MenuItemNode {
+            id: "parent".to_string(),
+            label: "Parent".to_string(),
+            icon: None,
+            disabled: false,
+            children: Some(vec![child1, child2]),
+        };
+        assert_eq!(parent.id, "parent");
+        assert_eq!(parent.label, "Parent");
+        assert!(parent.children.is_some());
+        assert_eq!(parent.children.as_ref().unwrap().len(), 2);
+    }
+}

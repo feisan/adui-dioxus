@@ -68,7 +68,7 @@ pub struct CalendarProps {
     pub style: Option<String>,
 }
 
-fn days_in_month(year: i32, month: u8) -> u8 {
+pub(crate) fn days_in_month(year: i32, month: u8) -> u8 {
     match month {
         1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
         4 | 6 | 9 | 11 => 30,
@@ -80,7 +80,7 @@ fn days_in_month(year: i32, month: u8) -> u8 {
     }
 }
 
-fn weekday_index_monday(year: i32, month: u8, day: u8) -> u8 {
+pub(crate) fn weekday_index_monday(year: i32, month: u8, day: u8) -> u8 {
     // Tomohiko Sakamoto's algorithm, returning 0 = Sunday .. 6 = Saturday.
     let m = month as i32;
     let d = day as i32;
@@ -285,6 +285,145 @@ pub fn Calendar(props: CalendarProps) -> Element {
             div { class: "adui-calendar-body",
                 for cell in date_cells { {cell} }
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calendar_date_from_ymd_valid() {
+        let date = CalendarDate::from_ymd(2024, 1, 1);
+        assert!(date.is_some());
+        let date = date.unwrap();
+        assert_eq!(date.year(), 2024);
+        assert_eq!(date.month(), 1);
+        assert_eq!(date.day(), 1);
+    }
+
+    #[test]
+    fn calendar_date_from_ymd_invalid_month() {
+        let date = CalendarDate::from_ymd(2024, 13, 1);
+        assert!(date.is_none());
+    }
+
+    #[test]
+    fn calendar_date_from_ymd_invalid_day() {
+        let date = CalendarDate::from_ymd(2024, 1, 32);
+        assert!(date.is_none());
+    }
+
+    #[test]
+    fn calendar_date_from_ymd_february_29_leap_year() {
+        let date = CalendarDate::from_ymd(2024, 2, 29);
+        assert!(date.is_some());
+        let date = date.unwrap();
+        assert_eq!(date.year(), 2024);
+        assert_eq!(date.month(), 2);
+        assert_eq!(date.day(), 29);
+    }
+
+    #[test]
+    fn calendar_date_from_ymd_february_29_non_leap_year() {
+        let date = CalendarDate::from_ymd(2023, 2, 29);
+        assert!(date.is_none());
+    }
+
+    #[test]
+    fn calendar_date_year_month_day() {
+        let date = CalendarDate::from_ymd(2024, 6, 15).unwrap();
+        assert_eq!(date.year(), 2024);
+        assert_eq!(date.month(), 6);
+        assert_eq!(date.day(), 15);
+    }
+
+    #[test]
+    fn calendar_date_clone() {
+        let date1 = CalendarDate::from_ymd(2024, 1, 1).unwrap();
+        let date2 = date1;
+        assert_eq!(date1, date2);
+    }
+
+    #[test]
+    fn calendar_mode_default() {
+        assert_eq!(CalendarMode::default(), CalendarMode::Month);
+    }
+
+    #[test]
+    fn calendar_mode_all_variants() {
+        assert_eq!(CalendarMode::Month, CalendarMode::Month);
+        assert_eq!(CalendarMode::Year, CalendarMode::Year);
+        assert_ne!(CalendarMode::Month, CalendarMode::Year);
+    }
+
+    #[test]
+    fn calendar_mode_clone() {
+        let original = CalendarMode::Year;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn days_in_month_31_days() {
+        assert_eq!(days_in_month(2024, 1), 31);
+        assert_eq!(days_in_month(2024, 3), 31);
+        assert_eq!(days_in_month(2024, 5), 31);
+        assert_eq!(days_in_month(2024, 7), 31);
+        assert_eq!(days_in_month(2024, 8), 31);
+        assert_eq!(days_in_month(2024, 10), 31);
+        assert_eq!(days_in_month(2024, 12), 31);
+    }
+
+    #[test]
+    fn days_in_month_30_days() {
+        assert_eq!(days_in_month(2024, 4), 30);
+        assert_eq!(days_in_month(2024, 6), 30);
+        assert_eq!(days_in_month(2024, 9), 30);
+        assert_eq!(days_in_month(2024, 11), 30);
+    }
+
+    #[test]
+    fn days_in_month_february_leap_year() {
+        assert_eq!(days_in_month(2024, 2), 29);
+        assert_eq!(days_in_month(2000, 2), 29);
+        assert_eq!(days_in_month(2004, 2), 29);
+    }
+
+    #[test]
+    fn days_in_month_february_non_leap_year() {
+        assert_eq!(days_in_month(2023, 2), 28);
+        assert_eq!(days_in_month(1900, 2), 28);
+        assert_eq!(days_in_month(2001, 2), 28);
+    }
+
+    #[test]
+    fn days_in_month_february_century_leap_year() {
+        assert_eq!(days_in_month(2000, 2), 29);
+    }
+
+    #[test]
+    fn days_in_month_february_century_non_leap_year() {
+        assert_eq!(days_in_month(1900, 2), 28);
+    }
+
+    #[test]
+    fn weekday_index_monday_known_dates() {
+        // 2024-01-01 is a Monday (0)
+        assert_eq!(weekday_index_monday(2024, 1, 1), 0);
+        // 2024-01-02 is a Tuesday (1)
+        assert_eq!(weekday_index_monday(2024, 1, 2), 1);
+        // 2024-01-07 is a Sunday (6)
+        assert_eq!(weekday_index_monday(2024, 1, 7), 6);
+    }
+
+    #[test]
+    fn weekday_index_monday_range() {
+        // Test that all weekdays are in range 0-6
+        for day in 1..=7 {
+            let weekday = weekday_index_monday(2024, 1, day);
+            assert!(weekday < 7);
         }
     }
 }

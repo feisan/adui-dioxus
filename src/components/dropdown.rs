@@ -271,3 +271,78 @@ pub fn Dropdown(props: DropdownProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dropdown_item_new() {
+        let item = DropdownItem::new("key1", "Label 1");
+        assert_eq!(item.key, "key1");
+        assert_eq!(item.label, "Label 1");
+        assert_eq!(item.disabled, false);
+    }
+
+    #[test]
+    fn dropdown_item_new_with_strings() {
+        let item = DropdownItem::new(String::from("key2"), String::from("Label 2"));
+        assert_eq!(item.key, "key2");
+        assert_eq!(item.label, "Label 2");
+        assert_eq!(item.disabled, false);
+    }
+
+    #[test]
+    fn dropdown_item_clone() {
+        let item1 = DropdownItem::new("key1", "Label 1");
+        let item2 = item1.clone();
+        assert_eq!(item1, item2);
+    }
+
+    #[test]
+    fn dropdown_item_partial_eq() {
+        let item1 = DropdownItem::new("key1", "Label 1");
+        let item2 = DropdownItem::new("key1", "Label 1");
+        let item3 = DropdownItem::new("key2", "Label 2");
+        assert_eq!(item1, item2);
+        assert_ne!(item1, item3);
+    }
+
+    #[test]
+    fn dropdown_trigger_default() {
+        assert_eq!(DropdownTrigger::default(), DropdownTrigger::Click);
+    }
+
+    #[test]
+    fn dropdown_trigger_all_variants() {
+        assert_eq!(DropdownTrigger::Click, DropdownTrigger::Click);
+        assert_eq!(DropdownTrigger::Hover, DropdownTrigger::Hover);
+        assert_ne!(DropdownTrigger::Click, DropdownTrigger::Hover);
+    }
+
+    #[test]
+    fn dropdown_trigger_clone() {
+        let original = DropdownTrigger::Hover;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn dropdown_placement_default() {
+        assert_eq!(DropdownPlacement::default(), DropdownPlacement::BottomLeft);
+    }
+
+    #[test]
+    fn dropdown_placement_all_variants() {
+        assert_eq!(DropdownPlacement::BottomLeft, DropdownPlacement::BottomLeft);
+        assert_eq!(DropdownPlacement::BottomRight, DropdownPlacement::BottomRight);
+        assert_ne!(DropdownPlacement::BottomLeft, DropdownPlacement::BottomRight);
+    }
+
+    #[test]
+    fn dropdown_placement_clone() {
+        let original = DropdownPlacement::BottomRight;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+}

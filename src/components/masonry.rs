@@ -25,7 +25,7 @@ pub struct MasonryResponsive {
 }
 
 impl MasonryResponsive {
-    fn iter(&self) -> Vec<(&'static str, u16)> {
+    pub(crate) fn iter(&self) -> Vec<(&'static str, u16)> {
         let mut list = Vec::new();
         if let Some(v) = self.xs {
             list.push(("xs", v));
@@ -140,4 +140,123 @@ fn responsive_columns_rules(id: usize, responsive: &MasonryResponsive) -> Option
         }
     }
     Some(buffer)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn masonry_responsive_default() {
+        let responsive = MasonryResponsive::default();
+        assert_eq!(responsive.xs, None);
+        assert_eq!(responsive.sm, None);
+        assert_eq!(responsive.md, None);
+        assert_eq!(responsive.lg, None);
+        assert_eq!(responsive.xl, None);
+        assert_eq!(responsive.xxl, None);
+    }
+
+    #[test]
+    fn masonry_responsive_clone() {
+        let responsive1 = MasonryResponsive {
+            xs: Some(1),
+            sm: Some(2),
+            md: Some(3),
+            lg: Some(4),
+            xl: Some(5),
+            xxl: Some(6),
+        };
+        let responsive2 = responsive1.clone();
+        assert_eq!(responsive1, responsive2);
+    }
+
+    #[test]
+    fn masonry_responsive_iter_empty() {
+        let responsive = MasonryResponsive::default();
+        let entries = responsive.iter();
+        assert_eq!(entries.len(), 0);
+    }
+
+    #[test]
+    fn masonry_responsive_iter_single() {
+        let responsive = MasonryResponsive {
+            xs: Some(2),
+            sm: None,
+            md: None,
+            lg: None,
+            xl: None,
+            xxl: None,
+        };
+        let entries = responsive.iter();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0], ("xs", 2));
+    }
+
+    #[test]
+    fn masonry_responsive_iter_multiple() {
+        let responsive = MasonryResponsive {
+            xs: Some(1),
+            sm: Some(2),
+            md: Some(3),
+            lg: None,
+            xl: None,
+            xxl: None,
+        };
+        let entries = responsive.iter();
+        assert_eq!(entries.len(), 3);
+        assert_eq!(entries[0], ("xs", 1));
+        assert_eq!(entries[1], ("sm", 2));
+        assert_eq!(entries[2], ("md", 3));
+    }
+
+    #[test]
+    fn masonry_responsive_iter_all() {
+        let responsive = MasonryResponsive {
+            xs: Some(1),
+            sm: Some(2),
+            md: Some(3),
+            lg: Some(4),
+            xl: Some(5),
+            xxl: Some(6),
+        };
+        let entries = responsive.iter();
+        assert_eq!(entries.len(), 6);
+        assert_eq!(entries[0], ("xs", 1));
+        assert_eq!(entries[1], ("sm", 2));
+        assert_eq!(entries[2], ("md", 3));
+        assert_eq!(entries[3], ("lg", 4));
+        assert_eq!(entries[4], ("xl", 5));
+        assert_eq!(entries[5], ("xxl", 6));
+    }
+
+    #[test]
+    fn masonry_responsive_partial_eq() {
+        let responsive1 = MasonryResponsive {
+            xs: Some(2),
+            sm: Some(3),
+            md: None,
+            lg: None,
+            xl: None,
+            xxl: None,
+        };
+        let responsive2 = MasonryResponsive {
+            xs: Some(2),
+            sm: Some(3),
+            md: None,
+            lg: None,
+            xl: None,
+            xxl: None,
+        };
+        let responsive3 = MasonryResponsive {
+            xs: Some(1),
+            sm: Some(2),
+            md: None,
+            lg: None,
+            xl: None,
+            xxl: None,
+        };
+        assert_eq!(responsive1, responsive2);
+        assert_ne!(responsive1, responsive3);
+    }
 }

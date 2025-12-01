@@ -167,3 +167,36 @@ pub fn Drawer(props: DrawerProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn drawer_placement_all_variants() {
+        assert_eq!(DrawerPlacement::Left, DrawerPlacement::Left);
+        assert_eq!(DrawerPlacement::Right, DrawerPlacement::Right);
+        assert_eq!(DrawerPlacement::Top, DrawerPlacement::Top);
+        assert_eq!(DrawerPlacement::Bottom, DrawerPlacement::Bottom);
+        assert_ne!(DrawerPlacement::Left, DrawerPlacement::Right);
+        assert_ne!(DrawerPlacement::Left, DrawerPlacement::Top);
+        assert_ne!(DrawerPlacement::Left, DrawerPlacement::Bottom);
+        assert_ne!(DrawerPlacement::Right, DrawerPlacement::Top);
+        assert_ne!(DrawerPlacement::Right, DrawerPlacement::Bottom);
+        assert_ne!(DrawerPlacement::Top, DrawerPlacement::Bottom);
+    }
+
+    #[test]
+    fn drawer_placement_clone() {
+        let original = DrawerPlacement::Left;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn drawer_placement_debug() {
+        let placement = DrawerPlacement::Right;
+        let debug_str = format!("{:?}", placement);
+        assert!(debug_str.contains("Right"));
+    }
+}

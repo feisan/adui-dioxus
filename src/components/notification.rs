@@ -22,7 +22,7 @@ pub enum NotificationPlacement {
 
 impl NotificationPlacement {
     #[allow(dead_code)]
-    fn as_style(&self) -> &'static str {
+    pub(crate) fn as_style(&self) -> &'static str {
         match self {
             NotificationPlacement::TopRight => "top: 24px; right: 24px;",
             NotificationPlacement::TopLeft => "top: 24px; left: 24px;",
@@ -328,4 +328,165 @@ fn schedule_notification_dismiss(
     _overlay: OverlayHandle,
     _duration_secs: f32,
 ) {
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn notification_type_all_variants() {
+        assert_eq!(NotificationType::Info, NotificationType::Info);
+        assert_eq!(NotificationType::Success, NotificationType::Success);
+        assert_eq!(NotificationType::Warning, NotificationType::Warning);
+        assert_eq!(NotificationType::Error, NotificationType::Error);
+        assert_ne!(NotificationType::Info, NotificationType::Success);
+        assert_ne!(NotificationType::Success, NotificationType::Warning);
+        assert_ne!(NotificationType::Warning, NotificationType::Error);
+    }
+
+    #[test]
+    fn notification_type_clone() {
+        let original = NotificationType::Success;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn notification_placement_default() {
+        assert_eq!(
+            NotificationPlacement::default(),
+            NotificationPlacement::TopRight
+        );
+    }
+
+    #[test]
+    fn notification_placement_all_variants() {
+        assert_eq!(
+            NotificationPlacement::TopRight,
+            NotificationPlacement::TopRight
+        );
+        assert_eq!(
+            NotificationPlacement::TopLeft,
+            NotificationPlacement::TopLeft
+        );
+        assert_eq!(
+            NotificationPlacement::BottomRight,
+            NotificationPlacement::BottomRight
+        );
+        assert_eq!(
+            NotificationPlacement::BottomLeft,
+            NotificationPlacement::BottomLeft
+        );
+        assert_ne!(
+            NotificationPlacement::TopRight,
+            NotificationPlacement::TopLeft
+        );
+        assert_ne!(
+            NotificationPlacement::TopRight,
+            NotificationPlacement::BottomRight
+        );
+    }
+
+    #[test]
+    fn notification_placement_clone() {
+        let original = NotificationPlacement::BottomLeft;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn notification_placement_as_style() {
+        assert_eq!(
+            NotificationPlacement::TopRight.as_style(),
+            "top: 24px; right: 24px;"
+        );
+        assert_eq!(
+            NotificationPlacement::TopLeft.as_style(),
+            "top: 24px; left: 24px;"
+        );
+        assert_eq!(
+            NotificationPlacement::BottomRight.as_style(),
+            "bottom: 24px; right: 24px;"
+        );
+        assert_eq!(
+            NotificationPlacement::BottomLeft.as_style(),
+            "bottom: 24px; left: 24px;"
+        );
+    }
+
+    #[test]
+    fn notification_config_default() {
+        let config = NotificationConfig::default();
+        assert_eq!(config.title, "");
+        assert_eq!(config.description, None);
+        assert_eq!(config.r#type, NotificationType::Info);
+        assert_eq!(config.placement, NotificationPlacement::TopRight);
+        assert_eq!(config.duration, 4.5);
+        assert_eq!(config.icon, None);
+        assert_eq!(config.class, None);
+        assert_eq!(config.style, None);
+        assert_eq!(config.on_click, None);
+        assert_eq!(config.key, None);
+    }
+
+    #[test]
+    fn notification_config_clone() {
+        let config1 = NotificationConfig {
+            title: "Test notification".to_string(),
+            description: Some("Test description".to_string()),
+            r#type: NotificationType::Success,
+            placement: NotificationPlacement::TopLeft,
+            duration: 5.0,
+            icon: None,
+            class: Some("custom-class".to_string()),
+            style: Some("color: blue;".to_string()),
+            on_click: None,
+            key: Some("notif-1".to_string()),
+        };
+        let config2 = config1.clone();
+        assert_eq!(config1, config2);
+    }
+
+    #[test]
+    fn notification_config_partial_eq() {
+        let config1 = NotificationConfig {
+            title: "Test".to_string(),
+            description: None,
+            r#type: NotificationType::Info,
+            placement: NotificationPlacement::TopRight,
+            duration: 4.5,
+            icon: None,
+            class: None,
+            style: None,
+            on_click: None,
+            key: None,
+        };
+        let config2 = NotificationConfig {
+            title: "Test".to_string(),
+            description: None,
+            r#type: NotificationType::Info,
+            placement: NotificationPlacement::TopRight,
+            duration: 4.5,
+            icon: None,
+            class: None,
+            style: None,
+            on_click: None,
+            key: None,
+        };
+        let config3 = NotificationConfig {
+            title: "Different".to_string(),
+            description: Some("Desc".to_string()),
+            r#type: NotificationType::Error,
+            placement: NotificationPlacement::BottomLeft,
+            duration: 6.0,
+            icon: None,
+            class: None,
+            style: None,
+            on_click: None,
+            key: None,
+        };
+        assert_eq!(config1, config2);
+        assert_ne!(config1, config3);
+    }
 }

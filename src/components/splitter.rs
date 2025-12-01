@@ -241,3 +241,39 @@ pub struct SplitterPaneProps {
 pub fn SplitterPane(props: SplitterPaneProps) -> Element {
     rsx! { {props.children} }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn splitter_orientation_default() {
+        assert_eq!(
+            SplitterOrientation::default(),
+            SplitterOrientation::Horizontal
+        );
+    }
+
+    #[test]
+    fn splitter_orientation_all_variants() {
+        assert_eq!(
+            SplitterOrientation::Horizontal,
+            SplitterOrientation::Horizontal
+        );
+        assert_eq!(
+            SplitterOrientation::Vertical,
+            SplitterOrientation::Vertical
+        );
+        assert_ne!(
+            SplitterOrientation::Horizontal,
+            SplitterOrientation::Vertical
+        );
+    }
+
+    #[test]
+    fn splitter_orientation_clone() {
+        let original = SplitterOrientation::Vertical;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+}

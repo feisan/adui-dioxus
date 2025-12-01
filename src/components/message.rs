@@ -242,3 +242,93 @@ fn schedule_message_dismiss(
     _duration_secs: f32,
 ) {
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn message_type_all_variants() {
+        assert_eq!(MessageType::Info, MessageType::Info);
+        assert_eq!(MessageType::Success, MessageType::Success);
+        assert_eq!(MessageType::Warning, MessageType::Warning);
+        assert_eq!(MessageType::Error, MessageType::Error);
+        assert_eq!(MessageType::Loading, MessageType::Loading);
+        assert_ne!(MessageType::Info, MessageType::Success);
+        assert_ne!(MessageType::Success, MessageType::Warning);
+        assert_ne!(MessageType::Warning, MessageType::Error);
+        assert_ne!(MessageType::Error, MessageType::Loading);
+    }
+
+    #[test]
+    fn message_type_clone() {
+        let original = MessageType::Success;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn message_config_default() {
+        let config = MessageConfig::default();
+        assert_eq!(config.content, "");
+        assert_eq!(config.r#type, MessageType::Info);
+        assert_eq!(config.duration, 3.0);
+        assert_eq!(config.icon, None);
+        assert_eq!(config.class, None);
+        assert_eq!(config.style, None);
+        assert_eq!(config.key, None);
+        assert_eq!(config.on_click, None);
+    }
+
+    #[test]
+    fn message_config_clone() {
+        let config1 = MessageConfig {
+            content: "Test message".to_string(),
+            r#type: MessageType::Success,
+            duration: 5.0,
+            icon: None,
+            class: Some("custom-class".to_string()),
+            style: Some("color: red;".to_string()),
+            key: Some("msg-1".to_string()),
+            on_click: None,
+        };
+        let config2 = config1.clone();
+        assert_eq!(config1, config2);
+    }
+
+    #[test]
+    fn message_config_partial_eq() {
+        let config1 = MessageConfig {
+            content: "Test".to_string(),
+            r#type: MessageType::Info,
+            duration: 3.0,
+            icon: None,
+            class: None,
+            style: None,
+            key: None,
+            on_click: None,
+        };
+        let config2 = MessageConfig {
+            content: "Test".to_string(),
+            r#type: MessageType::Info,
+            duration: 3.0,
+            icon: None,
+            class: None,
+            style: None,
+            key: None,
+            on_click: None,
+        };
+        let config3 = MessageConfig {
+            content: "Different".to_string(),
+            r#type: MessageType::Error,
+            duration: 5.0,
+            icon: None,
+            class: None,
+            style: None,
+            key: None,
+            on_click: None,
+        };
+        assert_eq!(config1, config2);
+        assert_ne!(config1, config3);
+    }
+}

@@ -251,3 +251,53 @@ pub fn update_open_state(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tooltip_placement_default() {
+        assert_eq!(TooltipPlacement::default(), TooltipPlacement::Top);
+    }
+
+    #[test]
+    fn tooltip_placement_all_variants() {
+        assert_eq!(TooltipPlacement::Top, TooltipPlacement::Top);
+        assert_eq!(TooltipPlacement::Bottom, TooltipPlacement::Bottom);
+        assert_eq!(TooltipPlacement::Left, TooltipPlacement::Left);
+        assert_eq!(TooltipPlacement::Right, TooltipPlacement::Right);
+        assert_ne!(TooltipPlacement::Top, TooltipPlacement::Bottom);
+        assert_ne!(TooltipPlacement::Top, TooltipPlacement::Left);
+        assert_ne!(TooltipPlacement::Top, TooltipPlacement::Right);
+        assert_ne!(TooltipPlacement::Bottom, TooltipPlacement::Left);
+        assert_ne!(TooltipPlacement::Bottom, TooltipPlacement::Right);
+        assert_ne!(TooltipPlacement::Left, TooltipPlacement::Right);
+    }
+
+    #[test]
+    fn tooltip_placement_clone() {
+        let original = TooltipPlacement::Right;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn tooltip_trigger_default() {
+        assert_eq!(TooltipTrigger::default(), TooltipTrigger::Hover);
+    }
+
+    #[test]
+    fn tooltip_trigger_all_variants() {
+        assert_eq!(TooltipTrigger::Hover, TooltipTrigger::Hover);
+        assert_eq!(TooltipTrigger::Click, TooltipTrigger::Click);
+        assert_ne!(TooltipTrigger::Hover, TooltipTrigger::Click);
+    }
+
+    #[test]
+    fn tooltip_trigger_clone() {
+        let original = TooltipTrigger::Click;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+}
