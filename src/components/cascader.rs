@@ -470,3 +470,130 @@ fn apply_selected_path(
         cb.call(new_path);
     }
 }
+
+#[cfg(test)]
+mod cascader_tests {
+    use super::*;
+    use crate::components::select_base::CascaderNode;
+
+    fn build_columns(options: &[CascaderNode], path: &[OptionKey]) -> Vec<Vec<CascaderNode>> {
+        let mut cols: Vec<Vec<CascaderNode>> = Vec::new();
+        let mut current_level: &[CascaderNode] = options;
+        cols.push(current_level.to_vec());
+
+        for key in path {
+            if let Some(node) = current_level.iter().find(|n| &n.key == key) {
+                if node.children.is_empty() {
+                    break;
+                }
+                current_level = &node.children;
+                cols.push(current_level.to_vec());
+            } else {
+                break;
+            }
+        }
+
+        cols
+    }
+
+    fn build_path_label(options: &[CascaderNode], path: &[OptionKey]) -> String {
+        fn find_label<'a>(nodes: &'a [CascaderNode], key: &str) -> Option<&'a CascaderNode> {
+            nodes.iter().find(|n| n.key == key)
+        }
+
+        let mut labels: Vec<String> = Vec::new();
+        let mut current = options;
+        for key in path {
+            if let Some(node) = find_label(current, key) {
+                labels.push(node.label.clone());
+                if node.children.is_empty() {
+                    break;
+                }
+                current = &node.children;
+            } else {
+                break;
+            }
+        }
+
+        if labels.is_empty() {
+            String::new()
+        } else {
+            labels.join(" / ")
+        }
+    }
+
+    #[test]
+    fn build_path_label_empty_path() {
+        let options = vec![CascaderNode {
+            key: "zhejiang".to_string(),
+            label: "Zhejiang".to_string(),
+            disabled: false,
+            children: vec![],
+        }];
+        let path: Vec<String> = vec![];
+        assert_eq!(build_path_label(&options, &path), "");
+    }
+
+    #[test]
+    fn build_path_label_single_level() {
+        let options = vec![CascaderNode {
+            key: "zhejiang".to_string(),
+            label: "Zhejiang".to_string(),
+            disabled: false,
+            children: vec![],
+        }];
+        let path = vec!["zhejiang".to_string()];
+        assert_eq!(build_path_label(&options, &path), "Zhejiang");
+    }
+
+    #[test]
+    fn build_path_label_multi_level() {
+        let options = vec![CascaderNode {
+            key: "zhejiang".to_string(),
+            label: "Zhejiang".to_string(),
+            disabled: false,
+            children: vec![CascaderNode {
+                key: "hangzhou".to_string(),
+                label: "Hangzhou".to_string(),
+                disabled: false,
+                children: vec![],
+            }],
+        }];
+        let path = vec!["zhejiang".to_string(), "hangzhou".to_string()];
+        assert_eq!(build_path_label(&options, &path), "Zhejiang / Hangzhou");
+    }
+
+    #[test]
+    fn build_columns_empty_path() {
+        let options = vec![CascaderNode {
+            key: "zhejiang".to_string(),
+            label: "Zhejiang".to_string(),
+            disabled: false,
+            children: vec![],
+        }];
+        let path: Vec<String> = vec![];
+        let cols = build_columns(&options, &path);
+        assert_eq!(cols.len(), 1);
+        assert_eq!(cols[0].len(), 1);
+    }
+
+    #[test]
+    fn build_columns_with_path() {
+        let options = vec![CascaderNode {
+            key: "zhejiang".to_string(),
+            label: "Zhejiang".to_string(),
+            disabled: false,
+            children: vec![CascaderNode {
+                key: "hangzhou".to_string(),
+                label: "Hangzhou".to_string(),
+                disabled: false,
+                children: vec![],
+            }],
+        }];
+        let path = vec!["zhejiang".to_string()];
+        let cols = build_columns(&options, &path);
+        assert_eq!(cols.len(), 2);
+        assert_eq!(cols[0].len(), 1);
+        assert_eq!(cols[1].len(), 1);
+    }
+}

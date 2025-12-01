@@ -364,3 +364,32 @@ pub fn AutoComplete(props: AutoCompleteProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod auto_complete_tests {
+    use super::*;
+
+    #[test]
+    fn auto_complete_props_defaults() {
+        // Test that optional props can be None
+        let props = AutoCompleteProps {
+            options: None,
+            value: None,
+            default_value: None,
+            placeholder: None,
+            allow_clear: false,
+            disabled: false,
+            status: None,
+            size: None,
+            class: None,
+            style: None,
+            dropdown_class: None,
+            dropdown_style: None,
+            on_change: None,
+            on_search: None,
+            on_select: None,
+        };
+        assert_eq!(props.allow_clear, false);
+        assert_eq!(props.disabled, false);
+    }
+}

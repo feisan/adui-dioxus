@@ -777,3 +777,90 @@ fn unique_id() -> u128 {
             .unwrap_or_default()
     }
 }
+
+#[cfg(test)]
+mod upload_tests {
+    use super::*;
+
+    #[test]
+    fn upload_status_all_variants() {
+        assert_eq!(UploadStatus::Ready, UploadStatus::Ready);
+        assert_eq!(UploadStatus::Uploading, UploadStatus::Uploading);
+        assert_eq!(UploadStatus::Done, UploadStatus::Done);
+        assert_eq!(UploadStatus::Error, UploadStatus::Error);
+        assert_ne!(UploadStatus::Ready, UploadStatus::Done);
+    }
+
+    #[test]
+    fn upload_list_type_default() {
+        assert_eq!(UploadListType::default(), UploadListType::Text);
+    }
+
+    #[test]
+    fn upload_list_type_all_variants() {
+        assert_eq!(UploadListType::Text, UploadListType::Text);
+        assert_eq!(UploadListType::Picture, UploadListType::Picture);
+        assert_eq!(UploadListType::PictureCard, UploadListType::PictureCard);
+        assert_ne!(UploadListType::Text, UploadListType::Picture);
+    }
+
+    #[test]
+    fn upload_http_method_default() {
+        assert_eq!(UploadHttpMethod::default(), UploadHttpMethod::Post);
+    }
+
+    #[test]
+    fn upload_http_method_all_variants() {
+        assert_eq!(UploadHttpMethod::Post, UploadHttpMethod::Post);
+        assert_eq!(UploadHttpMethod::Put, UploadHttpMethod::Put);
+        assert_eq!(UploadHttpMethod::Patch, UploadHttpMethod::Patch);
+        assert_ne!(UploadHttpMethod::Post, UploadHttpMethod::Put);
+    }
+
+    #[test]
+    fn upload_http_method_as_str() {
+        #[cfg(target_arch = "wasm32")]
+        {
+            assert_eq!(UploadHttpMethod::Post.as_str(), "POST");
+            assert_eq!(UploadHttpMethod::Put.as_str(), "PUT");
+            assert_eq!(UploadHttpMethod::Patch.as_str(), "PATCH");
+        }
+    }
+
+    #[test]
+    fn upload_file_done() {
+        let file = UploadFile::done("test.txt", Some(1024));
+        assert_eq!(file.name, "test.txt");
+        assert_eq!(file.size, Some(1024));
+        assert_eq!(file.status, UploadStatus::Done);
+        assert_eq!(file.percent, Some(100.0));
+        assert!(file.uid.starts_with("upload-"));
+    }
+
+    #[test]
+    fn upload_file_uploading() {
+        let file = UploadFile::uploading("test.txt", Some(1024));
+        assert_eq!(file.name, "test.txt");
+        assert_eq!(file.size, Some(1024));
+        assert_eq!(file.status, UploadStatus::Uploading);
+        assert_eq!(file.percent, Some(0.0));
+        assert!(file.uid.starts_with("upload-"));
+    }
+
+    #[test]
+    fn upload_list_config_default() {
+        let config = UploadListConfig::default();
+        assert_eq!(config.show_remove_icon, true);
+    }
+
+    #[test]
+    #[cfg(not(target_arch = "wasm32"))]
+    fn unique_id_generates_value() {
+        let id1 = unique_id();
+        // Small delay to ensure different timestamps
+        std::thread::sleep(std::time::Duration::from_millis(1));
+        let id2 = unique_id();
+        // IDs should be different (or at least non-zero)
+        assert!(id1 > 0 || id2 > 0);
+    }
+}

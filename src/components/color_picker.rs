@@ -437,3 +437,138 @@ fn rgb_to_hsv(r: u8, g: u8, b: u8) -> (f64, f64, f64) {
     };
     (if h < 0.0 { h + 360.0 } else { h }, s, max)
 }
+
+#[cfg(test)]
+mod color_picker_tests {
+    use super::*;
+
+    #[test]
+    fn parse_color_empty_string() {
+        assert_eq!(parse_color(""), None);
+        assert_eq!(parse_color("   "), None);
+    }
+
+    #[test]
+    fn parse_color_invalid_format() {
+        assert_eq!(parse_color("not-a-color"), None);
+        assert_eq!(parse_color("rgb(255,0,0)"), None);
+        assert_eq!(parse_color("#GGG"), None);
+    }
+
+    #[test]
+    fn parse_color_6_digit_hex() {
+        let result = parse_color("#FF0000");
+        assert!(result.is_some());
+        let color = result.unwrap();
+        assert!((color.h - 0.0).abs() < 1.0 || (color.h - 360.0).abs() < 1.0);
+        assert_eq!(color.a, 1.0);
+    }
+
+    #[test]
+    fn parse_color_8_digit_hex() {
+        let result = parse_color("#FF000080");
+        assert!(result.is_some());
+        let color = result.unwrap();
+        assert!((color.a - 0.5).abs() < 0.01);
+    }
+
+    #[test]
+    fn color_to_hex_with_alpha() {
+        let color = Hsva {
+            h: 0.0,
+            s: 1.0,
+            v: 1.0,
+            a: 0.5,
+        };
+        let hex = color_to_hex(Some(&color));
+        assert!(hex.starts_with('#'));
+        assert_eq!(hex.len(), 9); // #RRGGBBAA
+    }
+
+    #[test]
+    fn color_to_hex_without_alpha() {
+        let color = Hsva {
+            h: 0.0,
+            s: 1.0,
+            v: 1.0,
+            a: 1.0,
+        };
+        let hex = color_to_hex(Some(&color));
+        assert_eq!(hex.len(), 7); // #RRGGBB
+    }
+
+    #[test]
+    fn color_to_hex_none() {
+        assert_eq!(color_to_hex(None), "");
+    }
+
+    #[test]
+    fn color_to_css_with_color() {
+        let color = Hsva {
+            h: 0.0,
+            s: 1.0,
+            v: 1.0,
+            a: 0.5,
+        };
+        let css = color_to_css(Some(&color));
+        assert!(css.starts_with("rgba("));
+    }
+
+    #[test]
+    fn color_to_css_none() {
+        assert_eq!(color_to_css(None), "transparent");
+    }
+
+    #[test]
+    fn hsv_to_rgb_red() {
+        let (r, g, b) = hsv_to_rgb(0.0, 1.0, 1.0);
+        assert_eq!(r, 255);
+        assert_eq!(g, 0);
+        assert_eq!(b, 0);
+    }
+
+    #[test]
+    fn hsv_to_rgb_green() {
+        let (r, g, b) = hsv_to_rgb(120.0, 1.0, 1.0);
+        assert_eq!(r, 0);
+        assert_eq!(g, 255);
+        assert_eq!(b, 0);
+    }
+
+    #[test]
+    fn hsv_to_rgb_blue() {
+        let (r, g, b) = hsv_to_rgb(240.0, 1.0, 1.0);
+        assert_eq!(r, 0);
+        assert_eq!(g, 0);
+        assert_eq!(b, 255);
+    }
+
+    #[test]
+    fn rgb_to_hsv_red() {
+        let (h, s, v) = rgb_to_hsv(255, 0, 0);
+        assert!((h - 0.0).abs() < 1.0 || (h - 360.0).abs() < 1.0);
+        assert!((s - 1.0).abs() < 0.01);
+        assert!((v - 1.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn rgb_to_hsv_green() {
+        let (h, s, v) = rgb_to_hsv(0, 255, 0);
+        assert!((h - 120.0).abs() < 1.0);
+        assert!((s - 1.0).abs() < 0.01);
+        assert!((v - 1.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn rgb_to_hsv_black() {
+        let (_h, _s, v) = rgb_to_hsv(0, 0, 0);
+        assert!((v - 0.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn rgb_to_hsv_white() {
+        let (_h, s, v) = rgb_to_hsv(255, 255, 255);
+        assert!((s - 0.0).abs() < 0.01);
+        assert!((v - 1.0).abs() < 0.01);
+    }
+}

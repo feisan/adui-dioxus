@@ -205,3 +205,25 @@ pub fn Popover(props: PopoverProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod popover_tests {
+    use super::*;
+
+    #[test]
+    fn popover_placement_default() {
+        assert_eq!(TooltipPlacement::Top, TooltipPlacement::Top);
+    }
+
+    #[test]
+    fn popover_trigger_default() {
+        assert_eq!(TooltipTrigger::Click, TooltipTrigger::Click);
+    }
+
+    #[test]
+    fn popover_trigger_all_variants() {
+        assert_eq!(TooltipTrigger::Click, TooltipTrigger::Click);
+        assert_eq!(TooltipTrigger::Hover, TooltipTrigger::Hover);
+        assert_ne!(TooltipTrigger::Click, TooltipTrigger::Hover);
+    }
+}

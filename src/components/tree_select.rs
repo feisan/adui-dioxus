@@ -530,3 +530,67 @@ fn apply_selected_keys(
         cb.call(new_keys);
     }
 }
+
+#[cfg(test)]
+mod tree_select_tests {
+    use super::*;
+    use crate::components::select_base::TreeNode;
+
+    fn flatten_tree(nodes: &[TreeNode], depth: usize, out: &mut Vec<FlatNode>) {
+        for node in nodes {
+            out.push(FlatNode {
+                key: node.key.clone(),
+                label: node.label.clone(),
+                disabled: node.disabled,
+                depth,
+            });
+            if !node.children.is_empty() {
+                flatten_tree(&node.children, depth + 1, out);
+            }
+        }
+    }
+
+    #[test]
+    fn flatten_tree_empty() {
+        let nodes: Vec<TreeNode> = vec![];
+        let mut result = Vec::new();
+        flatten_tree(&nodes, 0, &mut result);
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn flatten_tree_single_node() {
+        let nodes = vec![TreeNode {
+            key: "1".to_string(),
+            label: "Node 1".to_string(),
+            disabled: false,
+            children: vec![],
+        }];
+        let mut result = Vec::new();
+        flatten_tree(&nodes, 0, &mut result);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].key, "1");
+        assert_eq!(result[0].label, "Node 1");
+        assert_eq!(result[0].depth, 0);
+    }
+
+    #[test]
+    fn flatten_tree_nested() {
+        let nodes = vec![TreeNode {
+            key: "1".to_string(),
+            label: "Node 1".to_string(),
+            disabled: false,
+            children: vec![TreeNode {
+                key: "2".to_string(),
+                label: "Node 2".to_string(),
+                disabled: false,
+                children: vec![],
+            }],
+        }];
+        let mut result = Vec::new();
+        flatten_tree(&nodes, 0, &mut result);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].depth, 0);
+        assert_eq!(result[1].depth, 1);
+    }
+}

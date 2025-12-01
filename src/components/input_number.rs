@@ -394,3 +394,71 @@ fn value_from_form(val: Option<Value>) -> Option<f64> {
         _ => None,
     }
 }
+
+#[cfg(test)]
+mod input_number_tests {
+    use super::*;
+    use serde_json::Number;
+
+    #[test]
+    fn input_number_props_defaults() {
+        // Test default values
+        assert_eq!(InputNumberProps {
+            value: None,
+            default_value: None,
+            min: None,
+            max: None,
+            step: None,
+            precision: None,
+            controls: true,
+            disabled: false,
+            status: None,
+            prefix: None,
+            suffix: None,
+            class: None,
+            style: None,
+            on_change: None,
+            on_change_complete: None,
+        }.controls, true);
+    }
+
+    #[test]
+    fn format_value_none() {
+        assert_eq!(format_value(None, None), "");
+    }
+
+    #[test]
+    fn format_value_with_precision() {
+        let result = format_value(Some(3.14159), Some(2));
+        assert_eq!(result, "3.14");
+    }
+
+    #[test]
+    fn format_value_without_precision() {
+        let result = format_value(Some(3.0), None);
+        assert_eq!(result, "3");
+    }
+
+    #[test]
+    fn value_from_form_number() {
+        let num = Number::from_f64(42.5).unwrap();
+        assert_eq!(value_from_form(Some(Value::Number(num))), Some(42.5));
+    }
+
+    #[test]
+    fn value_from_form_string() {
+        assert_eq!(value_from_form(Some(Value::String("42.5".to_string()))), Some(42.5));
+    }
+
+    #[test]
+    fn value_from_form_bool() {
+        assert_eq!(value_from_form(Some(Value::Bool(true))), Some(1.0));
+        assert_eq!(value_from_form(Some(Value::Bool(false))), Some(0.0));
+    }
+
+    #[test]
+    fn value_from_form_none() {
+        assert_eq!(value_from_form(None), None);
+        assert_eq!(value_from_form(Some(Value::Null)), None);
+    }
+}
