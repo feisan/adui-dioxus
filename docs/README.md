@@ -121,7 +121,7 @@ To use this component library in your Dioxus project, add it to your `Cargo.toml
 
 ```toml
 [dependencies]
-adui-dioxus = "0.1.0"
+adui-dioxus = "0.1.1"
 ```
 
 Then import and use components:

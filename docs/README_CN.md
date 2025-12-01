@@ -121,7 +121,7 @@
 
 ```toml
 [dependencies]
-adui-dioxus = "0.1.0"
+adui-dioxus = "0.1.1"
 ```
 
 然后导入并使用组件：
