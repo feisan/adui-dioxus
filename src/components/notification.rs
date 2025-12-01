@@ -21,6 +21,7 @@ pub enum NotificationPlacement {
 }
 
 impl NotificationPlacement {
+    #[allow(dead_code)]
     fn as_style(&self) -> &'static str {
         match self {
             NotificationPlacement::TopRight => "top: 24px; right: 24px;",

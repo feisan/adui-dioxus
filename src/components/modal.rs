@@ -27,6 +27,7 @@ pub enum ModalType {
 }
 
 impl ModalType {
+    #[allow(dead_code)]
     fn as_class(&self) -> &'static str {
         match self {
             ModalType::Info => "adui-modal-info",

@@ -51,7 +51,7 @@ impl TransferItem {
 }
 
 /// Props for the Transfer component.
-#[derive(Props, Clone, PartialEq)]
+#[derive(Props, Clone)]
 pub struct TransferProps {
     /// Data source for the transfer lists.
     pub data_source: Vec<TransferItem>,
@@ -100,6 +100,24 @@ pub struct TransferProps {
     /// Inline style for the root element.
     #[props(optional)]
     pub style: Option<String>,
+}
+
+impl PartialEq for TransferProps {
+    fn eq(&self, other: &Self) -> bool {
+        self.data_source == other.data_source
+            && self.target_keys == other.target_keys
+            && self.selected_keys == other.selected_keys
+            && self.titles == other.titles
+            && self.operations == other.operations
+            && self.show_search == other.show_search
+            && self.search_placeholder == other.search_placeholder
+            && self.disabled == other.disabled
+            && self.show_select_all == other.show_select_all
+            && self.one_way == other.one_way
+            && self.class == other.class
+            && self.style == other.style
+        // filter_option and event handlers cannot be compared for equality
+    }
 }
 
 /// Transfer component for moving items between two columns.

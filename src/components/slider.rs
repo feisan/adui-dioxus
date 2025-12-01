@@ -166,7 +166,7 @@ pub fn Slider(props: SliderProps) -> Element {
 
     let current = use_signal(|| initial_value.clone());
     let active_pointer = use_signal::<PointerState>(PointerState::default);
-    let mut active_handle = use_signal(|| None::<usize>);
+    let active_handle = use_signal(|| None::<usize>);
     // Sync to controlled/form value changes.
     {
         let mut current_signal = current.clone();
@@ -234,48 +234,53 @@ pub fn Slider(props: SliderProps) -> Element {
         normalized
     };
 
-    let current_for_move = current.clone();
-    let active_handle_for_move = active_handle.clone();
-    let active_pointer_for_move = active_pointer.clone();
-    let apply_for_move = apply_value.clone();
+    let handle_pointer_move = {
+        #[allow(unused_variables)]
+        let current_for_move = current.clone();
+        #[allow(unused_variables)]
+        let active_handle_for_move = active_handle.clone();
+        #[allow(unused_variables)]
+        let active_pointer_for_move = active_pointer.clone();
+        #[allow(unused_variables)]
+        let apply_for_move = apply_value.clone();
+        move |evt: Event<PointerData>| {
+            #[cfg(target_arch = "wasm32")]
+            {
+                if is_disabled {
+                    return;
+                }
+                let Some(pevt) = as_pointer_event(&evt) else {
+                    return;
+                };
+                if !is_active_pointer(&active_pointer_for_move, &pevt) {
+                    return;
+                }
+                let rect = pevt
+                    .current_target()
+                    .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
+                    .map(|el| el.get_bounding_client_rect());
+                let Some(rect) = rect else {
+                    return;
+                };
+                let Some(ratio) = pointer_ratio(&pevt, &rect, &math) else {
+                    return;
+                };
+                let target_value = ratio_to_value(ratio, &math);
 
-    let handle_pointer_move = move |evt: Event<PointerData>| {
-        #[cfg(target_arch = "wasm32")]
-        {
-            if is_disabled {
-                return;
+                let handle_idx = active_handle_for_move.read().unwrap_or(0);
+                let next = update_handle_value(
+                    &current_for_move.read(),
+                    handle_idx,
+                    target_value,
+                    range,
+                    &math,
+                );
+                apply_for_move(next, true);
             }
-            let Some(pevt) = as_pointer_event(&evt) else {
-                return;
-            };
-            if !is_active_pointer(&active_pointer_for_move, &pevt) {
-                return;
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let _ = evt;
             }
-            let rect = pevt
-                .current_target()
-                .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
-                .map(|el| el.get_bounding_client_rect());
-            let Some(rect) = rect else {
-                return;
-            };
-            let Some(ratio) = pointer_ratio(&pevt, &rect, &math) else {
-                return;
-            };
-            let target_value = ratio_to_value(ratio, &math);
-
-            let handle_idx = active_handle_for_move.read().unwrap_or(0);
-            let next = update_handle_value(
-                &current_for_move.read(),
-                handle_idx,
-                target_value,
-                range,
-                &math,
-            );
-            apply_for_move(next, true);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            let _ = evt;
         }
     };
 
@@ -298,45 +303,49 @@ pub fn Slider(props: SliderProps) -> Element {
         }
     };
 
-    let apply_for_track = apply_value.clone();
     let apply_for_key = apply_value.clone();
 
-    let handle_track_pointer_down = move |evt: Event<PointerData>| {
-        #[cfg(target_arch = "wasm32")]
-        {
-            if is_disabled {
-                return;
-            }
-            let Some(pevt) = as_pointer_event(&evt) else {
-                return;
-            };
-            let rect = pevt
-                .current_target()
-                .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
-                .map(|el| el.get_bounding_client_rect());
-            let Some(rect) = rect else {
-                return;
-            };
-            let Some(ratio) = pointer_ratio(&pevt, &rect, &math) else {
-                return;
-            };
-            let target_value = ratio_to_value(ratio, &math);
+    let handle_track_pointer_down = {
+        #[allow(unused_variables)]
+        let apply_for_track = apply_value.clone();
+        move |evt: Event<PointerData>| {
+            #[cfg(target_arch = "wasm32")]
+            {
+                if is_disabled {
+                    return;
+                }
+                let Some(pevt) = as_pointer_event(&evt) else {
+                    return;
+                };
+                let rect = pevt
+                    .current_target()
+                    .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
+                    .map(|el| el.get_bounding_client_rect());
+                let Some(rect) = rect else {
+                    return;
+                };
+                let Some(ratio) = pointer_ratio(&pevt, &rect, &math) else {
+                    return;
+                };
+                let target_value = ratio_to_value(ratio, &math);
 
-            let current_value = current.read();
-            let handle_idx = choose_handle(&current_value, target_value);
-            active_handle.set(Some(handle_idx));
-            let mut pointer_for_down = active_pointer.clone();
-            start_pointer(&mut pointer_for_down, &pevt);
+                let current_value = current.read();
+                let handle_idx = choose_handle(&current_value, target_value);
+                active_handle.set(Some(handle_idx));
+                let mut pointer_for_down = active_pointer.clone();
+                start_pointer(&mut pointer_for_down, &pevt);
 
-            let next = update_handle_value(&current_value, handle_idx, target_value, range, &math);
-            let normalized = apply_for_track(next, true);
-            if let Some(cb) = on_change_complete_cb.as_ref() {
-                cb.call(normalized);
+                let next =
+                    update_handle_value(&current_value, handle_idx, target_value, range, &math);
+                let normalized = apply_for_track(next, true);
+                if let Some(cb) = on_change_complete_cb.as_ref() {
+                    cb.call(normalized);
+                }
             }
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            let _ = evt;
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let _ = evt;
+            }
         }
     };
 
@@ -506,6 +515,7 @@ fn default_slider_value(range: bool, math: &SliderMath) -> SliderValue {
     }
 }
 
+#[allow(dead_code)]
 fn choose_handle(current: &SliderValue, target: f64) -> usize {
     match current {
         SliderValue::Single(_) => 0,
@@ -585,6 +595,7 @@ fn slider_value_to_form(value: &SliderValue) -> Value {
 }
 
 #[cfg(target_arch = "wasm32")]
+#[allow(dead_code)]
 fn pointer_ratio(
     evt: &web_sys::PointerEvent,
     rect: &web_sys::DomRect,
@@ -594,6 +605,7 @@ fn pointer_ratio(
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
 fn pointer_ratio(
     _evt: &web_sys::PointerEvent,
     _rect: &web_sys::DomRect,

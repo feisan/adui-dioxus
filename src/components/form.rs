@@ -317,7 +317,9 @@ struct FormContext {
     _label_col: Option<ColProps>,
     _wrapper_col: Option<ColProps>,
     disabled: bool,
+    #[allow(dead_code)]
     variant: Option<Variant>,
+    #[allow(dead_code)]
     feedback_icons: Option<FeedbackIcons>,
     registry: Rc<RefCell<HashMap<String, Vec<FormRule>>>>,
     on_values_change: Option<EventHandler<ValuesChangeEvent>>,

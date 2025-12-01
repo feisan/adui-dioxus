@@ -56,7 +56,7 @@ pub enum MentionPlacement {
 }
 
 /// Props for the Mentions component.
-#[derive(Props, Clone, PartialEq)]
+#[derive(Props, Clone)]
 pub struct MentionsProps {
     /// Controlled value of the textarea.
     #[props(optional)]
@@ -124,6 +124,28 @@ pub struct MentionsProps {
     /// Inline style for the root element.
     #[props(optional)]
     pub style: Option<String>,
+}
+
+impl PartialEq for MentionsProps {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+            && self.default_value == other.default_value
+            && self.placeholder == other.placeholder
+            && self.options == other.options
+            && self.prefix == other.prefix
+            && self.split == other.split
+            && self.disabled == other.disabled
+            && self.read_only == other.read_only
+            && self.loading == other.loading
+            && self.status == other.status
+            && self.size == other.size
+            && self.placement == other.placement
+            && self.auto_focus == other.auto_focus
+            && self.rows == other.rows
+            && self.class == other.class
+            && self.style == other.style
+        // filter_option and event handlers cannot be compared for equality
+    }
 }
 
 /// Mentions component for @-style input.
