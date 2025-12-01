@@ -319,18 +319,9 @@ mod tests {
 
     #[test]
     fn badge_status_class_mapping() {
-        assert_eq!(
-            BadgeStatus::Default.as_class(),
-            "adui-badge-status-default"
-        );
-        assert_eq!(
-            BadgeStatus::Success.as_class(),
-            "adui-badge-status-success"
-        );
-        assert_eq!(
-            BadgeStatus::Warning.as_class(),
-            "adui-badge-status-warning"
-        );
+        assert_eq!(BadgeStatus::Default.as_class(), "adui-badge-status-default");
+        assert_eq!(BadgeStatus::Success.as_class(), "adui-badge-status-success");
+        assert_eq!(BadgeStatus::Warning.as_class(), "adui-badge-status-warning");
         assert_eq!(BadgeStatus::Error.as_class(), "adui-badge-status-error");
     }
 
@@ -469,5 +460,66 @@ mod tests {
         // dot defaults to false
         // show_zero defaults to false
         // size defaults to BadgeSize::Default
+    }
+
+    #[test]
+    fn compute_badge_indicator_edge_cases() {
+        // Test with very large count
+        let (show, is_dot, text) = compute_badge_indicator(Some(999999), 99, false, true);
+        assert!(show);
+        assert!(!is_dot);
+        assert_eq!(text, "99+");
+    }
+
+    #[test]
+    fn compute_badge_indicator_one_below_overflow() {
+        let (show, is_dot, text) = compute_badge_indicator(Some(98), 99, false, true);
+        assert!(show);
+        assert!(!is_dot);
+        assert_eq!(text, "98");
+    }
+
+    #[test]
+    fn compute_badge_indicator_dot_with_show_zero() {
+        // Dot mode should ignore show_zero
+        let (show, is_dot, text) = compute_badge_indicator(Some(0), 99, true, false);
+        assert!(show);
+        assert!(is_dot);
+        assert!(text.is_empty());
+    }
+
+    #[test]
+    fn badge_status_all_variants_equality() {
+        let statuses = [
+            BadgeStatus::Default,
+            BadgeStatus::Success,
+            BadgeStatus::Warning,
+            BadgeStatus::Error,
+        ];
+        for (i, status1) in statuses.iter().enumerate() {
+            for (j, status2) in statuses.iter().enumerate() {
+                if i == j {
+                    assert_eq!(status1, status2);
+                } else {
+                    assert_ne!(status1, status2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn badge_color_preset_vs_custom() {
+        let preset = BadgeColor::Preset("primary".to_string());
+        let custom = BadgeColor::Custom("#ff0000".to_string());
+        assert_ne!(preset, custom);
+    }
+
+    #[test]
+    fn compute_badge_indicator_negative_overflow() {
+        // Test with custom overflow count
+        let (show, is_dot, text) = compute_badge_indicator(Some(50), 10, false, true);
+        assert!(show);
+        assert!(!is_dot);
+        assert_eq!(text, "10+");
     }
 }

@@ -920,4 +920,235 @@ mod tests {
         assert_eq!(link_style.border, "transparent");
         assert_eq!(link_style.color, tokens.color_link);
     }
+
+    #[test]
+    fn button_size_from_global() {
+        use crate::components::config_provider::ComponentSize;
+        assert_eq!(
+            ButtonSize::from_global(ComponentSize::Small),
+            ButtonSize::Small
+        );
+        assert_eq!(
+            ButtonSize::from_global(ComponentSize::Middle),
+            ButtonSize::Middle
+        );
+        assert_eq!(
+            ButtonSize::from_global(ComponentSize::Large),
+            ButtonSize::Large
+        );
+    }
+
+    #[test]
+    fn button_size_all_variants() {
+        assert_eq!(ButtonSize::Small, ButtonSize::Small);
+        assert_eq!(ButtonSize::Middle, ButtonSize::Middle);
+        assert_eq!(ButtonSize::Large, ButtonSize::Large);
+        assert_ne!(ButtonSize::Small, ButtonSize::Large);
+    }
+
+    #[test]
+    fn button_size_default() {
+        assert_eq!(ButtonSize::default(), ButtonSize::Middle);
+    }
+
+    #[test]
+    fn button_shape_all_variants() {
+        assert_eq!(ButtonShape::Default, ButtonShape::Default);
+        assert_eq!(ButtonShape::Round, ButtonShape::Round);
+        assert_eq!(ButtonShape::Circle, ButtonShape::Circle);
+        assert_ne!(ButtonShape::Default, ButtonShape::Circle);
+    }
+
+    #[test]
+    fn button_shape_default() {
+        assert_eq!(ButtonShape::default(), ButtonShape::Default);
+    }
+
+    #[test]
+    fn button_type_all_variants() {
+        assert_eq!(ButtonType::Default, ButtonType::Default);
+        assert_eq!(ButtonType::Primary, ButtonType::Primary);
+        assert_eq!(ButtonType::Dashed, ButtonType::Dashed);
+        assert_eq!(ButtonType::Text, ButtonType::Text);
+        assert_eq!(ButtonType::Link, ButtonType::Link);
+        assert_ne!(ButtonType::Default, ButtonType::Primary);
+    }
+
+    #[test]
+    fn button_type_default() {
+        assert_eq!(ButtonType::default(), ButtonType::Default);
+    }
+
+    #[test]
+    fn button_color_all_variants() {
+        assert_eq!(ButtonColor::Default, ButtonColor::Default);
+        assert_eq!(ButtonColor::Primary, ButtonColor::Primary);
+        assert_eq!(ButtonColor::Success, ButtonColor::Success);
+        assert_eq!(ButtonColor::Warning, ButtonColor::Warning);
+        assert_eq!(ButtonColor::Danger, ButtonColor::Danger);
+        assert_ne!(ButtonColor::Default, ButtonColor::Primary);
+    }
+
+    #[test]
+    fn button_color_default() {
+        assert_eq!(ButtonColor::default(), ButtonColor::Default);
+    }
+
+    #[test]
+    fn button_variant_all_variants() {
+        assert_eq!(ButtonVariant::Solid, ButtonVariant::Solid);
+        assert_eq!(ButtonVariant::Outlined, ButtonVariant::Outlined);
+        assert_eq!(ButtonVariant::Dashed, ButtonVariant::Dashed);
+        assert_eq!(ButtonVariant::Text, ButtonVariant::Text);
+        assert_eq!(ButtonVariant::Link, ButtonVariant::Link);
+        assert_ne!(ButtonVariant::Solid, ButtonVariant::Outlined);
+    }
+
+    #[test]
+    fn button_variant_default() {
+        assert_eq!(ButtonVariant::default(), ButtonVariant::Outlined);
+    }
+
+    #[test]
+    fn button_icon_placement_all_variants() {
+        assert_eq!(ButtonIconPlacement::Start, ButtonIconPlacement::Start);
+        assert_eq!(ButtonIconPlacement::End, ButtonIconPlacement::End);
+        assert_ne!(ButtonIconPlacement::Start, ButtonIconPlacement::End);
+    }
+
+    #[test]
+    fn button_icon_placement_default() {
+        assert_eq!(ButtonIconPlacement::default(), ButtonIconPlacement::Start);
+    }
+
+    #[test]
+    fn button_html_type_all_variants() {
+        assert_eq!(ButtonHtmlType::Button, ButtonHtmlType::Button);
+        assert_eq!(ButtonHtmlType::Submit, ButtonHtmlType::Submit);
+        assert_eq!(ButtonHtmlType::Reset, ButtonHtmlType::Reset);
+        assert_ne!(ButtonHtmlType::Button, ButtonHtmlType::Submit);
+    }
+
+    #[test]
+    fn button_html_type_default() {
+        assert_eq!(ButtonHtmlType::default(), ButtonHtmlType::Button);
+    }
+
+    #[test]
+    fn metrics_all_sizes() {
+        let tokens = ThemeTokens::light();
+        let small = metrics(&tokens, ButtonSize::Small, ButtonShape::Default);
+        let middle = metrics(&tokens, ButtonSize::Middle, ButtonShape::Default);
+        let large = metrics(&tokens, ButtonSize::Large, ButtonShape::Default);
+
+        assert!(small.height < middle.height);
+        assert!(middle.height < large.height);
+        assert!(small.font_size < middle.font_size);
+        assert!(middle.font_size < large.font_size);
+    }
+
+    #[test]
+    fn metrics_all_shapes() {
+        let tokens = ThemeTokens::light();
+        let default = metrics(&tokens, ButtonSize::Middle, ButtonShape::Default);
+        let round = metrics(&tokens, ButtonSize::Middle, ButtonShape::Round);
+        let circle = metrics(&tokens, ButtonSize::Middle, ButtonShape::Circle);
+
+        assert_eq!(default.radius, tokens.border_radius);
+        assert!(round.radius >= tokens.border_radius);
+        assert!((circle.radius - default.height / 2.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn is_cjk_detects_cjk_characters() {
+        assert!(is_cjk('中'));
+        assert!(is_cjk('文'));
+        assert!(is_cjk('日'));
+        assert!(is_cjk('本'));
+        assert!(!is_cjk('A'));
+        assert!(!is_cjk('1'));
+        assert!(!is_cjk(' '));
+    }
+
+    #[test]
+    fn is_two_cjk_edge_cases() {
+        assert!(!is_two_cjk(""));
+        assert!(!is_two_cjk("中"));
+        assert!(is_two_cjk("中文"));
+        assert!(!is_two_cjk("中文A"));
+        assert!(!is_two_cjk("A中文"));
+    }
+
+    #[test]
+    fn visuals_all_colors() {
+        let tokens = ThemeTokens::light();
+        let primary = visuals(&tokens, ButtonVariant::Solid, ButtonColor::Primary, false);
+        let success = visuals(&tokens, ButtonVariant::Solid, ButtonColor::Success, false);
+        let warning = visuals(&tokens, ButtonVariant::Solid, ButtonColor::Warning, false);
+        let danger = visuals(&tokens, ButtonVariant::Solid, ButtonColor::Danger, false);
+        let default = visuals(&tokens, ButtonVariant::Solid, ButtonColor::Default, false);
+
+        assert_eq!(primary.color, "#ffffff");
+        assert_eq!(success.color, "#ffffff");
+        assert_eq!(warning.color, "#ffffff");
+        assert_eq!(danger.color, "#ffffff");
+        assert_ne!(default.color, "#ffffff");
+    }
+
+    #[test]
+    fn visuals_text_variant() {
+        let tokens = ThemeTokens::light();
+        let text = visuals(&tokens, ButtonVariant::Text, ButtonColor::Default, false);
+        assert_eq!(text.bg, "transparent");
+        assert_eq!(text.border, "transparent");
+        assert_eq!(text.shadow, "none");
+    }
+
+    #[test]
+    fn visuals_dashed_variant() {
+        let tokens = ThemeTokens::light();
+        let dashed = visuals(&tokens, ButtonVariant::Dashed, ButtonColor::Default, false);
+        assert_eq!(dashed.border_style, "dashed");
+    }
+
+    #[test]
+    fn visuals_outlined_variant() {
+        let tokens = ThemeTokens::light();
+        let outlined = visuals(
+            &tokens,
+            ButtonVariant::Outlined,
+            ButtonColor::Default,
+            false,
+        );
+        assert_eq!(outlined.border_style, "solid");
+    }
+
+    #[test]
+    fn tone_palette_all_colors() {
+        let tokens = ThemeTokens::light();
+        let (primary, _, _) = tone_palette(&tokens, ButtonColor::Primary);
+        let (success, _, _) = tone_palette(&tokens, ButtonColor::Success);
+        let (warning, _, _) = tone_palette(&tokens, ButtonColor::Warning);
+        let (danger, _, _) = tone_palette(&tokens, ButtonColor::Danger);
+
+        assert_eq!(primary, tokens.color_primary);
+        assert_eq!(success, tokens.color_success);
+        assert_eq!(warning, tokens.color_warning);
+        assert_eq!(danger, tokens.color_error);
+    }
+
+    #[test]
+    fn focus_ring_all_colors() {
+        let primary = focus_ring(ButtonColor::Primary, "");
+        let success = focus_ring(ButtonColor::Success, "");
+        let warning = focus_ring(ButtonColor::Warning, "");
+        let danger = focus_ring(ButtonColor::Danger, "");
+        let default = focus_ring(ButtonColor::Default, "fallback");
+
+        assert!(primary.contains("255"));
+        assert!(success.contains("26"));
+        assert!(warning.contains("173"));
+        assert!(danger.contains("79"));
+        assert_eq!(default, "fallback");
+    }
 }

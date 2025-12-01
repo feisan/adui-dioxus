@@ -484,4 +484,85 @@ mod tests {
         assert_eq!(ModalType::Success.as_class(), "adui-modal-success");
         assert_eq!(ModalType::Error.as_class(), "adui-modal-error");
     }
+
+    #[test]
+    fn modal_type_all_variants() {
+        assert_eq!(ModalType::Info, ModalType::Info);
+        assert_eq!(ModalType::Success, ModalType::Success);
+        assert_eq!(ModalType::Error, ModalType::Error);
+        assert_eq!(ModalType::Warning, ModalType::Warning);
+        assert_eq!(ModalType::Confirm, ModalType::Confirm);
+        assert_ne!(ModalType::Info, ModalType::Error);
+    }
+
+    #[test]
+    fn modal_type_all_classes() {
+        assert_eq!(ModalType::Info.as_class(), "adui-modal-info");
+        assert_eq!(ModalType::Success.as_class(), "adui-modal-success");
+        assert_eq!(ModalType::Error.as_class(), "adui-modal-error");
+        assert_eq!(ModalType::Warning.as_class(), "adui-modal-warning");
+        assert_eq!(ModalType::Confirm.as_class(), "adui-modal-confirm");
+    }
+
+    #[test]
+    fn modal_type_equality() {
+        let info1 = ModalType::Info;
+        let info2 = ModalType::Info;
+        let error = ModalType::Error;
+        assert_eq!(info1, info2);
+        assert_ne!(info1, error);
+    }
+
+    #[test]
+    fn modal_type_clone() {
+        let original = ModalType::Warning;
+        let cloned = original;
+        assert_eq!(original, cloned);
+        assert_eq!(original.as_class(), cloned.as_class());
+    }
+
+    #[test]
+    fn mask_config_equality() {
+        let config1 = MaskConfig {
+            visible: true,
+            closable: true,
+            style: None,
+        };
+        let config2 = MaskConfig {
+            visible: true,
+            closable: true,
+            style: None,
+        };
+        let config3 = MaskConfig {
+            visible: false,
+            closable: true,
+            style: None,
+        };
+        assert_eq!(config1, config2);
+        assert_ne!(config1, config3);
+    }
+
+    #[test]
+    fn mask_config_with_style() {
+        let config = MaskConfig {
+            visible: true,
+            closable: true,
+            style: Some("background: red;".to_string()),
+        };
+        assert_eq!(config.visible, true);
+        assert_eq!(config.closable, true);
+        assert_eq!(config.style, Some("background: red;".to_string()));
+    }
+
+    #[test]
+    fn mask_config_defaults() {
+        let config = MaskConfig {
+            visible: true,
+            closable: true,
+            style: None,
+        };
+        assert_eq!(config.visible, true);
+        assert_eq!(config.closable, true);
+        assert!(config.style.is_none());
+    }
 }

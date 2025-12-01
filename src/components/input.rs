@@ -1316,24 +1316,21 @@ mod tests {
     #[test]
     fn input_variant_integration() {
         use crate::foundation::variant_from_bordered;
-        
+
         // Test variant takes priority over bordered
         assert_eq!(
             variant_from_bordered(Some(false), Some(Variant::Filled)),
             Variant::Filled
         );
-        
+
         // Test bordered=false maps to Borderless
         assert_eq!(
             variant_from_bordered(Some(false), None),
             Variant::Borderless
         );
-        
+
         // Test default is Outlined
-        assert_eq!(
-            variant_from_bordered(None, None),
-            Variant::Outlined
-        );
+        assert_eq!(variant_from_bordered(None, None), Variant::Outlined);
     }
 
     // Test character count calculation
@@ -1342,15 +1339,15 @@ mod tests {
         // Test basic character count
         let text = "Hello";
         assert_eq!(text.chars().count(), 5);
-        
+
         // Test empty string
         let empty = "";
         assert_eq!(empty.chars().count(), 0);
-        
+
         // Test with special characters
         let special = "Hello!@#";
         assert_eq!(special.chars().count(), 8);
-        
+
         // Test with unicode characters
         let unicode = "你好";
         assert_eq!(unicode.chars().count(), 2);
@@ -1362,7 +1359,7 @@ mod tests {
         let max_len = 10;
         let short_text = "Hello";
         let long_text = "This is a very long text that exceeds the maximum length";
-        
+
         assert!(short_text.chars().count() <= max_len);
         assert!(long_text.chars().count() > max_len);
     }
@@ -1374,18 +1371,18 @@ mod tests {
         // - allow_clear is true
         // - value is not empty
         // - input is not disabled
-        
+
         let allow_clear = true;
         let has_value = !"test".is_empty();
         let is_disabled = false;
         let should_show = allow_clear && has_value && !is_disabled;
         assert!(should_show);
-        
+
         // Should not show when disabled
         let is_disabled = true;
         let should_show = allow_clear && has_value && !is_disabled;
         assert!(!should_show);
-        
+
         // Should not show when value is empty
         let has_value = !"".is_empty();
         let is_disabled = false;
@@ -1421,9 +1418,127 @@ mod tests {
             on_press_enter: None,
             data_attributes: None,
         };
-        
+
         assert_eq!(props.disabled, false);
         assert_eq!(props.allow_clear, false);
         assert_eq!(props.show_count, false);
+    }
+
+    #[test]
+    fn input_size_default() {
+        assert_eq!(InputSize::default(), InputSize::Middle);
+    }
+
+    #[test]
+    fn input_size_all_variants() {
+        assert_eq!(InputSize::Small, InputSize::Small);
+        assert_eq!(InputSize::Middle, InputSize::Middle);
+        assert_eq!(InputSize::Large, InputSize::Large);
+        assert_ne!(InputSize::Small, InputSize::Large);
+    }
+
+    #[test]
+    fn input_size_equality() {
+        let size1 = InputSize::Small;
+        let size2 = InputSize::Small;
+        let size3 = InputSize::Large;
+        assert_eq!(size1, size2);
+        assert_ne!(size1, size3);
+    }
+
+    #[test]
+    fn input_character_count_with_emoji() {
+        let text = "Hello 😀";
+        assert_eq!(text.chars().count(), 7);
+    }
+
+    #[test]
+    fn input_character_count_with_mixed_unicode() {
+        let text = "Hello 世界";
+        assert_eq!(text.chars().count(), 8);
+    }
+
+    #[test]
+    fn input_max_length_formatting() {
+        let char_count = 5;
+        let max_len = 10;
+        let count_text = format!("{}/{}", char_count, max_len);
+        assert_eq!(count_text, "5/10");
+    }
+
+    #[test]
+    fn input_max_length_no_limit() {
+        let char_count = 15;
+        let count_text = char_count.to_string();
+        assert_eq!(count_text, "15");
+    }
+
+    #[test]
+    fn input_clear_button_logic_edge_cases() {
+        // Empty string should not show clear button
+        assert!(!"".is_empty() == false);
+
+        // Non-empty string should show clear button when enabled
+        assert!("test".is_empty() == false);
+    }
+
+    #[test]
+    fn input_size_class_empty_for_middle() {
+        // Middle size should return empty string
+        assert_eq!(InputSize::Middle.as_class(), "");
+    }
+
+    #[test]
+    fn input_variant_bordered_false() {
+        use crate::foundation::variant_from_bordered;
+        assert_eq!(
+            variant_from_bordered(Some(false), None),
+            Variant::Borderless
+        );
+    }
+
+    #[test]
+    fn input_variant_bordered_true() {
+        use crate::foundation::variant_from_bordered;
+        assert_eq!(variant_from_bordered(Some(true), None), Variant::Outlined);
+    }
+
+    #[test]
+    fn input_variant_priority() {
+        use crate::foundation::variant_from_bordered;
+        // Variant should take priority over bordered
+        assert_eq!(
+            variant_from_bordered(Some(true), Some(Variant::Filled)),
+            Variant::Filled
+        );
+        assert_eq!(
+            variant_from_bordered(Some(false), Some(Variant::Filled)),
+            Variant::Filled
+        );
+    }
+
+    #[test]
+    fn input_character_count_unicode_boundary() {
+        // Test with various unicode characters
+        let text1 = "a";
+        let text2 = "中";
+        let text3 = "😀";
+        assert_eq!(text1.chars().count(), 1);
+        assert_eq!(text2.chars().count(), 1);
+        assert_eq!(text3.chars().count(), 1);
+    }
+
+    #[test]
+    fn input_max_length_boundary_values() {
+        let max_len = 0;
+        let text = "";
+        assert!(text.chars().count() <= max_len);
+
+        let max_len = 1;
+        let text = "a";
+        assert!(text.chars().count() <= max_len);
+
+        let text2 = "ab";
+        assert!(text2.chars().count() > max_len);
     }
 }

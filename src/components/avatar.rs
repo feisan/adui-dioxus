@@ -238,6 +238,91 @@ mod tests {
     fn avatar_size_debug() {
         let size = AvatarSize::Small;
         let debug_str = format!("{:?}", size);
-        assert!(debug_str.contains("Small") || debug_str.contains("Default") || debug_str.contains("Large"));
+        assert!(
+            debug_str.contains("Small")
+                || debug_str.contains("Default")
+                || debug_str.contains("Large")
+        );
+    }
+
+    #[test]
+    fn avatar_shape_class_prefix() {
+        // All avatar shape classes should start with "adui-avatar-"
+        assert!(AvatarShape::Circle.as_class().starts_with("adui-avatar-"));
+        assert!(AvatarShape::Square.as_class().starts_with("adui-avatar-"));
+    }
+
+    #[test]
+    fn avatar_size_class_prefix() {
+        // All avatar size classes should start with "adui-avatar-"
+        assert!(AvatarSize::Small.as_class().starts_with("adui-avatar-"));
+        assert!(AvatarSize::Default.as_class().starts_with("adui-avatar-"));
+        assert!(AvatarSize::Large.as_class().starts_with("adui-avatar-"));
+    }
+
+    #[test]
+    fn avatar_shape_unique_classes() {
+        // All avatar shape classes should be unique
+        assert_ne!(
+            AvatarShape::Circle.as_class(),
+            AvatarShape::Square.as_class()
+        );
+    }
+
+    #[test]
+    fn avatar_size_unique_classes() {
+        // All avatar size classes should be unique
+        let small = AvatarSize::Small.as_class();
+        let default = AvatarSize::Default.as_class();
+        let large = AvatarSize::Large.as_class();
+        assert_ne!(small, default);
+        assert_ne!(default, large);
+        assert_ne!(small, large);
+    }
+
+    #[test]
+    fn avatar_shape_copy_semantics() {
+        // AvatarShape should be Copy
+        let shape = AvatarShape::Circle;
+        let class1 = shape.as_class();
+        let class2 = shape.as_class();
+        assert_eq!(class1, class2);
+    }
+
+    #[test]
+    fn avatar_size_copy_semantics() {
+        // AvatarSize should be Copy
+        let size = AvatarSize::Large;
+        let class1 = size.as_class();
+        let class2 = size.as_class();
+        assert_eq!(class1, class2);
+    }
+
+    #[test]
+    fn avatar_shape_all_variants_equality() {
+        let shapes = [AvatarShape::Circle, AvatarShape::Square];
+        for (i, shape1) in shapes.iter().enumerate() {
+            for (j, shape2) in shapes.iter().enumerate() {
+                if i == j {
+                    assert_eq!(shape1, shape2);
+                } else {
+                    assert_ne!(shape1, shape2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn avatar_size_all_variants_equality() {
+        let sizes = [AvatarSize::Small, AvatarSize::Default, AvatarSize::Large];
+        for (i, size1) in sizes.iter().enumerate() {
+            for (j, size2) in sizes.iter().enumerate() {
+                if i == j {
+                    assert_eq!(size1, size2);
+                } else {
+                    assert_ne!(size1, size2);
+                }
+            }
+        }
     }
 }

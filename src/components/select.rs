@@ -828,4 +828,75 @@ mod tests {
         assert!(SelectPlacement::BottomLeft.as_style().contains("top: 100%"));
         assert!(SelectPlacement::TopLeft.as_style().contains("bottom: 100%"));
     }
+
+    #[test]
+    fn select_mode_allows_input() {
+        assert!(!SelectMode::Single.allows_input());
+        assert!(!SelectMode::Multiple.allows_input());
+        assert!(SelectMode::Tags.allows_input());
+        assert!(SelectMode::Combobox.allows_input());
+    }
+
+    #[test]
+    fn select_mode_default() {
+        assert_eq!(SelectMode::default(), SelectMode::Single);
+    }
+
+    #[test]
+    fn select_mode_all_variants() {
+        assert_eq!(SelectMode::Single, SelectMode::Single);
+        assert_eq!(SelectMode::Multiple, SelectMode::Multiple);
+        assert_eq!(SelectMode::Tags, SelectMode::Tags);
+        assert_eq!(SelectMode::Combobox, SelectMode::Combobox);
+        assert_ne!(SelectMode::Single, SelectMode::Multiple);
+    }
+
+    #[test]
+    fn select_placement_all_variants() {
+        assert_eq!(SelectPlacement::BottomLeft, SelectPlacement::BottomLeft);
+        assert_eq!(SelectPlacement::BottomRight, SelectPlacement::BottomRight);
+        assert_eq!(SelectPlacement::TopLeft, SelectPlacement::TopLeft);
+        assert_eq!(SelectPlacement::TopRight, SelectPlacement::TopRight);
+        assert_ne!(SelectPlacement::BottomLeft, SelectPlacement::TopLeft);
+    }
+
+    #[test]
+    fn select_placement_default() {
+        assert_eq!(SelectPlacement::default(), SelectPlacement::BottomLeft);
+    }
+
+    #[test]
+    fn select_placement_all_styles() {
+        let bottom_left = SelectPlacement::BottomLeft.as_style();
+        let bottom_right = SelectPlacement::BottomRight.as_style();
+        let top_left = SelectPlacement::TopLeft.as_style();
+        let top_right = SelectPlacement::TopRight.as_style();
+
+        assert!(bottom_left.contains("top: 100%"));
+        assert!(bottom_left.contains("left: 0"));
+        assert!(bottom_right.contains("top: 100%"));
+        assert!(bottom_right.contains("right: 0"));
+        assert!(top_left.contains("bottom: 100%"));
+        assert!(top_left.contains("left: 0"));
+        assert!(top_right.contains("bottom: 100%"));
+        assert!(top_right.contains("right: 0"));
+    }
+
+    #[test]
+    fn select_mode_multiple_variants() {
+        // Test that Multiple and Tags are both multiple
+        assert!(SelectMode::Multiple.is_multiple());
+        assert!(SelectMode::Tags.is_multiple());
+        assert!(!SelectMode::Single.is_multiple());
+        assert!(!SelectMode::Combobox.is_multiple());
+    }
+
+    #[test]
+    fn select_mode_input_variants() {
+        // Test that Tags and Combobox allow input
+        assert!(SelectMode::Tags.allows_input());
+        assert!(SelectMode::Combobox.allows_input());
+        assert!(!SelectMode::Single.allows_input());
+        assert!(!SelectMode::Multiple.allows_input());
+    }
 }

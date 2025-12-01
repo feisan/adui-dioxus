@@ -329,4 +329,48 @@ mod tests {
         // - Always updates form control if present
         // - Calls on_change callback if present
     }
+
+    #[test]
+    fn switch_size_all_variants_equality() {
+        let sizes = [SwitchSize::Default, SwitchSize::Small];
+        for (i, size1) in sizes.iter().enumerate() {
+            for (j, size2) in sizes.iter().enumerate() {
+                if i == j {
+                    assert_eq!(size1, size2);
+                } else {
+                    assert_ne!(size1, size2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn switch_size_copy_semantics() {
+        // SwitchSize should be Copy
+        let size = SwitchSize::Small;
+        let size2 = size;
+        assert_eq!(size, size2);
+    }
+
+    #[test]
+    fn key_triggers_toggle_unicode_space() {
+        // Only regular space should trigger, not other unicode spaces
+        assert!(key_triggers_toggle(&Key::Character(" ".into())));
+        // Non-breaking space should not trigger
+        assert!(!key_triggers_toggle(&Key::Character("\u{00A0}".into())));
+    }
+
+    #[test]
+    fn key_triggers_toggle_empty_string() {
+        // Empty string should not trigger
+        assert!(!key_triggers_toggle(&Key::Character("".into())));
+    }
+
+    #[test]
+    fn key_triggers_toggle_multiple_spaces() {
+        // Only single space should trigger
+        assert!(key_triggers_toggle(&Key::Character(" ".into())));
+        // Multiple spaces should not trigger (treated as different string)
+        assert!(!key_triggers_toggle(&Key::Character("  ".into())));
+    }
 }

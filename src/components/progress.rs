@@ -301,4 +301,119 @@ mod tests {
         // show_info defaults to true
         // type defaults to ProgressType::Line
     }
+
+    #[test]
+    fn clamp_percent_edge_cases() {
+        // Test with very small negative values
+        assert_eq!(clamp_percent(-0.1), 0.0);
+        assert_eq!(clamp_percent(-100.0), 0.0);
+
+        // Test with very large positive values
+        assert_eq!(clamp_percent(100.1), 100.0);
+        assert_eq!(clamp_percent(1000.0), 100.0);
+    }
+
+    #[test]
+    fn clamp_percent_precision() {
+        // Test with floating point precision
+        assert_eq!(clamp_percent(0.0001), 0.0001);
+        assert_eq!(clamp_percent(99.9999), 99.9999);
+    }
+
+    #[test]
+    fn resolve_status_explicit_overrides_auto() {
+        // Explicit status should always override auto status
+        assert_eq!(
+            resolve_status(100.0, Some(ProgressStatus::Exception)),
+            ProgressStatus::Exception
+        );
+        assert_eq!(
+            resolve_status(0.0, Some(ProgressStatus::Success)),
+            ProgressStatus::Success
+        );
+    }
+
+    #[test]
+    fn progress_status_all_variants_equality() {
+        let statuses = [
+            ProgressStatus::Normal,
+            ProgressStatus::Success,
+            ProgressStatus::Exception,
+            ProgressStatus::Active,
+        ];
+        for (i, status1) in statuses.iter().enumerate() {
+            for (j, status2) in statuses.iter().enumerate() {
+                if i == j {
+                    assert_eq!(status1, status2);
+                } else {
+                    assert_ne!(status1, status2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn progress_status_class_prefix() {
+        // All progress status classes should start with "adui-progress-status-"
+        assert!(
+            ProgressStatus::Normal
+                .as_class()
+                .starts_with("adui-progress-status-")
+        );
+        assert!(
+            ProgressStatus::Success
+                .as_class()
+                .starts_with("adui-progress-status-")
+        );
+        assert!(
+            ProgressStatus::Exception
+                .as_class()
+                .starts_with("adui-progress-status-")
+        );
+        assert!(
+            ProgressStatus::Active
+                .as_class()
+                .starts_with("adui-progress-status-")
+        );
+    }
+
+    #[test]
+    fn progress_status_unique_classes() {
+        // All progress status classes should be unique
+        let classes: Vec<&str> = vec![
+            ProgressStatus::Normal.as_class(),
+            ProgressStatus::Success.as_class(),
+            ProgressStatus::Exception.as_class(),
+            ProgressStatus::Active.as_class(),
+        ];
+        for (i, class1) in classes.iter().enumerate() {
+            for (j, class2) in classes.iter().enumerate() {
+                if i != j {
+                    assert_ne!(class1, class2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn progress_type_all_variants() {
+        assert_eq!(ProgressType::Line, ProgressType::Line);
+        assert_eq!(ProgressType::Circle, ProgressType::Circle);
+        assert_ne!(ProgressType::Line, ProgressType::Circle);
+    }
+
+    #[test]
+    fn progress_type_copy_semantics() {
+        // ProgressType should be Copy
+        let progress_type = ProgressType::Circle;
+        let progress_type2 = progress_type;
+        assert_eq!(progress_type, progress_type2);
+    }
+
+    #[test]
+    fn clamp_percent_zero_and_hundred() {
+        // Boundary values should remain unchanged
+        assert_eq!(clamp_percent(0.0), 0.0);
+        assert_eq!(clamp_percent(100.0), 100.0);
+    }
 }

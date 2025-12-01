@@ -232,6 +232,101 @@ mod tests {
         let next2 = toggle_membership(&next, "a");
         assert!(next2.is_empty());
     }
+
+    #[test]
+    fn toggle_membership_multiple_values() {
+        let current = vec!["a".to_string(), "b".to_string()];
+        let next = toggle_membership(&current, "c");
+        assert_eq!(
+            next,
+            vec!["a".to_string(), "b".to_string(), "c".to_string()]
+        );
+    }
+
+    #[test]
+    fn toggle_membership_remove_middle_value() {
+        let current = vec!["a".to_string(), "b".to_string(), "c".to_string()];
+        let next = toggle_membership(&current, "b");
+        assert_eq!(next, vec!["a".to_string(), "c".to_string()]);
+    }
+
+    #[test]
+    fn toggle_membership_remove_first_value() {
+        let current = vec!["a".to_string(), "b".to_string()];
+        let next = toggle_membership(&current, "a");
+        assert_eq!(next, vec!["b".to_string()]);
+    }
+
+    #[test]
+    fn toggle_membership_remove_last_value() {
+        let current = vec!["a".to_string(), "b".to_string()];
+        let next = toggle_membership(&current, "b");
+        assert_eq!(next, vec!["a".to_string()]);
+    }
+
+    #[test]
+    fn toggle_membership_empty_after_removal() {
+        let current = vec!["a".to_string()];
+        let next = toggle_membership(&current, "a");
+        assert!(next.is_empty());
+    }
+
+    #[test]
+    fn toggle_membership_preserves_order() {
+        let current = vec!["a".to_string(), "b".to_string(), "c".to_string()];
+        let next = toggle_membership(&current, "d");
+        assert_eq!(
+            next,
+            vec![
+                "a".to_string(),
+                "b".to_string(),
+                "c".to_string(),
+                "d".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn toggle_membership_case_sensitive() {
+        let current = vec!["a".to_string()];
+        let next = toggle_membership(&current, "A");
+        assert_eq!(next, vec!["a".to_string(), "A".to_string()]);
+    }
+
+    #[test]
+    fn toggle_membership_unicode_values() {
+        let current = vec!["中文".to_string()];
+        let next = toggle_membership(&current, "中文");
+        assert!(next.is_empty());
+
+        let next2 = toggle_membership(&next, "中文");
+        assert_eq!(next2, vec!["中文".to_string()]);
+    }
+
+    #[test]
+    fn toggle_membership_special_characters() {
+        let current = vec!["a-b".to_string()];
+        let next = toggle_membership(&current, "a-b");
+        assert!(next.is_empty());
+    }
+
+    #[test]
+    fn toggle_membership_empty_string() {
+        let current = vec!["".to_string()];
+        let next = toggle_membership(&current, "");
+        assert!(next.is_empty());
+    }
+
+    #[test]
+    fn toggle_membership_large_list() {
+        let mut current = Vec::new();
+        for i in 0..100 {
+            current.push(i.to_string());
+        }
+        let next = toggle_membership(&current, "50");
+        assert_eq!(next.len(), 99);
+        assert!(!next.contains(&"50".to_string()));
+    }
 }
 
 /// Checkbox group props.

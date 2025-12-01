@@ -205,4 +205,57 @@ mod tests {
         let debug_str = format!("{:?}", alert_type);
         assert!(debug_str.contains("Error"));
     }
+
+    #[test]
+    fn alert_type_all_icon_kinds() {
+        // Verify all icon kinds are valid
+        let success_icon = AlertType::Success.icon_kind();
+        let info_icon = AlertType::Info.icon_kind();
+        let warning_icon = AlertType::Warning.icon_kind();
+        let error_icon = AlertType::Error.icon_kind();
+
+        assert_eq!(success_icon, IconKind::Check);
+        assert_eq!(info_icon, IconKind::Info);
+        assert_eq!(warning_icon, IconKind::Info);
+        assert_eq!(error_icon, IconKind::Close);
+    }
+
+    #[test]
+    fn alert_type_class_prefix() {
+        // All alert type classes should start with "adui-alert-"
+        assert!(AlertType::Success.as_class().starts_with("adui-alert-"));
+        assert!(AlertType::Info.as_class().starts_with("adui-alert-"));
+        assert!(AlertType::Warning.as_class().starts_with("adui-alert-"));
+        assert!(AlertType::Error.as_class().starts_with("adui-alert-"));
+    }
+
+    #[test]
+    fn alert_type_unique_classes() {
+        // All alert type classes should be unique
+        let classes: Vec<&str> = vec![
+            AlertType::Success.as_class(),
+            AlertType::Info.as_class(),
+            AlertType::Warning.as_class(),
+            AlertType::Error.as_class(),
+        ];
+        for (i, class1) in classes.iter().enumerate() {
+            for (j, class2) in classes.iter().enumerate() {
+                if i != j {
+                    assert_ne!(class1, class2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn alert_type_copy_semantics() {
+        // AlertType should be Copy, so we can use it multiple times
+        let alert_type = AlertType::Warning;
+        let class1 = alert_type.as_class();
+        let class2 = alert_type.as_class();
+        let icon1 = alert_type.icon_kind();
+        let icon2 = alert_type.icon_kind();
+        assert_eq!(class1, class2);
+        assert_eq!(icon1, icon2);
+    }
 }
