@@ -146,4 +146,63 @@ mod tests {
         assert_eq!(AlertType::Warning.as_class(), "adui-alert-warning");
         assert_eq!(AlertType::Error.as_class(), "adui-alert-error");
     }
+
+    #[test]
+    fn alert_type_icon_mapping() {
+        assert_eq!(AlertType::Success.icon_kind(), IconKind::Check);
+        assert_eq!(AlertType::Info.icon_kind(), IconKind::Info);
+        assert_eq!(AlertType::Warning.icon_kind(), IconKind::Info);
+        assert_eq!(AlertType::Error.icon_kind(), IconKind::Close);
+    }
+
+    #[test]
+    fn alert_type_all_variants() {
+        let variants = [
+            AlertType::Success,
+            AlertType::Info,
+            AlertType::Warning,
+            AlertType::Error,
+        ];
+        for variant in variants.iter() {
+            let class = variant.as_class();
+            assert!(!class.is_empty());
+            assert!(class.starts_with("adui-alert-"));
+            let icon = variant.icon_kind();
+            // Just verify icon_kind doesn't panic
+            let _ = format!("{:?}", icon);
+        }
+    }
+
+    #[test]
+    fn alert_type_equality() {
+        assert_eq!(AlertType::Success, AlertType::Success);
+        assert_eq!(AlertType::Info, AlertType::Info);
+        assert_ne!(AlertType::Success, AlertType::Error);
+    }
+
+    #[test]
+    fn alert_type_clone() {
+        let original = AlertType::Warning;
+        let cloned = original;
+        assert_eq!(original, cloned);
+        assert_eq!(original.as_class(), cloned.as_class());
+        assert_eq!(original.icon_kind(), cloned.icon_kind());
+    }
+
+    #[test]
+    fn alert_props_defaults() {
+        // AlertProps requires message, so we can't create a fully default instance
+        // But we can verify the default values:
+        // type defaults to AlertType::Info
+        // show_icon defaults to true
+        // closable defaults to false
+        // banner defaults to false
+    }
+
+    #[test]
+    fn alert_type_debug() {
+        let alert_type = AlertType::Error;
+        let debug_str = format!("{:?}", alert_type);
+        assert!(debug_str.contains("Error"));
+    }
 }

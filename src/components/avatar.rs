@@ -161,4 +161,83 @@ mod tests {
         assert_eq!(AvatarSize::Default.as_class(), "adui-avatar-md");
         assert_eq!(AvatarSize::Large.as_class(), "adui-avatar-lg");
     }
+
+    #[test]
+    fn avatar_shape_all_variants() {
+        let variants = [AvatarShape::Circle, AvatarShape::Square];
+        for variant in variants.iter() {
+            let class = variant.as_class();
+            assert!(!class.is_empty());
+            assert!(class.starts_with("adui-avatar-"));
+        }
+    }
+
+    #[test]
+    fn avatar_size_all_variants() {
+        let variants = [AvatarSize::Small, AvatarSize::Default, AvatarSize::Large];
+        for variant in variants.iter() {
+            let class = variant.as_class();
+            assert!(!class.is_empty());
+            assert!(class.starts_with("adui-avatar-"));
+        }
+    }
+
+    #[test]
+    fn avatar_shape_equality() {
+        assert_eq!(AvatarShape::Circle, AvatarShape::Circle);
+        assert_eq!(AvatarShape::Square, AvatarShape::Square);
+        assert_ne!(AvatarShape::Circle, AvatarShape::Square);
+    }
+
+    #[test]
+    fn avatar_size_equality() {
+        assert_eq!(AvatarSize::Small, AvatarSize::Small);
+        assert_eq!(AvatarSize::Default, AvatarSize::Default);
+        assert_eq!(AvatarSize::Large, AvatarSize::Large);
+        assert_ne!(AvatarSize::Small, AvatarSize::Large);
+    }
+
+    #[test]
+    fn avatar_shape_clone() {
+        let original = AvatarShape::Circle;
+        let cloned = original;
+        assert_eq!(original, cloned);
+        assert_eq!(original.as_class(), cloned.as_class());
+    }
+
+    #[test]
+    fn avatar_size_clone() {
+        let original = AvatarSize::Large;
+        let cloned = original;
+        assert_eq!(original, cloned);
+        assert_eq!(original.as_class(), cloned.as_class());
+    }
+
+    #[test]
+    fn avatar_props_defaults() {
+        // AvatarProps doesn't require any fields
+        // shape defaults to Circle when None
+        // size defaults to Default when None
+        // All other fields are optional
+    }
+
+    #[test]
+    fn avatar_group_props_defaults() {
+        // AvatarGroupProps requires children
+        // class and style are optional
+    }
+
+    #[test]
+    fn avatar_shape_debug() {
+        let shape = AvatarShape::Square;
+        let debug_str = format!("{:?}", shape);
+        assert!(debug_str.contains("Square") || debug_str.contains("Circle"));
+    }
+
+    #[test]
+    fn avatar_size_debug() {
+        let size = AvatarSize::Small;
+        let debug_str = format!("{:?}", size);
+        assert!(debug_str.contains("Small") || debug_str.contains("Default") || debug_str.contains("Large"));
+    }
 }

@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 /// Built-in image presets for the Empty component.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EmptyImage {
     /// Default illustration.
     Default,
@@ -157,5 +157,105 @@ mod tests {
             EmptyImage::Custom(s) => assert_eq!(s, url),
             _ => panic!("Expected Custom variant"),
         }
+    }
+
+    #[test]
+    fn empty_image_all_variants() {
+        let default = EmptyImage::Default;
+        let simple = EmptyImage::Simple;
+        let small = EmptyImage::Small;
+        let custom = EmptyImage::Custom("test".to_string());
+
+        assert_ne!(default, simple);
+        assert_ne!(default, small);
+        assert_ne!(default, custom);
+        assert_ne!(simple, small);
+        assert_ne!(simple, custom);
+        assert_ne!(small, custom);
+    }
+
+    #[test]
+    fn empty_image_debug() {
+        let default = EmptyImage::Default;
+        let debug_str = format!("{:?}", default);
+        // Just verify it doesn't panic
+        assert!(!debug_str.is_empty());
+    }
+
+    #[test]
+    fn empty_props_with_all_fields() {
+        let props = EmptyProps {
+            description: Some("Custom description".to_string()),
+            image: Some(EmptyImage::Simple),
+            class: Some("custom-class".to_string()),
+            style: Some("color: red;".to_string()),
+            footer: None,
+        };
+        assert_eq!(props.description, Some("Custom description".to_string()));
+        assert_eq!(props.image, Some(EmptyImage::Simple));
+        assert_eq!(props.class, Some("custom-class".to_string()));
+    }
+
+    #[test]
+    fn empty_props_minimal() {
+        let props = EmptyProps {
+            description: None,
+            image: None,
+            class: None,
+            style: None,
+            footer: None,
+        };
+        assert!(props.description.is_none());
+        assert!(props.image.is_none());
+        assert!(props.class.is_none());
+        assert!(props.style.is_none());
+        assert!(props.footer.is_none());
+    }
+
+    #[test]
+    fn empty_image_custom_empty_string() {
+        let custom = EmptyImage::Custom(String::new());
+        match custom {
+            EmptyImage::Custom(s) => assert_eq!(s, ""),
+            _ => panic!("Expected Custom variant"),
+        }
+    }
+
+    #[test]
+    fn empty_image_custom_long_string() {
+        let long_url = "https://example.com/very/long/path/to/image.png?query=param&other=value";
+        let custom = EmptyImage::Custom(long_url.to_string());
+        match custom {
+            EmptyImage::Custom(s) => assert_eq!(s, long_url),
+            _ => panic!("Expected Custom variant"),
+        }
+    }
+
+    #[test]
+    fn empty_props_clone() {
+        let props = EmptyProps {
+            description: Some("Test".to_string()),
+            image: Some(EmptyImage::Default),
+            class: None,
+            style: None,
+            footer: None,
+        };
+        let cloned = props.clone();
+        assert_eq!(props.description, cloned.description);
+        assert_eq!(props.image, cloned.image);
+    }
+
+    #[test]
+    fn empty_image_custom_equality_with_same_string() {
+        let custom1 = EmptyImage::Custom("test".to_string());
+        let custom2 = EmptyImage::Custom("test".to_string());
+        assert_eq!(custom1, custom2);
+    }
+
+    #[test]
+    fn empty_image_custom_equality_with_different_string() {
+        let custom1 = EmptyImage::Custom("test1".to_string());
+        let custom2 = EmptyImage::Custom("test2".to_string());
+        assert_ne!(custom1, custom2);
     }
 }

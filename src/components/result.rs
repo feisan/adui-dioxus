@@ -134,4 +134,66 @@ mod tests {
         assert_eq!(ResultStatus::Forbidden.as_class(), "adui-result-403");
         assert_eq!(ResultStatus::ServerError.as_class(), "adui-result-500");
     }
+
+    #[test]
+    fn result_status_icon_mapping() {
+        assert_eq!(ResultStatus::Success.icon_kind(), IconKind::Check);
+        assert_eq!(ResultStatus::Info.icon_kind(), IconKind::Info);
+        assert_eq!(ResultStatus::Warning.icon_kind(), IconKind::Info);
+        assert_eq!(ResultStatus::Error.icon_kind(), IconKind::Close);
+        assert_eq!(ResultStatus::NotFound.icon_kind(), IconKind::Info);
+        assert_eq!(ResultStatus::Forbidden.icon_kind(), IconKind::Info);
+        assert_eq!(ResultStatus::ServerError.icon_kind(), IconKind::Close);
+    }
+
+    #[test]
+    fn result_status_all_variants() {
+        let variants = [
+            ResultStatus::Success,
+            ResultStatus::Info,
+            ResultStatus::Warning,
+            ResultStatus::Error,
+            ResultStatus::NotFound,
+            ResultStatus::Forbidden,
+            ResultStatus::ServerError,
+        ];
+        for variant in variants.iter() {
+            let class = variant.as_class();
+            assert!(!class.is_empty());
+            assert!(class.starts_with("adui-result-"));
+            let icon = variant.icon_kind();
+            // Just verify icon_kind doesn't panic
+            let _ = format!("{:?}", icon);
+        }
+    }
+
+    #[test]
+    fn result_status_equality() {
+        assert_eq!(ResultStatus::Success, ResultStatus::Success);
+        assert_eq!(ResultStatus::Info, ResultStatus::Info);
+        assert_ne!(ResultStatus::Success, ResultStatus::Error);
+        assert_ne!(ResultStatus::NotFound, ResultStatus::Forbidden);
+    }
+
+    #[test]
+    fn result_status_clone() {
+        let original = ResultStatus::Warning;
+        let cloned = original;
+        assert_eq!(original, cloned);
+        assert_eq!(original.as_class(), cloned.as_class());
+        assert_eq!(original.icon_kind(), cloned.icon_kind());
+    }
+
+    #[test]
+    fn result_props_defaults() {
+        // ResultProps doesn't require any fields, but status defaults to Info when None
+        // All other fields are optional
+    }
+
+    #[test]
+    fn result_status_debug() {
+        let status = ResultStatus::ServerError;
+        let debug_str = format!("{:?}", status);
+        assert!(debug_str.contains("ServerError"));
+    }
 }

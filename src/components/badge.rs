@@ -284,4 +284,190 @@ mod tests {
         assert!(!is_dot);
         assert_eq!(text, "99+");
     }
+
+    #[test]
+    fn compute_badge_indicator_no_count() {
+        let (show, is_dot, text) = compute_badge_indicator(None, 99, false, false);
+        assert!(!show);
+        assert!(!is_dot);
+        assert!(text.is_empty());
+    }
+
+    #[test]
+    fn compute_badge_indicator_exact_overflow() {
+        let (show, is_dot, text) = compute_badge_indicator(Some(99), 99, false, true);
+        assert!(show);
+        assert!(!is_dot);
+        assert_eq!(text, "99");
+    }
+
+    #[test]
+    fn compute_badge_indicator_one_over_overflow() {
+        let (show, is_dot, text) = compute_badge_indicator(Some(100), 99, false, true);
+        assert!(show);
+        assert!(!is_dot);
+        assert_eq!(text, "99+");
+    }
+
+    #[test]
+    fn compute_badge_indicator_normal_count() {
+        let (show, is_dot, text) = compute_badge_indicator(Some(5), 99, false, true);
+        assert!(show);
+        assert!(!is_dot);
+        assert_eq!(text, "5");
+    }
+
+    #[test]
+    fn badge_status_class_mapping() {
+        assert_eq!(
+            BadgeStatus::Default.as_class(),
+            "adui-badge-status-default"
+        );
+        assert_eq!(
+            BadgeStatus::Success.as_class(),
+            "adui-badge-status-success"
+        );
+        assert_eq!(
+            BadgeStatus::Warning.as_class(),
+            "adui-badge-status-warning"
+        );
+        assert_eq!(BadgeStatus::Error.as_class(), "adui-badge-status-error");
+    }
+
+    #[test]
+    fn badge_status_all_variants() {
+        let variants = [
+            BadgeStatus::Default,
+            BadgeStatus::Success,
+            BadgeStatus::Warning,
+            BadgeStatus::Error,
+        ];
+        for variant in variants.iter() {
+            let class = variant.as_class();
+            assert!(!class.is_empty());
+            assert!(class.starts_with("adui-badge-status-"));
+        }
+    }
+
+    #[test]
+    fn badge_status_equality() {
+        assert_eq!(BadgeStatus::Default, BadgeStatus::Default);
+        assert_eq!(BadgeStatus::Success, BadgeStatus::Success);
+        assert_ne!(BadgeStatus::Default, BadgeStatus::Error);
+    }
+
+    #[test]
+    fn badge_status_clone() {
+        let original = BadgeStatus::Warning;
+        let cloned = original;
+        assert_eq!(original, cloned);
+        assert_eq!(original.as_class(), cloned.as_class());
+    }
+
+    #[test]
+    fn badge_color_preset() {
+        let color = BadgeColor::Preset("primary".to_string());
+        match color {
+            BadgeColor::Preset(s) => assert_eq!(s, "primary"),
+            _ => panic!("Expected Preset variant"),
+        }
+    }
+
+    #[test]
+    fn badge_color_custom() {
+        let color = BadgeColor::Custom("#ff0000".to_string());
+        match color {
+            BadgeColor::Custom(s) => assert_eq!(s, "#ff0000"),
+            _ => panic!("Expected Custom variant"),
+        }
+    }
+
+    #[test]
+    fn badge_color_equality() {
+        let preset1 = BadgeColor::Preset("primary".to_string());
+        let preset2 = BadgeColor::Preset("primary".to_string());
+        let preset3 = BadgeColor::Preset("success".to_string());
+        assert_eq!(preset1, preset2);
+        assert_ne!(preset1, preset3);
+
+        let custom1 = BadgeColor::Custom("#ff0000".to_string());
+        let custom2 = BadgeColor::Custom("#ff0000".to_string());
+        let custom3 = BadgeColor::Custom("#00ff00".to_string());
+        assert_eq!(custom1, custom2);
+        assert_ne!(custom1, custom3);
+
+        assert_ne!(preset1, custom1);
+    }
+
+    #[test]
+    fn badge_color_clone() {
+        let original = BadgeColor::Preset("primary".to_string());
+        let cloned = original.clone();
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn badge_size_default_value() {
+        assert_eq!(BadgeSize::Default, BadgeSize::default());
+    }
+
+    #[test]
+    fn badge_size_all_variants() {
+        assert_eq!(BadgeSize::Default, BadgeSize::Default);
+        assert_eq!(BadgeSize::Small, BadgeSize::Small);
+        assert_ne!(BadgeSize::Default, BadgeSize::Small);
+    }
+
+    #[test]
+    fn badge_size_equality() {
+        let size1 = BadgeSize::Default;
+        let size2 = BadgeSize::Default;
+        let size3 = BadgeSize::Small;
+        assert_eq!(size1, size2);
+        assert_ne!(size1, size3);
+    }
+
+    #[test]
+    fn badge_size_clone() {
+        let original = BadgeSize::Small;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn ribbon_placement_default() {
+        assert_eq!(RibbonPlacement::End, RibbonPlacement::default());
+    }
+
+    #[test]
+    fn ribbon_placement_all_variants() {
+        assert_eq!(RibbonPlacement::End, RibbonPlacement::End);
+        assert_eq!(RibbonPlacement::Start, RibbonPlacement::Start);
+        assert_ne!(RibbonPlacement::End, RibbonPlacement::Start);
+    }
+
+    #[test]
+    fn ribbon_placement_equality() {
+        let placement1 = RibbonPlacement::End;
+        let placement2 = RibbonPlacement::End;
+        let placement3 = RibbonPlacement::Start;
+        assert_eq!(placement1, placement2);
+        assert_ne!(placement1, placement3);
+    }
+
+    #[test]
+    fn ribbon_placement_clone() {
+        let original = RibbonPlacement::Start;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn badge_props_defaults() {
+        // BadgeProps doesn't require any fields
+        // overflow_count defaults to 99
+        // dot defaults to false
+        // show_zero defaults to false
+        // size defaults to BadgeSize::Default
+    }
 }
