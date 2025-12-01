@@ -113,7 +113,7 @@ mod tests {
         let custom1 = EmptyImage::Custom("url1".to_string());
         let custom2 = EmptyImage::Custom("url2".to_string());
         let custom3 = EmptyImage::Custom("url1".to_string());
-        
+
         assert!(custom1 != custom2);
         assert!(custom1 == custom3);
     }

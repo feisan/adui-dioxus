@@ -315,8 +315,16 @@ mod tests {
 
         for kind in all_kinds.iter() {
             let def = icon_def(*kind);
-            assert!(!def.paths.is_empty(), "IconKind {:?} should have at least one path", kind);
-            assert_eq!(def.view_box, "0 0 24 24", "IconKind {:?} should have standard view_box", kind);
+            assert!(
+                !def.paths.is_empty(),
+                "IconKind {:?} should have at least one path",
+                kind
+            );
+            assert_eq!(
+                def.view_box, "0 0 24 24",
+                "IconKind {:?} should have standard view_box",
+                kind
+            );
         }
     }
 
