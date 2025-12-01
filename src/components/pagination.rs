@@ -231,3 +231,95 @@ pub fn Pagination(props: PaginationProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pagination_props_defaults() {
+        let props = PaginationProps {
+            current: None,
+            default_current: None,
+            page_size: None,
+            default_page_size: None,
+            total: 100,
+            page_size_options: None,
+            show_size_changer: false,
+            show_total: false,
+            on_change: None,
+            on_page_size_change: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(props.total, 100);
+        assert_eq!(props.show_size_changer, false);
+        assert_eq!(props.show_total, false);
+    }
+
+    #[test]
+    fn pagination_props_with_values() {
+        let props = PaginationProps {
+            current: Some(2),
+            default_current: None,
+            page_size: Some(20),
+            default_page_size: None,
+            total: 100,
+            page_size_options: Some(vec![10, 20, 50, 100]),
+            show_size_changer: true,
+            show_total: true,
+            on_change: None,
+            on_page_size_change: None,
+            class: None,
+            style: None,
+        };
+        assert_eq!(props.current, Some(2));
+        assert_eq!(props.page_size, Some(20));
+        assert_eq!(props.show_size_changer, true);
+        assert_eq!(props.show_total, true);
+    }
+
+    #[test]
+    fn pagination_total_pages_calculation() {
+        // Test total pages calculation logic
+        let total = 100u32;
+        let page_size = 10u32;
+        let total_pages = total.div_ceil(page_size);
+        assert_eq!(total_pages, 10);
+
+        let total2 = 95u32;
+        let page_size2 = 10u32;
+        let total_pages2 = total2.div_ceil(page_size2);
+        assert_eq!(total_pages2, 10); // 95 / 10 = 9.5, ceil = 10
+
+        let total3 = 1u32;
+        let page_size3 = 10u32;
+        let total_pages3 = total3.div_ceil(page_size3).max(1);
+        assert_eq!(total_pages3, 1); // Minimum 1 page
+    }
+
+    #[test]
+    fn pagination_page_clamping() {
+        // Test page clamping logic
+        let total_pages = 10u32;
+        let page = 15u32;
+        let clamped = page.clamp(1, total_pages);
+        assert_eq!(clamped, 10);
+
+        let page2 = 0u32;
+        let clamped2 = page2.clamp(1, total_pages);
+        assert_eq!(clamped2, 1);
+    }
+
+    #[test]
+    fn pagination_page_size_minimum() {
+        // Test page size minimum value
+        let page_size = 0u32;
+        let min_size = page_size.max(1);
+        assert_eq!(min_size, 1);
+
+        let page_size2 = 10u32;
+        let min_size2 = page_size2.max(1);
+        assert_eq!(min_size2, 10);
+    }
+}

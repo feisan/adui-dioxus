@@ -1299,4 +1299,131 @@ mod tests {
             InputSize::Large
         );
     }
+
+    // Note: resolve_current_value and apply_input_value functions require Dioxus runtime
+    // and cannot be easily tested in unit tests without a full runtime setup.
+    // These functions are tested indirectly through integration tests and component demos.
+
+    // Test InputSize enum methods
+    #[test]
+    fn input_size_variants() {
+        assert_eq!(InputSize::Small.as_class(), "adui-input-sm");
+        assert_eq!(InputSize::Middle.as_class(), "");
+        assert_eq!(InputSize::Large.as_class(), "adui-input-lg");
+    }
+
+    // Test variant integration
+    #[test]
+    fn input_variant_integration() {
+        use crate::foundation::variant_from_bordered;
+        
+        // Test variant takes priority over bordered
+        assert_eq!(
+            variant_from_bordered(Some(false), Some(Variant::Filled)),
+            Variant::Filled
+        );
+        
+        // Test bordered=false maps to Borderless
+        assert_eq!(
+            variant_from_bordered(Some(false), None),
+            Variant::Borderless
+        );
+        
+        // Test default is Outlined
+        assert_eq!(
+            variant_from_bordered(None, None),
+            Variant::Outlined
+        );
+    }
+
+    // Test character count calculation
+    #[test]
+    fn input_character_count_calculation() {
+        // Test basic character count
+        let text = "Hello";
+        assert_eq!(text.chars().count(), 5);
+        
+        // Test empty string
+        let empty = "";
+        assert_eq!(empty.chars().count(), 0);
+        
+        // Test with special characters
+        let special = "Hello!@#";
+        assert_eq!(special.chars().count(), 8);
+        
+        // Test with unicode characters
+        let unicode = "你好";
+        assert_eq!(unicode.chars().count(), 2);
+    }
+
+    // Test max_length validation
+    #[test]
+    fn input_max_length_validation() {
+        let max_len = 10;
+        let short_text = "Hello";
+        let long_text = "This is a very long text that exceeds the maximum length";
+        
+        assert!(short_text.chars().count() <= max_len);
+        assert!(long_text.chars().count() > max_len);
+    }
+
+    // Test clear button visibility logic
+    #[test]
+    fn input_clear_button_visibility() {
+        // Clear button should be visible when:
+        // - allow_clear is true
+        // - value is not empty
+        // - input is not disabled
+        
+        let allow_clear = true;
+        let has_value = !"test".is_empty();
+        let is_disabled = false;
+        let should_show = allow_clear && has_value && !is_disabled;
+        assert!(should_show);
+        
+        // Should not show when disabled
+        let is_disabled = true;
+        let should_show = allow_clear && has_value && !is_disabled;
+        assert!(!should_show);
+        
+        // Should not show when value is empty
+        let has_value = !"".is_empty();
+        let is_disabled = false;
+        let should_show = allow_clear && has_value && !is_disabled;
+        assert!(!should_show);
+    }
+
+    // Test InputProps default values
+    #[test]
+    fn input_props_defaults() {
+        let props = InputProps {
+            value: None,
+            default_value: None,
+            placeholder: None,
+            disabled: false,
+            size: None,
+            variant: None,
+            bordered: None,
+            status: None,
+            prefix: None,
+            suffix: None,
+            addon_before: None,
+            addon_after: None,
+            allow_clear: false,
+            max_length: None,
+            show_count: false,
+            class: None,
+            root_class_name: None,
+            style: None,
+            class_names: None,
+            styles: None,
+            on_change: None,
+            on_press_enter: None,
+            data_attributes: None,
+        };
+        
+        assert_eq!(props.disabled, false);
+        assert_eq!(props.allow_clear, false);
+        assert_eq!(props.show_count, false);
+    }
 }

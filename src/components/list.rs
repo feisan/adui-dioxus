@@ -148,3 +148,118 @@ pub fn List(props: ListProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn list_props_defaults() {
+        let props = ListProps {
+            header: None,
+            footer: None,
+            bordered: false,
+            size: None,
+            class: None,
+            style: None,
+            loading: false,
+            is_empty: None,
+            empty: None,
+            pagination_total: None,
+            pagination_current: None,
+            pagination_page_size: None,
+            pagination_on_change: None,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.bordered, false);
+        assert_eq!(props.loading, false);
+        assert!(props.header.is_none());
+        assert!(props.footer.is_none());
+    }
+
+    #[test]
+    fn list_props_bordered() {
+        let props = ListProps {
+            header: None,
+            footer: None,
+            bordered: true,
+            size: None,
+            class: None,
+            style: None,
+            loading: false,
+            is_empty: None,
+            empty: None,
+            pagination_total: None,
+            pagination_current: None,
+            pagination_page_size: None,
+            pagination_on_change: None,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.bordered, true);
+    }
+
+    #[test]
+    fn list_props_loading() {
+        let props = ListProps {
+            header: None,
+            footer: None,
+            bordered: false,
+            size: None,
+            class: None,
+            style: None,
+            loading: true,
+            is_empty: None,
+            empty: None,
+            pagination_total: None,
+            pagination_current: None,
+            pagination_page_size: None,
+            pagination_on_change: None,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.loading, true);
+    }
+
+    #[test]
+    fn list_props_size() {
+        let props = ListProps {
+            header: None,
+            footer: None,
+            bordered: false,
+            size: Some(ComponentSize::Small),
+            class: None,
+            style: None,
+            loading: false,
+            is_empty: None,
+            empty: None,
+            pagination_total: None,
+            pagination_current: None,
+            pagination_page_size: None,
+            pagination_on_change: None,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.size, Some(ComponentSize::Small));
+    }
+
+    #[test]
+    fn list_props_pagination() {
+        let props = ListProps {
+            header: None,
+            footer: None,
+            bordered: false,
+            size: None,
+            class: None,
+            style: None,
+            loading: false,
+            is_empty: None,
+            empty: None,
+            pagination_total: Some(100),
+            pagination_current: Some(1),
+            pagination_page_size: Some(10),
+            pagination_on_change: None,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.pagination_total, Some(100));
+        assert_eq!(props.pagination_current, Some(1));
+        assert_eq!(props.pagination_page_size, Some(10));
+    }
+}

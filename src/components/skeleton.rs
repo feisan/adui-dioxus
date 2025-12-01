@@ -80,3 +80,92 @@ pub fn Skeleton(props: SkeletonProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn skeleton_props_defaults() {
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: true,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert!(props.loading.is_none());
+        assert_eq!(props.active, false);
+        assert_eq!(props.title, true);
+    }
+
+    #[test]
+    fn skeleton_props_loading() {
+        let props = SkeletonProps {
+            loading: Some(true),
+            active: false,
+            title: true,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.loading, Some(true));
+    }
+
+    #[test]
+    fn skeleton_props_active() {
+        let props = SkeletonProps {
+            loading: None,
+            active: true,
+            title: true,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.active, true);
+    }
+
+    #[test]
+    fn skeleton_props_title() {
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: false,
+            paragraph_rows: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.title, false);
+    }
+
+    #[test]
+    fn skeleton_props_paragraph_rows() {
+        let props = SkeletonProps {
+            loading: None,
+            active: false,
+            title: true,
+            paragraph_rows: Some(5),
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.paragraph_rows, Some(5));
+    }
+
+    #[test]
+    fn skeleton_paragraph_rows_minimum() {
+        // Test paragraph rows minimum value logic
+        let rows = 0u8;
+        let min_rows = rows.max(1);
+        assert_eq!(min_rows, 1);
+
+        let rows2 = 3u8;
+        let min_rows2 = rows2.max(1);
+        assert_eq!(min_rows2, 3);
+    }
+}

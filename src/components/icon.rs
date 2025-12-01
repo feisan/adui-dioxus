@@ -231,3 +231,107 @@ fn icon_def(kind: IconKind) -> IconDef {
         },
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn icon_kind_default() {
+        assert_eq!(IconKind::default(), IconKind::Info);
+    }
+
+    #[test]
+    fn icon_kind_all_variants() {
+        // Test all icon kinds exist and are distinct
+        assert_ne!(IconKind::Plus, IconKind::Minus);
+        assert_ne!(IconKind::Check, IconKind::Close);
+        assert_ne!(IconKind::Info, IconKind::Question);
+        assert_ne!(IconKind::ArrowRight, IconKind::ArrowLeft);
+        assert_ne!(IconKind::ArrowUp, IconKind::ArrowDown);
+        assert_ne!(IconKind::Search, IconKind::Copy);
+        assert_ne!(IconKind::Edit, IconKind::Loading);
+        assert_ne!(IconKind::Eye, IconKind::EyeInvisible);
+    }
+
+    #[test]
+    fn icon_props_defaults() {
+        let props = IconProps {
+            kind: IconKind::default(),
+            size: 20.0,
+            color: None,
+            rotate: None,
+            spin: false,
+            class: None,
+            aria_label: None,
+            view_box: None,
+            custom: None,
+        };
+        assert_eq!(props.kind, IconKind::Info);
+        assert_eq!(props.size, 20.0);
+        assert_eq!(props.spin, false);
+    }
+
+    #[test]
+    fn icon_def_returns_valid_definitions() {
+        // Test that all icon kinds have valid definitions
+        let plus_def = icon_def(IconKind::Plus);
+        assert_eq!(plus_def.view_box, "0 0 24 24");
+        assert_eq!(plus_def.fill, false);
+        assert!(!plus_def.paths.is_empty());
+
+        let info_def = icon_def(IconKind::Info);
+        assert_eq!(info_def.view_box, "0 0 24 24");
+        assert_eq!(info_def.fill, false);
+        assert!(!info_def.paths.is_empty());
+
+        let loading_def = icon_def(IconKind::Loading);
+        assert_eq!(loading_def.view_box, "0 0 24 24");
+        assert_eq!(loading_def.fill, false);
+        assert!(!loading_def.paths.is_empty());
+    }
+
+    #[test]
+    fn icon_def_all_kinds_have_paths() {
+        // Ensure all icon kinds have at least one path
+        let all_kinds = [
+            IconKind::Plus,
+            IconKind::Minus,
+            IconKind::Check,
+            IconKind::Close,
+            IconKind::Info,
+            IconKind::Question,
+            IconKind::ArrowRight,
+            IconKind::ArrowLeft,
+            IconKind::ArrowUp,
+            IconKind::ArrowDown,
+            IconKind::Search,
+            IconKind::Copy,
+            IconKind::Edit,
+            IconKind::Loading,
+            IconKind::Eye,
+            IconKind::EyeInvisible,
+        ];
+
+        for kind in all_kinds.iter() {
+            let def = icon_def(*kind);
+            assert!(!def.paths.is_empty(), "IconKind {:?} should have at least one path", kind);
+            assert_eq!(def.view_box, "0 0 24 24", "IconKind {:?} should have standard view_box", kind);
+        }
+    }
+
+    #[test]
+    fn icon_kind_equality() {
+        // Test that same icon kinds are equal
+        assert_eq!(IconKind::Plus, IconKind::Plus);
+        assert_eq!(IconKind::Info, IconKind::Info);
+        assert_eq!(IconKind::Loading, IconKind::Loading);
+    }
+
+    #[test]
+    fn icon_kind_clone() {
+        let original = IconKind::Check;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+}

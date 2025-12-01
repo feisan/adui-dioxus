@@ -95,3 +95,63 @@ pub fn Spin(props: SpinProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn spin_size_default() {
+        assert_eq!(SpinSize::default(), SpinSize::Default);
+    }
+
+    #[test]
+    fn spin_size_variants() {
+        assert_ne!(SpinSize::Small, SpinSize::Default);
+        assert_ne!(SpinSize::Default, SpinSize::Large);
+        assert_ne!(SpinSize::Small, SpinSize::Large);
+    }
+
+    #[test]
+    fn spin_size_equality() {
+        assert_eq!(SpinSize::Small, SpinSize::Small);
+        assert_eq!(SpinSize::Default, SpinSize::Default);
+        assert_eq!(SpinSize::Large, SpinSize::Large);
+    }
+
+    #[test]
+    fn spin_size_clone() {
+        let original = SpinSize::Small;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn spin_props_defaults() {
+        let props = SpinProps {
+            spinning: None,
+            size: None,
+            tip: None,
+            class: None,
+            style: None,
+            fullscreen: false,
+            children: rsx!(div {}),
+        };
+        assert!(props.spinning.is_none());
+        assert!(props.size.is_none());
+        assert!(props.tip.is_none());
+        assert_eq!(props.fullscreen, false);
+    }
+
+    #[test]
+    fn spin_size_all_variants() {
+        // Test all variants exist
+        let small = SpinSize::Small;
+        let default = SpinSize::Default;
+        let large = SpinSize::Large;
+
+        assert_ne!(small, default);
+        assert_ne!(default, large);
+        assert_ne!(small, large);
+    }
+}

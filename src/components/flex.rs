@@ -285,3 +285,203 @@ fn base_classes(
 
     classes
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn flex_direction_variants() {
+        assert_eq!(FlexDirection::default(), FlexDirection::Row);
+        assert_ne!(FlexDirection::Row, FlexDirection::Column);
+        assert_ne!(FlexDirection::RowReverse, FlexDirection::ColumnReverse);
+    }
+
+    #[test]
+    fn flex_justify_variants() {
+        assert_eq!(FlexJustify::default(), FlexJustify::Start);
+        assert_ne!(FlexJustify::Start, FlexJustify::End);
+        assert_ne!(FlexJustify::Center, FlexJustify::Between);
+    }
+
+    #[test]
+    fn flex_align_variants() {
+        assert_eq!(FlexAlign::default(), FlexAlign::Stretch);
+        assert_ne!(FlexAlign::Start, FlexAlign::End);
+        assert_ne!(FlexAlign::Center, FlexAlign::Baseline);
+    }
+
+    #[test]
+    fn flex_wrap_variants() {
+        assert_eq!(FlexWrap::default(), FlexWrap::NoWrap);
+        assert_ne!(FlexWrap::NoWrap, FlexWrap::Wrap);
+        assert_ne!(FlexWrap::Wrap, FlexWrap::WrapReverse);
+    }
+
+    #[test]
+    fn flex_component_variants() {
+        assert_eq!(FlexComponent::default(), FlexComponent::Div);
+        assert_ne!(FlexComponent::Div, FlexComponent::Section);
+        assert_ne!(FlexComponent::Article, FlexComponent::Nav);
+    }
+
+    #[test]
+    fn flex_orientation_variants() {
+        assert_eq!(FlexOrientation::default(), FlexOrientation::Horizontal);
+        assert_ne!(FlexOrientation::Horizontal, FlexOrientation::Vertical);
+    }
+
+    #[test]
+    fn flex_gap_conversion() {
+        // Test that conversion works without panicking
+        let _small: GapPreset = FlexGap::Small.into();
+        let _middle: GapPreset = FlexGap::Middle.into();
+        let _large: GapPreset = FlexGap::Large.into();
+    }
+
+    #[test]
+    fn flex_shared_config_defaults() {
+        let config = FlexSharedConfig::default();
+        assert_eq!(config.class, None);
+        assert_eq!(config.style, None);
+        assert_eq!(config.vertical, None);
+    }
+
+    #[test]
+    fn compute_direction_with_orientation() {
+        // Orientation takes priority
+        assert_eq!(
+            compute_direction(
+                FlexDirection::Row,
+                Some(FlexOrientation::Vertical),
+                false,
+                None
+            ),
+            FlexDirection::Column
+        );
+        assert_eq!(
+            compute_direction(
+                FlexDirection::Column,
+                Some(FlexOrientation::Horizontal),
+                true,
+                None
+            ),
+            FlexDirection::Row
+        );
+    }
+
+    #[test]
+    fn compute_direction_with_vertical_flag() {
+        // Vertical flag converts Row to Column
+        assert_eq!(
+            compute_direction(FlexDirection::Row, None, true, None),
+            FlexDirection::Column
+        );
+        // But doesn't affect Column
+        assert_eq!(
+            compute_direction(FlexDirection::Column, None, true, None),
+            FlexDirection::Column
+        );
+    }
+
+    #[test]
+    fn compute_direction_with_inherited_vertical() {
+        // Inherited vertical flag converts Row to Column
+        assert_eq!(
+            compute_direction(FlexDirection::Row, None, false, Some(true)),
+            FlexDirection::Column
+        );
+        // But doesn't affect Column
+        assert_eq!(
+            compute_direction(FlexDirection::Column, None, false, Some(true)),
+            FlexDirection::Column
+        );
+    }
+
+    #[test]
+    fn base_classes_includes_flex_class() {
+        let classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::NoWrap,
+            FlexJustify::Start,
+            FlexAlign::Stretch,
+        );
+        assert!(classes.contains(&"adui-flex".to_string()));
+    }
+
+    #[test]
+    fn base_classes_direction_mapping() {
+        let row_classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::NoWrap,
+            FlexJustify::Start,
+            FlexAlign::Stretch,
+        );
+        assert!(row_classes.contains(&"adui-flex-horizontal".to_string()));
+
+        let col_classes = base_classes(
+            FlexDirection::Column,
+            FlexWrap::NoWrap,
+            FlexJustify::Start,
+            FlexAlign::Stretch,
+        );
+        assert!(col_classes.contains(&"adui-flex-vertical".to_string()));
+    }
+
+    #[test]
+    fn base_classes_wrap_mapping() {
+        let nowrap_classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::NoWrap,
+            FlexJustify::Start,
+            FlexAlign::Stretch,
+        );
+        assert!(nowrap_classes.contains(&"adui-flex-wrap-nowrap".to_string()));
+
+        let wrap_classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::Wrap,
+            FlexJustify::Start,
+            FlexAlign::Stretch,
+        );
+        assert!(wrap_classes.contains(&"adui-flex-wrap-wrap".to_string()));
+    }
+
+    #[test]
+    fn base_classes_justify_mapping() {
+        let start_classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::NoWrap,
+            FlexJustify::Start,
+            FlexAlign::Stretch,
+        );
+        assert!(start_classes.contains(&"adui-flex-justify-start".to_string()));
+
+        let center_classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::NoWrap,
+            FlexJustify::Center,
+            FlexAlign::Stretch,
+        );
+        assert!(center_classes.contains(&"adui-flex-justify-center".to_string()));
+    }
+
+    #[test]
+    fn base_classes_align_mapping() {
+        let stretch_classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::NoWrap,
+            FlexJustify::Start,
+            FlexAlign::Stretch,
+        );
+        assert!(stretch_classes.contains(&"adui-flex-align-stretch".to_string()));
+
+        let center_classes = base_classes(
+            FlexDirection::Row,
+            FlexWrap::NoWrap,
+            FlexJustify::Start,
+            FlexAlign::Center,
+        );
+        assert!(center_classes.contains(&"adui-flex-align-center".to_string()));
+    }
+}

@@ -96,3 +96,66 @@ pub fn Empty(props: EmptyProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty_image_variants() {
+        assert!(EmptyImage::Default != EmptyImage::Simple);
+        assert!(EmptyImage::Simple != EmptyImage::Small);
+        assert!(EmptyImage::Default != EmptyImage::Small);
+    }
+
+    #[test]
+    fn empty_image_custom() {
+        let custom1 = EmptyImage::Custom("url1".to_string());
+        let custom2 = EmptyImage::Custom("url2".to_string());
+        let custom3 = EmptyImage::Custom("url1".to_string());
+        
+        assert!(custom1 != custom2);
+        assert!(custom1 == custom3);
+    }
+
+    #[test]
+    fn empty_image_equality() {
+        assert!(EmptyImage::Default == EmptyImage::Default);
+        assert!(EmptyImage::Simple == EmptyImage::Simple);
+        assert!(EmptyImage::Small == EmptyImage::Small);
+    }
+
+    #[test]
+    fn empty_image_clone() {
+        let original = EmptyImage::Default;
+        let cloned = original.clone();
+        assert!(original == cloned);
+
+        let custom_original = EmptyImage::Custom("test".to_string());
+        let custom_cloned = custom_original.clone();
+        assert!(custom_original == custom_cloned);
+    }
+
+    #[test]
+    fn empty_props_defaults() {
+        let props = EmptyProps {
+            description: None,
+            image: None,
+            class: None,
+            style: None,
+            footer: None,
+        };
+        assert!(props.description.is_none());
+        assert!(props.image.is_none());
+    }
+
+    #[test]
+    fn empty_image_custom_string() {
+        let url = "https://example.com/image.png";
+        let custom = EmptyImage::Custom(url.to_string());
+        match custom {
+            EmptyImage::Custom(s) => assert_eq!(s, url),
+            _ => panic!("Expected Custom variant"),
+        }
+    }
+}

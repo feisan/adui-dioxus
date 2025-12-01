@@ -316,3 +316,88 @@ fn sider_palette(tokens: &ThemeTokens, theme: SiderTheme) -> (String, String) {
         SiderTheme::Dark => (tokens.color_bg_layout.clone(), "#fafafa".into()),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sider_theme_default() {
+        assert_eq!(SiderTheme::default(), SiderTheme::Dark);
+    }
+
+    #[test]
+    fn sider_theme_variants() {
+        assert_ne!(SiderTheme::Light, SiderTheme::Dark);
+    }
+
+    #[test]
+    fn sider_theme_equality() {
+        assert_eq!(SiderTheme::Light, SiderTheme::Light);
+        assert_eq!(SiderTheme::Dark, SiderTheme::Dark);
+    }
+
+    #[test]
+    fn layout_props_defaults() {
+        let props = LayoutProps {
+            class: None,
+            style: None,
+            has_sider: None,
+            children: rsx!(div {}),
+        };
+        assert!(props.class.is_none());
+        assert!(props.style.is_none());
+        assert!(props.has_sider.is_none());
+    }
+
+    #[test]
+    fn layout_props_has_sider() {
+        let props_with_sider = LayoutProps {
+            class: None,
+            style: None,
+            has_sider: Some(true),
+            children: rsx!(div {}),
+        };
+        assert_eq!(props_with_sider.has_sider, Some(true));
+
+        let props_without_sider = LayoutProps {
+            class: None,
+            style: None,
+            has_sider: Some(false),
+            children: rsx!(div {}),
+        };
+        assert_eq!(props_without_sider.has_sider, Some(false));
+    }
+
+    #[test]
+    fn sider_props_defaults() {
+        let props = SiderProps {
+            width: None,
+            collapsed_width: None,
+            collapsed: None,
+            default_collapsed: false,
+            collapsible: false,
+            reverse_arrow: false,
+            trigger: None,
+            zero_width_trigger_style: None,
+            theme: SiderTheme::default(),
+            has_border: true,
+            on_collapse: None,
+            class: None,
+            style: None,
+            children: rsx!(div {}),
+        };
+        assert_eq!(props.default_collapsed, false);
+        assert_eq!(props.collapsible, false);
+        assert_eq!(props.reverse_arrow, false);
+        assert_eq!(props.theme, SiderTheme::Dark);
+        assert_eq!(props.has_border, true);
+    }
+
+    #[test]
+    fn sider_theme_clone() {
+        let original = SiderTheme::Light;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+}

@@ -137,3 +137,70 @@ pub fn Breadcrumb(props: BreadcrumbProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn breadcrumb_item_new() {
+        let item = BreadcrumbItem::new("1", "Home");
+        assert_eq!(item.id, "1");
+        assert_eq!(item.label, "Home");
+        assert_eq!(item.href, None);
+    }
+
+    #[test]
+    fn breadcrumb_item_with_href() {
+        let item = BreadcrumbItem::with_href("2", "About", "/about");
+        assert_eq!(item.id, "2");
+        assert_eq!(item.label, "About");
+        assert_eq!(item.href, Some("/about".to_string()));
+    }
+
+    #[test]
+    fn breadcrumb_item_equality() {
+        let item1 = BreadcrumbItem::new("1", "Home");
+        let item2 = BreadcrumbItem::new("1", "Home");
+        assert!(item1 == item2);
+
+        let item3 = BreadcrumbItem::with_href("1", "Home", "/home");
+        assert!(item1 != item3);
+    }
+
+    #[test]
+    fn breadcrumb_item_clone() {
+        let original = BreadcrumbItem::new("1", "Home");
+        let cloned = original.clone();
+        assert!(original == cloned);
+    }
+
+    #[test]
+    fn breadcrumb_props_defaults() {
+        let props = BreadcrumbProps {
+            items: vec![],
+            separator: None,
+            class: None,
+            style: None,
+            on_item_click: None,
+        };
+        assert_eq!(props.items.len(), 0);
+        assert_eq!(props.separator, None);
+    }
+
+    #[test]
+    fn breadcrumb_item_with_string_slices() {
+        let item = BreadcrumbItem::new("id", "label");
+        assert_eq!(item.id, "id");
+        assert_eq!(item.label, "label");
+    }
+
+    #[test]
+    fn breadcrumb_item_with_owned_strings() {
+        let id = String::from("id");
+        let label = String::from("label");
+        let item = BreadcrumbItem::new(id.clone(), label.clone());
+        assert_eq!(item.id, id);
+        assert_eq!(item.label, label);
+    }
+}

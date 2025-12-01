@@ -108,3 +108,64 @@ pub fn Divider(props: DividerProps) -> Element {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn divider_orientation_default() {
+        assert_eq!(DividerOrientation::default(), DividerOrientation::Center);
+    }
+
+    #[test]
+    fn divider_orientation_variants() {
+        assert_ne!(DividerOrientation::Left, DividerOrientation::Center);
+        assert_ne!(DividerOrientation::Center, DividerOrientation::Right);
+        assert_ne!(DividerOrientation::Left, DividerOrientation::Right);
+    }
+
+    #[test]
+    fn divider_orientation_equality() {
+        assert_eq!(DividerOrientation::Left, DividerOrientation::Left);
+        assert_eq!(DividerOrientation::Center, DividerOrientation::Center);
+        assert_eq!(DividerOrientation::Right, DividerOrientation::Right);
+    }
+
+    #[test]
+    fn divider_props_defaults() {
+        let props = DividerProps {
+            dashed: false,
+            plain: false,
+            vertical: false,
+            orientation: DividerOrientation::default(),
+            orientation_margin: None,
+            class: None,
+            style: None,
+            content: None,
+        };
+        assert_eq!(props.dashed, false);
+        assert_eq!(props.plain, false);
+        assert_eq!(props.vertical, false);
+        assert_eq!(props.orientation, DividerOrientation::Center);
+    }
+
+    #[test]
+    fn divider_orientation_clone() {
+        let original = DividerOrientation::Left;
+        let cloned = original;
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn divider_orientation_all_variants() {
+        // Test all variants exist
+        let left = DividerOrientation::Left;
+        let center = DividerOrientation::Center;
+        let right = DividerOrientation::Right;
+
+        assert_ne!(left, center);
+        assert_ne!(center, right);
+        assert_ne!(left, right);
+    }
+}
