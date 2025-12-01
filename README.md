@@ -21,6 +21,21 @@ This is an experimental port of Ant Design 6.0.0 to Dioxus. The library includes
 
 And many more components...
 
+## Installation
+
+Install adui-dioxus using Cargo:
+
+```bash
+cargo add adui-dioxus
+```
+
+Or manually add the dependency to your `Cargo.toml` file:
+
+```toml
+[dependencies]
+adui-dioxus = "0.1.1"
+```
+
 ## Documentation
 
 Comprehensive documentation is available in the `docs/` directory:
