@@ -219,11 +219,11 @@ fn PetShopDemo() -> Element {
     
     rsx! {
         Layout {
-            style: "min-height: 100vh; background: var(--adui-color-bg-base);",
+            style: "min-height: 100vh; background: #f7f7f8;",
             Header {
-                style: "background: var(--adui-color-bg-container); border-bottom: 1px solid var(--adui-color-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);",
+                style: "background: #ffffff; border-bottom: 1px solid rgba(0, 0, 0, 0.06); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);",
                 div {
-                    style: "max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 72px;",
+                    style: "max-width: 1400px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 64px;",
                     // Logo 和标题
                     div {
                         style: "display: flex; align-items: center; gap: 12px; cursor: pointer; transition: opacity 0.2s;",
@@ -234,19 +234,19 @@ fn PetShopDemo() -> Element {
                             current_page_num.set(1);
                         },
                         div {
-                            style: "font-size: 28px; line-height: 1;",
+                            style: "font-size: 24px; line-height: 1;",
                             "🐾"
                         }
                         Title {
                             level: TitleLevel::H3,
-                            style: "margin: 0; color: var(--adui-color-primary); font-weight: 600; letter-spacing: -0.5px;",
+                            style: "margin: 0; color: #202123; font-weight: 500; letter-spacing: -0.3px; font-size: 18px;",
                             "Pet Shop"
                         }
                     }
                     
                     // 搜索框
                     div {
-                        style: "flex: 1; max-width: 600px; margin: 0 32px;",
+                        style: "flex: 1; max-width: 600px; margin: 0 24px;",
                         Search {
                             placeholder: Some("搜索宠物、品牌...".to_string()),
                             value: Some(search_query.read().clone()),
@@ -299,10 +299,10 @@ fn PetShopDemo() -> Element {
                         Badge {
                             count: Some(rsx!({(*cart_count.read()).to_string()})),
                             div {
-                                style: "cursor: pointer; padding: 8px 16px; border-radius: var(--adui-radius); transition: background 0.2s; display: flex; align-items: center; gap: 8px;",
+                                style: "cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: background 0.2s; display: flex; align-items: center; gap: 6px; color: #565869;",
                                 onclick: move |_| current_page.set("cart".to_string()),
                                 Icon { kind: IconKind::Info }
-                                span { style: "font-weight: 500;", "购物车" }
+                                span { style: "font-weight: 400; font-size: 14px;", "购物车" }
                             }
                         }
                     }
@@ -310,7 +310,7 @@ fn PetShopDemo() -> Element {
             }
             
             Content {
-                style: "min-height: calc(100vh - 64px - 80px);",
+                style: "min-height: calc(100vh - 64px - 80px); background: #f7f7f8;",
                 if *current_page.read() == "home" {
                     HomePage {
                         pets: paginated_pets(),
@@ -443,9 +443,9 @@ fn PetShopDemo() -> Element {
             }
             
             Footer {
-                style: "text-align: center; padding: 32px 24px; background: var(--adui-color-bg-container); border-top: 1px solid var(--adui-color-border); color: var(--adui-color-text-secondary); margin-top: 48px;",
+                style: "text-align: center; padding: 32px 24px; background: #ffffff; border-top: 1px solid rgba(0, 0, 0, 0.06); color: #8e8ea0; margin-top: 64px;",
                 div {
-                    style: "font-size: 14px;",
+                    style: "font-size: 13px; font-weight: 400;",
                     "© 2024 Pet Shop Demo. All rights reserved."
                 }
             }
@@ -500,15 +500,15 @@ fn HomePage(props: HomePageProps) -> Element {
     
     rsx! {
         div {
-            style: "max-width: 1400px; margin: 0 auto; padding: 32px 24px;",
+            style: "max-width: 1200px; margin: 0 auto; padding: 40px 24px;",
             // 轮播图
             div {
-                style: "margin-bottom: 40px; border-radius: var(--adui-radius-lg); overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);",
+                style: "margin-bottom: 48px; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);",
                 Carousel {
                     items: vec![
-                        CarouselItem::new("热门宠物特惠").with_background("linear-gradient(135deg, #667eea 0%, #764ba2 100%)"),
-                        CarouselItem::new("新品上市").with_background("linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"),
-                        CarouselItem::new("限时折扣").with_background("linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"),
+                        CarouselItem::new("热门宠物特惠").with_background("linear-gradient(135deg, #ececf1 0%, #d1d5db 100%)"),
+                        CarouselItem::new("新品上市").with_background("linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)"),
+                        CarouselItem::new("限时折扣").with_background("linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)"),
                     ],
                     autoplay: true,
                     arrows: true,
@@ -518,7 +518,7 @@ fn HomePage(props: HomePageProps) -> Element {
             
             // 分类导航
             div {
-                style: "margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;",
+                style: "margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;",
                 div {
                     style: "flex: 1; min-width: 300px;",
                     Segmented {
@@ -539,6 +539,7 @@ fn HomePage(props: HomePageProps) -> Element {
                 Button {
                     r#type: ButtonType::Default,
                     onclick: Some(EventHandler::new(move |_| props.on_filter_click.call(()))),
+                    styles_root: Some("background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 8px; color: #565869;".to_string()),
                     Icon { kind: IconKind::Search }
                     "筛选"
                 }
@@ -590,7 +591,7 @@ fn HomePage(props: HomePageProps) -> Element {
                 // 分页
                 if props.total > props.page_size {
                     div {
-                        style: "display: flex; justify-content: center; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--adui-color-border);",
+                        style: "display: flex; justify-content: center; margin-top: 64px; padding-top: 40px; border-top: 1px solid rgba(0, 0, 0, 0.06);",
                         Pagination {
                             current: Some(props.current_page_num as u32),
                             page_size: Some(props.page_size),
@@ -623,9 +624,9 @@ fn PetCard(props: PetCardProps) -> Element {
     rsx! {
         Card {
             hoverable: true,
-            style: "height: 100%; display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease;",
+            style: "height: 100%; display: flex; flex-direction: column; background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);",
             div {
-                style: "position: relative; margin-bottom: 16px; border-radius: var(--adui-radius); overflow: hidden;",
+                style: "position: relative; margin-bottom: 16px; border-radius: 12px 12px 0 0; overflow: hidden; background: #f9fafb;",
                 div {
                     style: "cursor: pointer; transition: transform 0.3s ease;",
                     onclick: move |_| props.on_click.call(()),
@@ -633,13 +634,13 @@ fn PetCard(props: PetCardProps) -> Element {
                         src: props.pet.image.clone(),
                         alt: Some(props.pet.name.clone()),
                         width: Some("100%".to_string()),
-                        height: Some("240px".to_string()),
+                        height: Some("220px".to_string()),
                         style: Some("object-fit: cover;".to_string()),
                     }
                 }
                 if !props.pet.tags.is_empty() {
                     div {
-                        style: "position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 1;",
+                        style: "position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 1;",
                         for tag in &props.pet.tags {
                             Tag {
                                 color: if tag == "折扣" {
@@ -658,40 +659,40 @@ fn PetCard(props: PetCardProps) -> Element {
                 }
             }
             div {
-                style: "flex: 1; display: flex; flex-direction: column; padding: 0 4px;",
+                style: "flex: 1; display: flex; flex-direction: column; padding: 16px;",
                 div {
-                    style: "cursor: pointer; margin-bottom: 12px;",
+                    style: "cursor: pointer; margin-bottom: 10px;",
                     onclick: move |_| props.on_click.call(()),
                     Title {
                         level: TitleLevel::H4,
-                        style: "margin: 0 0 8px 0; font-weight: 600; transition: color 0.2s;",
+                        style: "margin: 0 0 8px 0; font-weight: 500; color: #202123; font-size: 16px; line-height: 1.4;",
                         {props.pet.name.clone()}
                     }
                 }
                 div {
-                    style: "display: flex; align-items: center; gap: 8px; margin-bottom: 12px;",
+                    style: "display: flex; align-items: center; gap: 6px; margin-bottom: 12px;",
                     Rate {
                         value: Some(props.pet.rating),
                         disabled: true,
                     }
                     Text {
                         r#type: TextType::Secondary,
-                        style: "font-size: 13px;",
+                        style: "font-size: 12px; color: #8e8ea0;",
                         {format!("({})", props.pet.review_count)}
                     }
                 }
                 div {
-                    style: "display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;",
+                    style: "display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px;",
                     Statistic {
                         value: props.pet.price,
                         precision: Some(2),
                         prefix: Some(rsx!("¥")),
-                        style: "font-size: 20px; font-weight: 600; color: var(--adui-color-error);",
+                        style: "font-size: 20px; font-weight: 600; color: #202123;",
                     }
                     if let Some(original) = props.pet.original_price {
                         Text {
                             r#type: TextType::Secondary,
-                            style: "text-decoration: line-through; font-size: 14px;",
+                            style: "text-decoration: line-through; font-size: 14px; color: #8e8ea0;",
                             {format!("¥{:.2}", original)}
                         }
                     }
@@ -703,12 +704,14 @@ fn PetCard(props: PetCardProps) -> Element {
                         Button {
                             r#type: ButtonType::Primary,
                             onclick: Some(EventHandler::new(move |_| props.on_add_to_cart.call(()))),
+                            styles_root: Some("background: #10a37f; border: none; border-radius: 8px; color: white; font-weight: 400;".to_string()),
                             "加入购物车"
                         }
                     }
                     Button {
                         r#type: ButtonType::Default,
                         onclick: move |_| props.on_click.call(()),
+                        styles_root: Some("background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 8px; color: #565869; font-weight: 400;".to_string()),
                         "查看详情"
                     }
                 }
@@ -737,12 +740,13 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
     
     rsx! {
         div {
-            style: "max-width: 1400px; margin: 0 auto; padding: 32px 24px;",
+            style: "max-width: 1200px; margin: 0 auto; padding: 40px 24px; background: #f7f7f8; min-height: calc(100vh - 64px - 80px);",
             div {
-                style: "margin-bottom: 24px;",
+                style: "margin-bottom: 32px;",
                 Button {
                     r#type: ButtonType::Text,
                     onclick: Some(EventHandler::new(move |_| props.on_back.call(()))),
+                    styles_root: Some("color: #565869; font-weight: 400; padding: 8px 0;".to_string()),
                     Icon { kind: IconKind::ArrowLeft }
                     "返回"
                 }
@@ -772,14 +776,14 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                                 src: props.pet.images[0].clone(),
                                 alt: Some(props.pet.name.clone()),
                                 width: Some("100%".to_string()),
-                                style: Some("border-radius: var(--adui-radius-lg);".to_string()),
+                                style: Some("border-radius: 12px; background: #f9fafb;".to_string()),
                             }
                         }
                         div {
-                            style: "display: flex; gap: 8px; margin-top: 12px;",
+                            style: "display: flex; gap: 8px; margin-top: 16px;",
                             for (idx, img_url) in props.pet.images.iter().take(4).enumerate() {
                                 div {
-                                    style: "cursor: pointer;",
+                                    style: "cursor: pointer; border-radius: 8px; overflow: hidden; border: 2px solid transparent; transition: border-color 0.2s;",
                                     onclick: {
                                         let mut visible = preview_visible;
                                         let mut current = preview_current;
@@ -794,7 +798,7 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                                         alt: Some(format!("{} {}", props.pet.name, idx)),
                                         width: Some("80px".to_string()),
                                         height: Some("80px".to_string()),
-                                        style: Some("object-fit: cover; border-radius: var(--adui-radius); border: 2px solid transparent;".to_string()),
+                                        style: Some("object-fit: cover; background: #f9fafb;".to_string()),
                                     }
                                 }
                             }
@@ -809,36 +813,36 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                         ..Default::default()
                     }),
                     div {
-                        style: "display: flex; flex-direction: column; gap: 20px; padding: 0 16px;",
+                        style: "display: flex; flex-direction: column; gap: 24px; padding: 0 24px;",
                         Title {
                             level: TitleLevel::H2,
-                            style: "margin: 0; font-weight: 600;",
+                            style: "margin: 0; font-weight: 500; color: #202123; font-size: 24px; line-height: 1.3;",
                             {props.pet.name.clone()}
                         }
                         div {
-                            style: "display: flex; align-items: center; gap: 12px; padding: 12px 0;",
+                            style: "display: flex; align-items: center; gap: 10px; padding: 8px 0;",
                             Rate {
                                 value: Some(props.pet.rating),
                                 disabled: true,
                             }
                             Text {
                                 r#type: TextType::Secondary,
-                                style: "font-size: 14px;",
+                                style: "font-size: 14px; color: #8e8ea0;",
                                 {format!("{} 条评价", props.pet.review_count)}
                             }
                         }
                         div {
-                            style: "display: flex; align-items: baseline; gap: 16px; padding: 16px; background: var(--adui-color-bg-base); border-radius: var(--adui-radius);",
+                            style: "display: flex; align-items: baseline; gap: 16px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06);",
                             Statistic {
                                 value: props.pet.price,
                                 precision: Some(2),
                                 prefix: Some(rsx!("¥")),
-                                style: "font-size: 32px; font-weight: 700; color: var(--adui-color-error);",
+                                style: "font-size: 32px; font-weight: 600; color: #202123;",
                             }
                             if let Some(original) = props.pet.original_price {
                                 Text {
                                     r#type: TextType::Secondary,
-                                    style: "text-decoration: line-through; font-size: 18px;",
+                                    style: "text-decoration: line-through; font-size: 18px; color: #8e8ea0;",
                                     {format!("¥{:.2}", original)}
                                 }
                             }
@@ -868,8 +872,8 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                         }
                         Divider {}
                         div {
-                            style: "display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--adui-color-bg-base); border-radius: var(--adui-radius);",
-                            Text { style: "font-weight: 500;", "数量：" }
+                            style: "display: flex; align-items: center; gap: 16px; padding: 16px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06);",
+                            Text { style: "font-weight: 400; color: #565869;", "数量：" }
                             InputNumber {
                                 value: Some(*quantity.read() as f64),
                                 min: Some(1.0),
@@ -898,6 +902,7 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                                             handler.call(*qty.read());
                                         }
                                     })),
+                                    styles_root: Some("background: #10a37f; border: none; border-radius: 8px; color: white; font-weight: 400; width: 100%;".to_string()),
                                     "加入购物车"
                                 }
                             }
@@ -906,13 +911,14 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                                 Button {
                                     r#type: ButtonType::Default,
                                     size: adui_dioxus::ButtonSize::Large,
+                                    styles_root: Some("background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 8px; color: #565869; font-weight: 400; width: 100%;".to_string()),
                                     "立即购买"
                                 }
                             }
                         }
                         Divider {}
                         Paragraph {
-                            style: "line-height: 1.8; color: var(--adui-color-text-secondary);",
+                            style: "line-height: 1.7; color: #565869; font-size: 15px;",
                             {props.pet.description.clone()}
                         }
                     }
@@ -921,12 +927,12 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
             
             // 商品详情标签页
             div {
-                style: "margin-top: 32px;",
+                style: "margin-top: 48px;",
                 Tabs {
                     items: vec![
                         TabItem::new("desc", "商品描述", Some(rsx!(
                             Paragraph {
-                                style: "line-height: 1.8;",
+                                style: "line-height: 1.7; color: #565869; font-size: 15px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06);",
                                 {props.pet.description.clone()}
                             }
                         ))),
@@ -946,7 +952,7 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                                 style: "display: flex; flex-direction: column; gap: 16px;",
                                 for review in &props.pet.reviews {
                         div {
-                            style: "display: flex; gap: 16px; padding: 20px; background: var(--adui-color-bg-container); border-radius: var(--adui-radius-lg); border: 1px solid var(--adui-color-border); transition: box-shadow 0.2s;",
+                            style: "display: flex; gap: 16px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06); transition: box-shadow 0.2s;",
                                         Avatar {
                                             src: Some(review.avatar.clone()),
                                             size: Some(adui_dioxus::AvatarSize::Large),
@@ -954,26 +960,26 @@ fn ProductDetailPage(props: ProductDetailPageProps) -> Element {
                                         div {
                                             style: "flex: 1;",
                                             div {
-                                                style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;",
+                                                style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
                                                 Text {
-                                                    style: "font-weight: 600; font-size: 15px;",
+                                                    style: "font-weight: 500; font-size: 15px; color: #202123;",
                                                     {review.user.clone()}
                                                 }
                                                 Text {
                                                     r#type: TextType::Secondary,
-                                                    style: "font-size: 13px;",
+                                                    style: "font-size: 13px; color: #8e8ea0;",
                                                     {review.date.clone()}
                                                 }
                                             }
                                             div {
-                                                style: "margin-bottom: 12px;",
+                                                style: "margin-bottom: 10px;",
                                                 Rate {
                                                     value: Some(review.rating),
                                                     disabled: true,
                                                 }
                                             }
                                             Paragraph {
-                                                style: "margin: 0; line-height: 1.7; color: var(--adui-color-text);",
+                                                style: "margin: 0; line-height: 1.7; color: #565869; font-size: 14px;",
                                                 {review.comment.clone()}
                                             }
                                         }
@@ -1025,7 +1031,7 @@ fn ShoppingCartPage(props: ShoppingCartPageProps) -> Element {
     if props.cart.is_empty() {
         return rsx! {
             div {
-                style: "max-width: 1400px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px;",
+                style: "max-width: 1200px; margin: 0 auto; padding: 80px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; background: #f7f7f8;",
                 Empty {
                     image: EmptyImage::Default,
                     description: Some("购物车是空的".to_string()),
@@ -1036,10 +1042,10 @@ fn ShoppingCartPage(props: ShoppingCartPageProps) -> Element {
     
     rsx! {
         div {
-            style: "max-width: 1400px; margin: 0 auto; padding: 32px 24px;",
+            style: "max-width: 1200px; margin: 0 auto; padding: 40px 24px; background: #f7f7f8; min-height: calc(100vh - 64px - 80px);",
             Title {
                 level: TitleLevel::H2,
-                style: "margin-bottom: 32px; font-weight: 600;",
+                style: "margin-bottom: 32px; font-weight: 500; color: #202123; font-size: 24px;",
                 "购物车"
             }
             
@@ -1053,35 +1059,36 @@ fn ShoppingCartPage(props: ShoppingCartPageProps) -> Element {
                         ..Default::default()
                     }),
                     Card {
+                        style: "background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px;",
                         div {
                             style: "display: flex; flex-direction: column; gap: 16px;",
                             for item in &props.cart {
                                 div {
-                                    style: "display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px solid var(--adui-color-border); border-radius: var(--adui-radius-lg); background: var(--adui-color-bg-container); transition: box-shadow 0.2s;",
+                                    style: "display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px; background: #ffffff; transition: box-shadow 0.2s;",
                                     Image {
                                         src: item.pet.image.clone(),
                                         alt: Some(item.pet.name.clone()),
                                         width: Some("100px".to_string()),
                                         height: Some("100px".to_string()),
-                                        style: Some("object-fit: cover; border-radius: var(--adui-radius); flex-shrink: 0;".to_string()),
+                                        style: Some("object-fit: cover; border-radius: 8px; flex-shrink: 0;".to_string()),
                                     }
                                     div {
                                         style: "flex: 1; min-width: 0;",
                                         Title {
                                             level: TitleLevel::H5,
-                                            style: "margin: 0 0 12px 0; font-weight: 600;",
+                                            style: "margin: 0 0 12px 0; font-weight: 500; color: #202123; font-size: 16px;",
                                             {item.pet.name.clone()}
                                         }
                                         div {
                                             style: "display: flex; align-items: center; gap: 20px; flex-wrap: wrap;",
                                             Text {
                                                 r#type: TextType::Secondary,
-                                                style: "font-size: 14px;",
+                                                style: "font-size: 14px; color: #8e8ea0;",
                                                 {format!("单价: ¥{:.2}", item.pet.price)}
                                             }
                                             div {
                                                 style: "display: flex; align-items: center; gap: 8px;",
-                                                Text { style: "font-size: 14px;", "数量: " }
+                                                Text { style: "font-size: 14px; color: #565869;", "数量: " }
                                                 InputNumber {
                                                     value: Some(item.quantity as f64),
                                                     min: Some(1.0),
@@ -1097,7 +1104,7 @@ fn ShoppingCartPage(props: ShoppingCartPageProps) -> Element {
                                                 }
                                             }
                                             Text {
-                                                style: "font-weight: 600; font-size: 16px; color: var(--adui-color-error);",
+                                                style: "font-weight: 600; font-size: 16px; color: #202123;",
                                                 {format!("小计: ¥{:.2}", item.pet.price * item.quantity as f64)}
                                             }
                                         }
@@ -1129,29 +1136,29 @@ fn ShoppingCartPage(props: ShoppingCartPageProps) -> Element {
                     }),
                     Card {
                         title: Some(rsx!("结算信息")),
-                        style: "position: sticky; top: 88px;",
+                        style: "position: sticky; top: 88px; background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px;",
                         div {
                             style: "display: flex; flex-direction: column; gap: 20px;",
                             div {
                                 style: "display: flex; justify-content: space-between; align-items: center; padding: 12px 0;",
-                                Text { style: "font-size: 15px;", "商品数量：" }
+                                Text { style: "font-size: 15px; color: #565869;", "商品数量：" }
                                 Text {
-                                    style: "font-weight: 600; font-size: 15px;",
+                                    style: "font-weight: 500; font-size: 15px; color: #202123;",
                                     {format!("{} 件", total_count)}
                                 }
                             }
                             Divider {}
                             div {
-                                style: "display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--adui-color-bg-base); border-radius: var(--adui-radius);",
+                                style: "display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f7f7f8; border-radius: 12px;",
                                 Text {
-                                    style: "font-size: 18px; font-weight: 600;",
+                                    style: "font-size: 18px; font-weight: 500; color: #202123;",
                                     "合计："
                                 }
                                 Statistic {
                                     value: total_price,
                                     precision: Some(2),
                                     prefix: Some(rsx!("¥")),
-                                    style: "font-size: 28px; font-weight: 700; color: var(--adui-color-error);",
+                                    style: "font-size: 28px; font-weight: 600; color: #202123;",
                                 }
                             }
                             div {
@@ -1160,7 +1167,7 @@ fn ShoppingCartPage(props: ShoppingCartPageProps) -> Element {
                                     r#type: ButtonType::Primary,
                                     size: adui_dioxus::ButtonSize::Large,
                                     onclick: Some(EventHandler::new(move |_| props.on_checkout.call(()))),
-                                    styles_root: Some("width: 100%; height: 48px; font-size: 16px; font-weight: 600;".to_string()),
+                                    styles_root: Some("width: 100%; height: 48px; font-size: 16px; font-weight: 400; background: #10a37f; border: none; border-radius: 8px; color: white;".to_string()),
                                     "去结算"
                                 }
                             }
@@ -1199,10 +1206,10 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
     
     rsx! {
         div {
-            style: "max-width: 1000px; margin: 0 auto; padding: 32px 24px;",
+            style: "max-width: 900px; margin: 0 auto; padding: 40px 24px; background: #f7f7f8; min-height: calc(100vh - 64px - 80px);",
             Title {
                 level: TitleLevel::H2,
-                style: "margin-bottom: 40px; font-weight: 600;",
+                style: "margin-bottom: 40px; font-weight: 500; color: #202123; font-size: 24px;",
                 "结算"
             }
             
@@ -1217,41 +1224,44 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                 if *current_step.read() == 0 {
                     Card {
                         title: Some(rsx!("订单确认")),
+                        style: "background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px;",
                         div {
                             style: "display: flex; flex-direction: column; gap: 16px;",
                             div {
-                                style: "display: flex; justify-content: space-between;",
-                                Text { "商品总价：" }
+                                style: "display: flex; justify-content: space-between; padding: 12px 0;",
+                                Text { style: "color: #565869;", "商品总价：" }
                                 Statistic {
                                     value: total_price,
                                     precision: Some(2),
                                     prefix: Some(rsx!("¥")),
+                                    style: "color: #202123;",
                                 }
                             }
                             div {
-                                style: "display: flex; justify-content: space-between;",
-                                Text { "运费：" }
-                                Text { "¥0.00" }
+                                style: "display: flex; justify-content: space-between; padding: 12px 0;",
+                                Text { style: "color: #565869;", "运费：" }
+                                Text { style: "color: #202123;", "¥0.00" }
                             }
                             Divider {}
                             div {
-                                style: "display: flex; justify-content: space-between; align-items: center;",
+                                style: "display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #f7f7f8; border-radius: 12px;",
                                 Text {
-                                    style: "font-size: 18px; font-weight: 600;",
+                                    style: "font-size: 18px; font-weight: 500; color: #202123;",
                                     "实付金额："
                                 }
                                 Statistic {
                                     value: total_price,
                                     precision: Some(2),
                                     prefix: Some(rsx!("¥")),
-                                    style: "font-size: 24px; color: var(--adui-color-error);",
+                                    style: "font-size: 24px; font-weight: 600; color: #202123;",
                                 }
                             }
                             div {
-                                style: "display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;",
+                                style: "display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;",
                             Button {
                                 r#type: ButtonType::Default,
                                 onclick: Some(EventHandler::new(move |_| props.on_back.call(()))),
+                                styles_root: Some("background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 8px; color: #565869; font-weight: 400;".to_string()),
                                 "返回"
                             }
                                 Button {
@@ -1260,6 +1270,7 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                                         let mut step = current_step;
                                         move |_| step.set(1)
                                     },
+                                    styles_root: Some("background: #10a37f; border: none; border-radius: 8px; color: white; font-weight: 400;".to_string()),
                                     "下一步"
                                 }
                             }
@@ -1268,6 +1279,7 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                 } else if *current_step.read() == 1 {
                     Card {
                         title: Some(rsx!("选择配送方式")),
+                        style: "background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px;",
                         RadioGroup {
                             value: delivery_method.read().clone(),
                             on_change: {
@@ -1288,13 +1300,14 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                             }
                         }
                         div {
-                            style: "display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;",
+                            style: "display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;",
                             Button {
                                 r#type: ButtonType::Default,
                                 onclick: {
                                     let mut step = current_step;
                                     move |_| step.set(0)
                                 },
+                                styles_root: Some("background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 8px; color: #565869; font-weight: 400;".to_string()),
                                 "上一步"
                             }
                             Button {
@@ -1303,6 +1316,7 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                                     let mut step = current_step;
                                     move |_| step.set(2)
                                 },
+                                styles_root: Some("background: #10a37f; border: none; border-radius: 8px; color: white; font-weight: 400;".to_string()),
                                 "下一步"
                             }
                         }
@@ -1310,6 +1324,7 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                 } else if *current_step.read() == 2 {
                     Card {
                         title: Some(rsx!("选择支付方式")),
+                        style: "background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px;",
                         RadioGroup {
                             value: payment_method.read().clone(),
                             on_change: {
@@ -1330,13 +1345,14 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                             }
                         }
                         div {
-                            style: "display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px;",
+                            style: "display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;",
                             Button {
                                 r#type: ButtonType::Default,
                                 onclick: {
                                     let mut step = current_step;
                                     move |_| step.set(1)
                                 },
+                                styles_root: Some("background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 8px; color: #565869; font-weight: 400;".to_string()),
                                 "上一步"
                             }
                             Button {
@@ -1345,6 +1361,7 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                                     let mut step = current_step;
                                     move |_| step.set(3)
                                 },
+                                styles_root: Some("background: #10a37f; border: none; border-radius: 8px; color: white; font-weight: 400;".to_string()),
                                 "确认支付"
                             }
                         }
@@ -1352,19 +1369,20 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                 } else {
                     Card {
                         title: Some(rsx!("订单完成")),
+                        style: "background: #ffffff; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 12px;",
                         div {
-                            style: "text-align: center; padding: 48px 32px;",
+                            style: "text-align: center; padding: 64px 32px;",
                             div {
-                                style: "font-size: 64px; margin-bottom: 24px; animation: scaleIn 0.5s ease;",
+                                style: "font-size: 64px; margin-bottom: 24px;",
                                 "✅"
                             }
                             Title {
                                 level: TitleLevel::H3,
-                                style: "margin-bottom: 16px; font-weight: 600;",
+                                style: "margin-bottom: 16px; font-weight: 500; color: #202123; font-size: 22px;",
                                 "订单提交成功！"
                             }
                             Paragraph {
-                                style: "margin: 16px 0 32px 0; color: var(--adui-color-text-secondary); font-size: 15px; line-height: 1.8;",
+                                style: "margin: 16px 0 40px 0; color: #8e8ea0; font-size: 15px; line-height: 1.7;",
                                 "您的订单已成功提交，我们将在24小时内处理并安排发货。"
                             }
                             Progress {
@@ -1372,12 +1390,12 @@ fn CheckoutPage(props: CheckoutPageProps) -> Element {
                                 status: Some(adui_dioxus::ProgressStatus::Success),
                             }
                             div {
-                                style: "margin-top: 32px;",
+                                style: "margin-top: 40px;",
                             Button {
                                 r#type: ButtonType::Primary,
                                 size: adui_dioxus::ButtonSize::Large,
                                 onclick: Some(EventHandler::new(move |_| props.on_complete.call(()))),
-                                styles_root: Some("padding: 0 32px; height: 44px; font-size: 16px; font-weight: 600;".to_string()),
+                                styles_root: Some("padding: 0 32px; height: 44px; font-size: 16px; font-weight: 400; background: #10a37f; border: none; border-radius: 8px; color: white;".to_string()),
                                 "返回首页"
                             }
                             }
