@@ -111,7 +111,7 @@ cargo add adui-dioxus
 
 ```toml
 [dependencies]
-adui-dioxus = "0.1.1"
+adui-dioxus = "0.1.2"
 ```
 
 ## 文档

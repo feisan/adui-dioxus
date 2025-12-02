@@ -111,7 +111,7 @@ Or manually add the dependency to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-adui-dioxus = "0.1.1"
+adui-dioxus = "0.1.2"
 ```
 
 ## Documentation
