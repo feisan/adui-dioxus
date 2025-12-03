@@ -131,9 +131,70 @@ Each component has detailed documentation including:
 
 ### Requirements
 
-- Rust toolchain (latest stable recommended)
-- Dioxus CLI (`cargo install dioxus-cli` or use `dx` command)
-- `wasm32-unknown-unknown` target for WASM builds (`rustup target add wasm32-unknown-unknown`)
+Before you can start developing, you need to set up your development environment. This section will guide you through installing the necessary tools.
+
+#### Prerequisites
+
+First, ensure you have the Rust toolchain installed. If you haven't installed Rust yet, visit [rustup.rs](https://rustup.rs/) and follow the installation instructions for your platform.
+
+Verify your Rust installation:
+
+```bash
+rustc --version
+cargo --version
+```
+
+#### Installing Rust WASM Target
+
+Dioxus applications compile to WebAssembly (WASM) for web deployment. You need to add the `wasm32-unknown-unknown` target to your Rust toolchain.
+
+Install the WASM target:
+
+```bash
+rustup target add wasm32-unknown-unknown
+```
+
+This command downloads and installs the necessary toolchain components for compiling Rust code to WebAssembly.
+
+Verify the installation:
+
+```bash
+rustup target list --installed | grep wasm32-unknown-unknown
+```
+
+If the command outputs `wasm32-unknown-unknown`, the target is successfully installed.
+
+#### Installing Dioxus CLI
+
+The Dioxus CLI (`dx`) provides commands for building, serving, and bundling Dioxus applications. Install it using Cargo:
+
+```bash
+cargo install dioxus-cli
+```
+
+**Note**: This installation may take several minutes as it compiles the CLI from source. Make sure you have a stable internet connection.
+
+After installation, verify that the CLI is available:
+
+```bash
+dx --version
+```
+
+You should see the Dioxus CLI version number. If the command is not found, ensure that Cargo's binary directory is in your system's PATH:
+
+- **Linux/macOS**: `~/.cargo/bin`
+- **Windows**: `%USERPROFILE%\.cargo\bin`
+
+#### Troubleshooting
+
+**Issue**: `dx` command not found after installation
+- **Solution**: Add `~/.cargo/bin` (or `%USERPROFILE%\.cargo\bin` on Windows) to your PATH environment variable, then restart your terminal.
+
+**Issue**: WASM target installation fails
+- **Solution**: Ensure you have a stable internet connection and try running `rustup update` first, then retry the target installation.
+
+**Issue**: Dioxus CLI installation takes too long or fails
+- **Solution**: Make sure you have sufficient disk space and a stable internet connection. You can also try installing with `--locked` flag: `cargo install dioxus-cli --locked`
 
 ### Build and Check
 

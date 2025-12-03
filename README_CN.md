@@ -131,9 +131,70 @@ adui-dioxus = "0.1.2"
 
 ### 环境要求
 
-- Rust 工具链（推荐最新稳定版）
-- Dioxus CLI (`cargo install dioxus-cli` 或使用 `dx` 命令)
-- 用于 WASM 构建的 `wasm32-unknown-unknown` target（`rustup target add wasm32-unknown-unknown`）
+在开始开发之前，你需要设置开发环境。本节将指导你安装必要的工具。
+
+#### 前置条件
+
+首先，确保你已经安装了 Rust 工具链。如果还没有安装 Rust，请访问 [rustup.rs](https://rustup.rs/) 并按照你平台的安装说明进行操作。
+
+验证你的 Rust 安装：
+
+```bash
+rustc --version
+cargo --version
+```
+
+#### 安装 Rust WASM Target
+
+Dioxus 应用程序需要编译为 WebAssembly (WASM) 以便在 Web 上部署。你需要将 `wasm32-unknown-unknown` target 添加到你的 Rust 工具链中。
+
+安装 WASM target：
+
+```bash
+rustup target add wasm32-unknown-unknown
+```
+
+此命令会下载并安装将 Rust 代码编译为 WebAssembly 所需的工具链组件。
+
+验证安装：
+
+```bash
+rustup target list --installed | grep wasm32-unknown-unknown
+```
+
+如果命令输出了 `wasm32-unknown-unknown`，说明 target 已成功安装。
+
+#### 安装 Dioxus CLI
+
+Dioxus CLI (`dx`) 提供了构建、运行和打包 Dioxus 应用程序的命令。使用 Cargo 安装：
+
+```bash
+cargo install dioxus-cli
+```
+
+**注意**：此安装可能需要几分钟时间，因为它会从源代码编译 CLI。请确保你有稳定的网络连接。
+
+安装完成后，验证 CLI 是否可用：
+
+```bash
+dx --version
+```
+
+你应该能看到 Dioxus CLI 的版本号。如果找不到命令，请确保 Cargo 的二进制目录在你的系统 PATH 中：
+
+- **Linux/macOS**: `~/.cargo/bin`
+- **Windows**: `%USERPROFILE%\.cargo\bin`
+
+#### 故障排除
+
+**问题**：安装后找不到 `dx` 命令
+- **解决方案**：将 `~/.cargo/bin`（Windows 上为 `%USERPROFILE%\.cargo\bin`）添加到你的 PATH 环境变量中，然后重启终端。
+
+**问题**：WASM target 安装失败
+- **解决方案**：确保你有稳定的网络连接，先运行 `rustup update`，然后重试 target 安装。
+
+**问题**：Dioxus CLI 安装时间过长或失败
+- **解决方案**：确保你有足够的磁盘空间和稳定的网络连接。你也可以尝试使用 `--locked` 标志安装：`cargo install dioxus-cli --locked`
 
 ### 构建与检查
 
