@@ -166,13 +166,29 @@ If the command outputs `wasm32-unknown-unknown`, the target is successfully inst
 
 #### Installing Dioxus CLI
 
-The Dioxus CLI (`dx`) provides commands for building, serving, and bundling Dioxus applications. Install it using Cargo:
+The Dioxus CLI (`dx`) provides commands for building, serving, and bundling Dioxus applications.
+
+**Recommended (Faster)**: Install using `cargo-binstall` for faster installation from pre-built binaries:
+
+First, install `cargo-binstall`:
+
+```bash
+cargo install cargo-binstall
+```
+
+Then install Dioxus CLI:
+
+```bash
+cargo binstall dioxus-cli
+```
+
+**Alternative**: Install using Cargo (slower, compiles from source):
 
 ```bash
 cargo install dioxus-cli
 ```
 
-**Note**: This installation may take several minutes as it compiles the CLI from source. Make sure you have a stable internet connection.
+**Note**: Using `cargo-binstall` is recommended as it installs pre-built binaries and is much faster than compiling from source. The traditional `cargo install` method may take several minutes as it compiles the CLI from source. Make sure you have a stable internet connection.
 
 After installation, verify that the CLI is available:
 
@@ -194,7 +210,7 @@ You should see the Dioxus CLI version number. If the command is not found, ensur
 - **Solution**: Ensure you have a stable internet connection and try running `rustup update` first, then retry the target installation.
 
 **Issue**: Dioxus CLI installation takes too long or fails
-- **Solution**: Make sure you have sufficient disk space and a stable internet connection. You can also try installing with `--locked` flag: `cargo install dioxus-cli --locked`
+- **Solution**: Use `cargo-binstall` for faster installation from pre-built binaries. First install `cargo-binstall` with `cargo install cargo-binstall`, then install Dioxus CLI with `cargo binstall dioxus-cli`. Alternatively, ensure you have sufficient disk space and a stable internet connection, and try installing with `--locked` flag: `cargo install dioxus-cli --locked`
 
 ### Build and Check
 

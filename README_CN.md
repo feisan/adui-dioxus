@@ -166,13 +166,29 @@ rustup target list --installed | grep wasm32-unknown-unknown
 
 #### 安装 Dioxus CLI
 
-Dioxus CLI (`dx`) 提供了构建、运行和打包 Dioxus 应用程序的命令。使用 Cargo 安装：
+Dioxus CLI (`dx`) 提供了构建、运行和打包 Dioxus 应用程序的命令。
+
+**推荐方式（更快）**：使用 `cargo-binstall` 安装，可以从预编译的二进制文件快速安装：
+
+首先，安装 `cargo-binstall`：
+
+```bash
+cargo install cargo-binstall
+```
+
+然后安装 Dioxus CLI：
+
+```bash
+cargo binstall dioxus-cli
+```
+
+**备选方式**：使用 Cargo 安装（较慢，从源代码编译）：
 
 ```bash
 cargo install dioxus-cli
 ```
 
-**注意**：此安装可能需要几分钟时间，因为它会从源代码编译 CLI。请确保你有稳定的网络连接。
+**注意**：推荐使用 `cargo-binstall`，因为它安装预编译的二进制文件，比从源代码编译快得多。传统的 `cargo install` 方法可能需要几分钟时间，因为它会从源代码编译 CLI。请确保你有稳定的网络连接。
 
 安装完成后，验证 CLI 是否可用：
 
@@ -194,7 +210,7 @@ dx --version
 - **解决方案**：确保你有稳定的网络连接，先运行 `rustup update`，然后重试 target 安装。
 
 **问题**：Dioxus CLI 安装时间过长或失败
-- **解决方案**：确保你有足够的磁盘空间和稳定的网络连接。你也可以尝试使用 `--locked` 标志安装：`cargo install dioxus-cli --locked`
+- **解决方案**：使用 `cargo-binstall` 从预编译的二进制文件快速安装。首先使用 `cargo install cargo-binstall` 安装 `cargo-binstall`，然后使用 `cargo binstall dioxus-cli` 安装 Dioxus CLI。或者，确保你有足够的磁盘空间和稳定的网络连接，并尝试使用 `--locked` 标志安装：`cargo install dioxus-cli --locked`
 
 ### 构建与检查
 
